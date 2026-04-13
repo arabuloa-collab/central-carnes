@@ -3,32 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <title>Central de Carnes</title>
-</head>
-<body style="background:#111;color:white;text-align:center;font-family:Arial;">
+  <style>
+    body {
+      font-family: Arial;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
 
-<h1 style="color:red;">Central de Carnes</h1>
+    h1 { color: red; }
+
+    form {
+      background: #222;
+      padding: 20px;
+      margin: 20px auto;
+      width: 300px;
+      border-radius: 10px;
+    }
+
+    input, select, button {
+      width: 100%;
+      margin: 5px 0;
+      padding: 8px;
+    }
+
+    button {
+      background: red;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Central de Carnes</h1>
 
 <form id="pedidoForm">
   <h3>Datos del Cliente</h3>
 
-  <input type="text" id="nombre" placeholder="Nombre" required><br>
-  <input type="text" id="telefono" placeholder="Teléfono" required><br>
-  <input type="text" id="direccion" placeholder="Dirección" required><br>
+  <input type="text" id="nombre" placeholder="Nombre" required>
+  <input type="text" id="telefono" placeholder="Teléfono" required>
+  <input type="text" id="direccion" placeholder="Dirección" required>
 
   <h3>Pedido</h3>
 
-  <select id="producto"></select><br>
+  <select id="producto"></select>
 
-  <input type="number" id="cantidad" placeholder="Cantidad" required><br>
+  <input type="number" id="cantidad" placeholder="Cantidad" required>
 
   <button type="submit">Enviar Pedido</button>
 </form>
 
 <script>
+// 🔥 CARGAR PRODUCTOS
 fetch("/api/productos")
   .then(res => res.json())
   .then(data => {
     const select = document.getElementById("producto");
+    select.innerHTML = "";
+
     data.forEach(p => {
       const option = document.createElement("option");
       option.value = p.nombre;
@@ -37,6 +71,7 @@ fetch("/api/productos")
     });
   });
 
+// 🔥 ENVIAR PEDIDO
 document.getElementById("pedidoForm").addEventListener("submit", e => {
   e.preventDefault();
 
@@ -50,14 +85,22 @@ document.getElementById("pedidoForm").addEventListener("submit", e => {
     cantidad: document.getElementById("cantidad").value
   };
 
+  console.log("Pedido enviado:", pedido);
+
   fetch("/api/pedidos", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(pedido)
   })
   .then(() => {
-    alert("Pedido enviado");
+    alert("Pedido enviado correctamente");
     location.reload();
+  })
+  .catch(err => {
+    alert("Error enviando pedido");
+    console.error(err);
   });
 });
 </script>
