@@ -7,6 +7,20 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(express.json());
 
+// 🔥 PRODUCTOS (IMPORTANTE)
+app.get("/api/productos", (req, res) => {
+  res.json([
+    { nombre: "AGUJA RIOPLATENSE" },
+    { nombre: "ALITAS CAMELIAS" },
+    { nombre: "ALITAS SOYCHU" },
+    { nombre: "ASADO FORTUNA" },
+    { nombre: "BIFE DE CHORIZO" },
+    { nombre: "CUADRIL" },
+    { nombre: "LOMO" },
+    { nombre: "VACIO" }
+  ]);
+});
+
 // 🔥 ruta principal
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public/index.html"));

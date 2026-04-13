@@ -4,48 +4,48 @@ const fs = require("fs");
 
 let pedidos = [];
 
-if (fs.existsSync("pedidos.json")) {
-  try {
+// 🔥 cargar pedidos si existen
+try {
+  if (fs.existsSync("pedidos.json")) {
     const data = fs.readFileSync("pedidos.json", "utf8");
     pedidos = data ? JSON.parse(data) : [];
-  } catch (error) {
-    pedidos = [];
   }
+} catch (error) {
+  pedidos = [];
 }
 
-// GET
+// 📥 OBTENER TODOS LOS PEDIDOS
 router.get("/", (req, res) => {
   res.json(pedidos);
 });
 
-// POST
+// 📤 CREAR PEDIDO
 router.post("/", (req, res) => {
-  const nuevo = req.body;
+  const nuevoPedido = req.body;
 
-  nuevo.id = Date.now(); // 🔥 único
-  nuevo.fecha = new Date().toLocaleString();
+  // 🔥 AGREGAR FECHA
+  nuevoPedido.fecha = new Date().toLocaleString();
 
-  pedidos.push(nuevo);
+  pedidos.push(nuevoPedido);
 
   fs.writeFileSync("pedidos.json", JSON.stringify(pedidos, null, 2));
 
-  res.json({ ok: true });
+  res.json({ mensaje: "Pedido guardado" });
 });
 
-// DELETE
-router.delete("/:id", (req, res) => {
-  const id = Number(req.params.id);
+// 🗑 ELIMINAR PEDIDO
+router.delete("/:index", (req, res) => {
+  const index = parseInt(req.params.index);
 
-  const antes = pedidos.length;
+  if (index >= 0 && index < pedidos.length) {
+    pedidos.splice(index, 1);
 
-  pedidos = pedidos.filter(p => p.id !== id);
+    fs.writeFileSync("pedidos.json", JSON.stringify(pedidos, null, 2));
 
-  fs.writeFileSync("pedidos.json", JSON.stringify(pedidos, null, 2));
-
-  res.json({
-    ok: true,
-    eliminados: antes - pedidos.length
-  });
+    res.json({ mensaje: "Eliminado" });
+  } else {
+    res.status(404).json({ error: "No existe" });
+  }
 });
 
 module.exports = router;
