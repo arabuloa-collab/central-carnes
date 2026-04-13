@@ -94,10 +94,24 @@ document.getElementById("pedidoForm").addEventListener("submit", e => {
     },
     body: JSON.stringify(pedido)
   })
-  .then(() => {
-    alert("Pedido enviado correctamente");
-    location.reload();
-  })
+ .then(() => {
+  // 🔥 ARMAR MENSAJE WHATSAPP
+  const mensaje = `🛒 *Nuevo Pedido*%0A
+👤 Nombre: ${pedido.cliente.nombre}%0A
+📞 Teléfono: ${pedido.cliente.telefono}%0A
+📍 Dirección: ${pedido.cliente.direccion}%0A
+🥩 Producto: ${pedido.producto}%0A
+⚖️ Cantidad: ${pedido.cantidad}`;
+
+  // 🔥 TU NÚMERO (CAMBIAR)
+  const telefono = "5491125061324";
+
+  // 🔥 ABRIR WHATSAPP
+  window.open(`https://wa.me/${telefono}?text=${mensaje}`, "_blank");
+
+  alert("Pedido enviado correctamente");
+  location.reload();
+})
   .catch(err => {
     alert("Error enviando pedido");
     console.error(err);
