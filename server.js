@@ -1,31 +1,18 @@
-console.log("SERVER NUEVO EJECUTANDO");
-
 const express = require("express");
-const cors = require("cors");
-
 const app = express();
+const path = require("path");
 
-app.use(cors());
+// 🔥 ESTO ES LO IMPORTANTE
+app.use(express.static(path.join(__dirname, "public")));
+
 app.use(express.json());
 
-// RUTA PRINCIPAL
-app.get("/", (req, res) => {
-  res.send("Servidor Central de Carnes funcionando");
-});
+// tus rutas
+app.use("/api/pedidos", require("./routes/pedidos"));
 
-// CLIENTES
-const clientesRoutes = require("./routes/clientes");
-app.use("/api/clientes", clientesRoutes);
+// puerto
+const PORT = process.env.PORT || 3000;
 
-// PRODUCTOS
-const productosRoutes = require("./routes/productos");
-app.use("/api/productos", productosRoutes);
-
-// PEDIDOS
-const pedidosRoutes = require("./routes/pedidos");
-app.use("/api/pedidos", pedidosRoutes);
-
-// SERVIDOR
-app.listen(3000, () => {
-  console.log("Servidor en http://localhost:3000/api/pedidos");
+app.listen(PORT, () => {
+  console.log("Servidor funcionando");
 });

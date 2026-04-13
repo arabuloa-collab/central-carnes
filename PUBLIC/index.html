@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Central de Carnes</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      color: red;
+    }
+
+    form {
+      background: #222;
+      padding: 20px;
+      margin: 20px auto;
+      width: 300px;
+      border-radius: 10px;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      margin: 5px 0;
+      padding: 8px;
+    }
+
+    button {
+      background: red;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Central de Carnes</h1>
+
+  <form id="pedidoForm">
+    <h3>Datos del Cliente</h3>
+
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="text" id="telefono" placeholder="Teléfono" required>
+    <input type="text" id="direccion" placeholder="Dirección" required>
+    <input type="text" id="empresa" placeholder="Empresa">
+
+    <h3>Pedido</h3>
+
+    <select id="producto">
+      <option>Cargando productos...</option>
+    </select>
+
+    <input type="number" id="cantidad" placeholder="Cantidad (kg o unidades)" required>
+
+    <textarea id="descripcion" placeholder="Descripción"></textarea>
+
+    <button type="submit">Enviar Pedido</button>
+  </form>
+
+  <script>
+let enviando = false; // 🔥 evita duplicados
+
+document.getElementById("pedidoForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  if (enviando) return; // 🔥 bloquea doble envío
+  enviando = true;
+
+  const pedido = {
+    cliente: {
+      nombre: nombre.value,
+      telefono: telefono.value,
+      direccion: direccion.value,
+      empresa: empresa.value
+    },
+    producto: producto.value,
+    cantidad: cantidad.value,
+    descripcion: descripcion.value
+  };
+
+  try {
+    await fetch("/api/pedidos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pedido)
+    });
+
+    alert("✅ Pedido enviado");
+
+    document.getElementById("pedidoForm").reset();
+
+  } catch (err) {
+    alert("❌ Error enviando pedido");
+  }
+
+  enviando = false;
+});
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Central de Carnes</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+  text-align: center;
+}
+
+h1 { color: red; }
+
+form {
+  background: #222;
+  padding: 20px;
+  margin: 20px auto;
+  width: 300px;
+  border-radius: 10px;
+}
+
+input, select, textarea, button {
+  width: 100%;
+  margin: 5px 0;
+  padding: 8px;
+}
+
+button {
+  background: red;
+  color: white;
+  border: none;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Central de Carnes</h1>
+
+<form id="pedidoForm">
+
+<input type="text" id="nombre" placeholder="Nombre" required>
+<input type="text" id="telefono" placeholder="Teléfono" required>
+<input type="text" id="direccion" placeholder="Dirección" required>
+<input type="text" id="empresa" placeholder="Empresa">
+
+<select id="producto"></select>
+
+<input type="number" id="cantidad" placeholder="Cantidad" required>
+
+<textarea id="descripcion" placeholder="Descripción"></textarea>
+
+<button>Enviar Pedido</button>
+
+</form>
+
+<script>
+
+// PRODUCTOS FIJOS
+const productos = [
+"AGUJA RIOPLATENSE",
+"ALITAS CAMELIAS",
+"ALITAS SOYCHU",
+"ASADO FORTUNA",
+"BIFE DE CHORIZO",
+"CUADRIL",
+"LOMO",
+"VACIO"
+];
+
+// CARGAR PRODUCTOS
+const select = document.getElementById("producto");
+
+productos.forEach(p => {
+  const option = document.createElement("option");
+  option.value = p;
+  option.textContent = p;
+  select.appendChild(option);
+});
+
+// ENVIAR PEDIDO
+document.getElementById("pedidoForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const pedido = {
+    cliente: {
+      nombre: nombre.value,
+      telefono: telefono.value,
+      direccion: direccion.value,
+      empresa: empresa.value
+    },
+    producto: producto.value,
+    cantidad: cantidad.value,
+    descripcion: descripcion.value
+  };
+
+  fetch("/api/pedidos", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(pedido)
+  })
+  .then(() => alert("Pedido enviado"));
+});
+
+</script>
+
+</body>
+</html>
