@@ -24,7 +24,15 @@ router.post("/", (req, res) => {
   const nuevoPedido = req.body;
 
   // 🔥 AGREGAR FECHA
-  nuevoPedido.fecha = new Date().toLocaleString();
+  nuevoPedido.fecha = new Date().toLocaleString("es-AR", {
+  timeZone: "America/Argentina/Buenos_Aires",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit"
+});
 
   pedidos.push(nuevoPedido);
 
