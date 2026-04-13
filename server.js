@@ -2,12 +2,17 @@ const express = require("express");
 const app = express();
 const path = require("path");
 
-// 🔥 ESTO ES LO IMPORTANTE
+// servir archivos
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(express.json());
 
-// tus rutas
+// 🔥 ruta principal
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
+// rutas API
 app.use("/api/pedidos", require("./routes/pedidos"));
 
 // puerto
