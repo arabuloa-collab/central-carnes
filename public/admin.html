@@ -1,3 +1,4 @@
+<p>VERSION NUEVA</p>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -31,12 +32,21 @@
     }
 
     button {
-      background: red;
-      color: white;
-      border: none;
+      margin-top: 5px;
       padding: 10px;
+      border: none;
       cursor: pointer;
       width: 100%;
+    }
+
+    .btn-eliminar {
+      background: red;
+      color: white;
+    }
+
+    .btn-wsp {
+      background: green;
+      color: white;
     }
   </style>
 </head>
@@ -49,6 +59,8 @@
 <div id="lista"></div>
 
 <script>
+const TELEFONO = "5491125061324";
+
 function cargar() {
   fetch("/api/pedidos")
     .then(res => res.json())
@@ -73,7 +85,14 @@ function cargar() {
           🥩 ${p.producto}<br>
           ⚖️ ${p.cantidad}<br>
           📅 ${p.fecha || "sin fecha"}<br><br>
-          <button onclick="eliminar(${i})">Eliminar</button>
+
+          <button class="btn-wsp" onclick="enviarWhatsApp(${i})">
+            Enviar por WhatsApp
+          </button>
+
+          <button class="btn-eliminar" onclick="eliminar(${i})">
+            Eliminar
+          </button>
         `;
 
         lista.appendChild(div);
@@ -86,6 +105,24 @@ function eliminar(i) {
     method: "DELETE"
   })
   .then(() => cargar());
+}
+
+function enviarWhatsApp(i) {
+  fetch("/api/pedidos")
+    .then(res => res.json())
+    .then(data => {
+      const p = data[i];
+
+      const mensaje = `🛒 *Pedido*%0A
+👤 ${p.cliente.nombre}%0A
+📞 ${p.cliente.telefono}%0A
+📍 ${p.cliente.direccion}%0A
+🥩 ${p.producto}%0A
+⚖️ ${p.cantidad}%0A
+📅 ${p.fecha}`;
+
+      window.open(`https://wa.me/${TELEFONO}?text=${mensaje}`, "_blank");
+    });
 }
 
 document.getElementById("filtro").addEventListener("input", cargar);
