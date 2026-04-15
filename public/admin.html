@@ -1,6 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
 <meta charset="UTF-8">
 <title>Admin PRO</title>
 
@@ -85,9 +82,9 @@ button {
 
 <body>
 
-<!-- 🔥 HEADER CON LOGO (ÚNICO CAMBIO) -->
+<!-- 🔥 HEADER CON LOGO CORREGIDO -->
 <header style="display:flex; align-items:center; justify-content:center; gap:10px;">
-  <img src="/logo.png" style="height:40px;">
+  <img src="logo.png" style="height:40px;">
   <span>📦 Panel de Pedidos</span>
 </header>
 
@@ -260,7 +257,7 @@ function wsp(i) {
   .then(data => {
     const p = data[i];
 
-    const msg = `Pedido%0A${p.cliente?.nombre}%0A${p.producto}%0A${p.cantidad}`;
+    const msg = `🛒 *PEDIDO*%0A%0A👤 ${p.cliente?.nombre}%0A📞 ${p.cliente?.telefono}%0A📍 ${p.cliente?.direccion}%0A%0A🥩 ${p.producto}%0A⚖️ ${p.cantidad}%0A📅 ${p.fecha}`;
     window.open(`https://wa.me/${TELEFONO}?text=${msg}`);
   });
 }
