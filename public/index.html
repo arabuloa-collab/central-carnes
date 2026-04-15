@@ -30,7 +30,12 @@ header {
   border-radius: 12px;
   text-align: center;
   font-weight: bold;
-  box-shadow: 0 0 10px #000;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.promo-card:hover {
+  transform: scale(1.05);
 }
 
 /* CONTENEDOR */
@@ -78,28 +83,6 @@ button {
 .btn-wsp { background: #25D366; color: black; }
 .btn-qr { background: #3b82f6; color: white; }
 
-.estado {
-  padding: 5px;
-  border-radius: 6px;
-  font-weight: bold;
-  display: inline-block;
-  margin-top: 5px;
-}
-
-.pendiente { background: #facc15; color: black; }
-.entregado { background: #22c55e; color: black; }
-
-.card {
-  background: #1e293b;
-  margin: 10px auto;
-  padding: 15px;
-  border-radius: 10px;
-}
-
-.btn-repetir {
-  background: #3b82f6;
-  color: white;
-}
 </style>
 </head>
 
@@ -110,64 +93,44 @@ button {
   <b>Central Carnes</b>
 </header>
 
-<!-- 🔥 PROMOCIONES -->
+<!-- 🔥 PROMOS CLICK -->
 <div class="promos">
 
-  <div class="promo-card">
-    🔥 PROMO: 2kg de Asado + 1kg de Vacío 🔥
+  <div class="promo-card" onclick="aplicarPromo('ASADO FORTUNA', '2')">
+    🔥 2kg Asado Fortuna
   </div>
 
-  <div class="promo-card">
-    💥 OFERTA: 10% OFF pagando en efectivo 💥
+  <div class="promo-card" onclick="aplicarPromo('VACIO', '1')">
+    💥 1kg Vacío Oferta
   </div>
 
-  <div class="promo-card">
-    🚚 ENVÍO GRATIS en pedidos mayores a $20.000
+  <div class="promo-card" onclick="aplicarPromo('BIFE DE CHORIZO', '3')">
+    🥩 Promo Bife x3kg
   </div>
 
 </div>
 
 <!-- FORM -->
-<div id="formulario" class="container">
+<div class="container">
 
 <h2>Hacer Pedido</h2>
 
-<div class="section">
-  <div class="section-title">Datos</div>
-  <input id="nombre" placeholder="Nombre">
-  <input id="telefono" placeholder="Teléfono">
-  <input id="direccion" placeholder="Dirección">
-</div>
+<input id="nombre" placeholder="Nombre">
+<input id="telefono" placeholder="Teléfono">
+<input id="direccion" placeholder="Dirección">
 
-<div class="section">
-  <div class="section-title">Pedido</div>
-  <select id="producto"></select>
-  <input id="cantidad" placeholder="Cantidad (kg)">
-</div>
+<select id="producto"></select>
+
+<input id="cantidad" placeholder="Cantidad (kg)">
 
 <button class="btn-main" onclick="enviar()">Enviar Pedido</button>
 <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
-<button class="btn-wsp" onclick="compartir()">Compartir</button>
-<button class="btn-qr" onclick="verQR()">Ver QR</button>
 
-</div>
-
-<!-- HISTORIAL -->
-<div id="historial" class="container" style="display:none;">
-  <h2>📦 Mis pedidos</h2>
-  <div id="lista"></div>
-  <button onclick="volver()">Volver</button>
-</div>
-
-<!-- QR -->
-<div id="qrModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000a; justify-content:center; align-items:center;" onclick="this.style.display='none'">
-  <img id="qrImg">
 </div>
 
 <script>
 
-const URL = window.location.origin;
-
+// 🔥 AUTO COMPLETAR
 window.onload = () => {
   nombre.value = localStorage.getItem("nombre") || "";
   telefono.value = localStorage.getItem("telefono") || "";
@@ -186,6 +149,15 @@ function cargarProductos(){
       producto.appendChild(o);
     });
   });
+}
+
+// 🔥 APLICAR PROMO
+function aplicarPromo(prod, cant){
+  producto.value = prod;
+  cantidad.value = cant;
+
+  // scroll al formulario
+  window.scrollTo({ top: 300, behavior: "smooth" });
 }
 
 function enviar(){
@@ -207,49 +179,6 @@ function enviar(){
     })
   })
   .then(()=>alert("Pedido enviado"));
-}
-
-function compartir(){
-  const msg = "Hacé tu pedido 👉 " + URL;
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-}
-
-function verQR(){
-  qrImg.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${URL}`;
-  qrModal.style.display="flex";
-}
-
-function verHistorial(){
-  const tel=telefono.value || localStorage.getItem("telefono");
-  if(!tel){alert("Ingresá tu teléfono");return;}
-
-  fetch("/api/pedidos")
-  .then(r=>r.json())
-  .then(data=>{
-    lista.innerHTML="";
-    const pedidos=data.filter(p=>p.cliente?.telefono==tel);
-
-    pedidos.reverse().forEach(p=>{
-      const estado=p.estado||"pendiente";
-      const clase=estado==="entregado"?"entregado":"pendiente";
-
-      lista.innerHTML+=`
-      <div class="card">
-        🥩 ${p.producto}<br>
-        ⚖️ ${p.cantidad}<br>
-        📅 ${p.fecha||"-"}<br>
-        <div class="estado ${clase}">${estado}</div>
-      </div>`;
-    });
-
-    formulario.style.display="none";
-    historial.style.display="block";
-  });
-}
-
-function volver(){
-  historial.style.display="none";
-  formulario.style.display="block";
 }
 
 cargarProductos();
