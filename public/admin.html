@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -12,7 +12,6 @@ body {
   margin: 0;
 }
 
-/* HEADER */
 header {
   background: linear-gradient(90deg, #dc2626, #ef4444);
   padding: 15px;
@@ -21,10 +20,9 @@ header {
   font-weight: bold;
 }
 
-/* LOGIN */
 #login {
   text-align: center;
-  margin-top: 50px;
+  margin-top: 60px;
 }
 
 input {
@@ -45,31 +43,24 @@ button {
   font-weight: bold;
 }
 
-/* PANEL */
 #panel {
   display: none;
   padding: 10px;
 }
 
-/* TOP BAR */
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.btn-out {
-  background: orange;
-  color: black;
-}
+.btn-out { background: orange; color: black; }
 
-/* FILTRO */
 #filtro {
   width: 100%;
   margin: 10px 0;
 }
 
-/* CARDS */
 .card {
   background: #1e293b;
   margin: 10px 0;
@@ -78,18 +69,9 @@ button {
   box-shadow: 0 0 10px #000;
 }
 
-/* ESTADOS */
-.pendiente {
-  color: #facc15;
-  font-weight: bold;
-}
+.pendiente { color: #facc15; font-weight: bold; }
+.entregado { color: #22c55e; font-weight: bold; }
 
-.entregado {
-  color: #22c55e;
-  font-weight: bold;
-}
-
-/* BOTONES */
 .btn-wsp { background: #22c55e; color: black; }
 .btn-del { background: #dc2626; color: white; }
 .btn-state { background: #3b82f6; color: white; }
@@ -129,10 +111,22 @@ button {
 <script>
 const TELEFONO = "5491125061324";
 
-// LOGIN
+// ELEMENTOS
+const loginDiv = document.getElementById("login");
+const panel = document.getElementById("panel");
+const usuario = document.getElementById("usuario");
+const lista = document.getElementById("lista");
+const filtro = document.getElementById("filtro");
+
+// LOGIN (FIX DEFINITIVO)
 function login() {
-  const user = document.getElementById("user").value;
-  const pass = document.getElementById("pass").value;
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value.trim();
+
+  if (!user || !pass) {
+    alert("Completa los datos");
+    return;
+  }
 
   fetch("/api/login", {
     method:"POST",
@@ -147,60 +141,55 @@ function login() {
     localStorage.setItem("login", data.user);
     mostrar();
   })
-  .catch(() => alert("Login incorrecto"));
+  .catch(() => alert("Usuario o contraseña incorrectos"));
 }
 
+// LOGOUT
 function logout() {
   localStorage.removeItem("login");
   location.reload();
 }
 
+// MOSTRAR PANEL
 function mostrar() {
-  loginDiv.style.display="none";
-  panel.style.display="block";
+  loginDiv.style.display = "none";
+  panel.style.display = "block";
   usuario.innerText = localStorage.getItem("login");
   cargar();
 }
 
 // SESION
-if (localStorage.getItem("login")) mostrar();
+if (localStorage.getItem("login")) {
+  mostrar();
+}
 
-// ELEMENTOS
-const lista = document.getElementById("lista");
-const filtro = document.getElementById("filtro");
-const loginDiv = document.getElementById("login");
-const panel = document.getElementById("panel");
-const usuario = document.getElementById("usuario");
-const userInput = document.getElementById("user");
-const passInput = document.getElementById("pass");
-
-// CARGAR
+// CARGAR PEDIDOS
 function cargar() {
   fetch("/api/pedidos")
-  .then(r=>r.json())
-  .then(data=>{
-    lista.innerHTML="";
+  .then(r => r.json())
+  .then(data => {
+    lista.innerHTML = "";
 
     const f = filtro.value.toLowerCase();
 
-    data.forEach((p,i)=>{
-      const nombre=p.cliente?.nombre||"Sin nombre";
-      if(!nombre.toLowerCase().includes(f)) return;
+    data.forEach((p, i) => {
+      const nombre = p.cliente?.nombre || "Sin nombre";
+      if (!nombre.toLowerCase().includes(f)) return;
 
       const estado = p.estado || "pendiente";
-      const claseEstado = estado === "entregado" ? "entregado" : "pendiente";
+      const clase = estado === "entregado" ? "entregado" : "pendiente";
 
-      const div=document.createElement("div");
-      div.className="card";
+      const div = document.createElement("div");
+      div.className = "card";
 
-      div.innerHTML=`
+      div.innerHTML = `
         <b>${nombre}</b><br>
-        📞 ${p.cliente?.telefono||"-"}<br>
-        📍 ${p.cliente?.direccion||"-"}<br>
-        🥩 ${p.producto||"-"}<br>
-        ⚖️ ${p.cantidad||"-"}<br>
-        📅 ${p.fecha||"-"}<br>
-        📦 Estado: <span class="${claseEstado}">${estado}</span><br><br>
+        📞 ${p.cliente?.telefono || "-"}<br>
+        📍 ${p.cliente?.direccion || "-"}<br>
+        🥩 ${p.producto || "-"}<br>
+        ⚖️ ${p.cantidad || "-"}<br>
+        📅 ${p.fecha || "-"}<br>
+        📦 Estado: <span class="${clase}">${estado}</span><br><br>
 
         <button class="btn-wsp" onclick="wsp(${i})">WhatsApp</button>
         <button class="btn-state" onclick="cambiar(${i})">Cambiar estado</button>
@@ -213,41 +202,41 @@ function cargar() {
 }
 
 // ELIMINAR
-function del(i){
-  fetch("/api/pedidos/"+i,{method:"DELETE"})
-  .then(()=>cargar());
+function del(i) {
+  fetch("/api/pedidos/" + i, { method: "DELETE" })
+    .then(() => cargar());
 }
 
-// ESTADO
-function cambiar(i){
+// CAMBIAR ESTADO
+function cambiar(i) {
   fetch("/api/pedidos")
-  .then(r=>r.json())
-  .then(data=>{
-    const actual=data[i].estado||"pendiente";
-    const nuevo=actual==="pendiente"?"entregado":"pendiente";
+  .then(r => r.json())
+  .then(data => {
+    const actual = data[i].estado || "pendiente";
+    const nuevo = actual === "pendiente" ? "entregado" : "pendiente";
 
-    fetch("/api/pedidos/"+i,{
-      method:"PUT",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ estado:nuevo })
+    fetch("/api/pedidos/" + i, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado: nuevo })
     })
-    .then(()=>cargar());
+    .then(() => cargar());
   });
 }
 
 // WHATSAPP
-function wsp(i){
+function wsp(i) {
   fetch("/api/pedidos")
-  .then(r=>r.json())
-  .then(data=>{
-    const p=data[i];
+  .then(r => r.json())
+  .then(data => {
+    const p = data[i];
 
-    const msg=`Pedido%0A${p.cliente?.nombre}%0A${p.producto}%0A${p.cantidad}`;
+    const msg = `Pedido%0A${p.cliente?.nombre}%0A${p.producto}%0A${p.cantidad}`;
     window.open(`https://wa.me/${TELEFONO}?text=${msg}`);
   });
 }
 
-filtro.addEventListener("input",cargar);
+filtro.addEventListener("input", cargar);
 </script>
 
 </body>
