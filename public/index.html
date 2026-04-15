@@ -9,33 +9,64 @@ body {
   font-family: Arial;
   background: #0f172a;
   color: white;
-  text-align: center;
   margin: 0;
 }
 
 header {
   background: linear-gradient(90deg, #dc2626, #ef4444);
   padding: 15px;
+  text-align: center;
 }
 
+/* 🔥 CONTENEDOR */
+.container {
+  max-width: 400px;
+  margin: 20px auto;
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px #000;
+}
+
+/* 🔥 SECCIONES */
+.section {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.section-title {
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #94a3b8;
+}
+
+/* 🔥 INPUTS */
 input, select {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 250px;
-  border-radius: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
   border: none;
+  margin-bottom: 10px;
+  background: #0f172a;
+  color: white;
 }
 
+/* 🔥 BOTONES */
 button {
-  padding: 12px;
-  width: 250px;
+  padding: 14px;
+  width: 100%;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #22c55e;
   color: black;
   font-weight: bold;
   cursor: pointer;
+}
+
+.btn-sec {
+  background: #334155;
+  color: white;
+  margin-top: 10px;
 }
 
 .card {
@@ -43,7 +74,6 @@ button {
   margin: 10px auto;
   padding: 15px;
   border-radius: 10px;
-  width: 260px;
 }
 
 .btn-repetir {
@@ -71,9 +101,9 @@ button {
   color: black;
 }
 
-/* 🔥 ANIMACIONES */
+/* animación */
 .fade-out {
-  animation: fadeOut 0.5s forwards;
+  animation: fadeOut 0.4s forwards;
 }
 
 @keyframes fadeOut {
@@ -86,37 +116,31 @@ button {
 #exito {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #0f172a;
-  justify-content: center;
-  align-items: center;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#0f172a;
+  justify-content:center;
+  align-items:center;
 }
 
 .card-exito {
-  background: #1e293b;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 0 20px #000;
-  animation: zoomIn 0.4s ease;
+  background:#1e293b;
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+  animation:zoomIn 0.3s;
 }
 
 @keyframes zoomIn {
-  from {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  from {transform:scale(0.6); opacity:0;}
+  to {transform:scale(1); opacity:1;}
 }
 
 .check {
-  font-size: 80px;
-  color: #22c55e;
+  font-size:70px;
+  color:#22c55e;
 }
 </style>
 </head>
@@ -124,40 +148,44 @@ button {
 <body>
 
 <header>
-  <div style="display:flex; flex-direction:column; align-items:center;">
-    <img src="logo.png" style="height:50px;">
-    <div><b>Central Carnes</b></div>
-  </div>
+  <img src="logo.png" style="height:50px;"><br>
+  <b>Central Carnes</b>
 </header>
 
 <!-- FORM -->
-<div id="formulario">
+<div id="formulario" class="container">
+
 <h2>Hacer Pedido</h2>
 
-<input id="nombre" placeholder="Nombre">
-<input id="telefono" placeholder="Teléfono">
-<input id="direccion" placeholder="Dirección">
-
-<select id="producto"></select>
-
-<input id="cantidad" placeholder="Cantidad (kg)">
-
-<button onclick="enviar()">Enviar Pedido</button>
-<button onclick="verHistorial()">Ver mis pedidos</button>
+<div class="section">
+  <div class="section-title">Datos del cliente</div>
+  <input id="nombre" placeholder="Nombre completo">
+  <input id="telefono" placeholder="Teléfono">
+  <input id="direccion" placeholder="Dirección de entrega">
 </div>
 
-<!-- 🔥 EXITO ANIMADO -->
+<div class="section">
+  <div class="section-title">Detalle del pedido</div>
+  <select id="producto"></select>
+  <input id="cantidad" placeholder="Cantidad en kg">
+</div>
+
+<button onclick="enviar()">Enviar Pedido</button>
+<button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
+
+</div>
+
+<!-- EXITO -->
 <div id="exito">
   <div class="card-exito">
     <div class="check">✅</div>
     <h2>Pedido enviado</h2>
-    <p>Nos comunicamos a la brevedad</p>
     <button onclick="volver()">Hacer otro pedido</button>
   </div>
 </div>
 
 <!-- HISTORIAL -->
-<div id="historial" style="display:none;">
+<div id="historial" class="container" style="display:none;">
   <h2>📦 Mis pedidos</h2>
   <div id="lista"></div>
   <button onclick="volver()">Volver</button>
@@ -165,126 +193,102 @@ button {
 
 <script>
 
-// AUTO COMPLETAR
+// auto completar
 window.onload = function() {
-  document.getElementById("nombre").value = localStorage.getItem("nombre") || "";
-  document.getElementById("telefono").value = localStorage.getItem("telefono") || "";
-  document.getElementById("direccion").value = localStorage.getItem("direccion") || "";
+  nombre.value = localStorage.getItem("nombre") || "";
+  telefono.value = localStorage.getItem("telefono") || "";
+  direccion.value = localStorage.getItem("direccion") || "";
 };
 
 function cargarProductos() {
   fetch("/api/productos")
-    .then(r => r.json())
-    .then(data => {
-      const select = document.getElementById("producto");
-      select.innerHTML = "";
-
-      data.forEach(p => {
-        const option = document.createElement("option");
-        option.value = p.nombre;
-        option.textContent = p.nombre;
-        select.appendChild(option);
-      });
+  .then(r=>r.json())
+  .then(data=>{
+    producto.innerHTML="";
+    data.forEach(p=>{
+      let o=document.createElement("option");
+      o.value=p.nombre;
+      o.textContent=p.nombre;
+      producto.appendChild(o);
     });
+  });
 }
 
-function enviar() {
-  const nombre = document.getElementById("nombre").value;
-  const telefono = document.getElementById("telefono").value;
-  const direccion = document.getElementById("direccion").value;
+function enviar(){
+  const n=nombre.value;
+  const t=telefono.value;
+  const d=direccion.value;
 
-  localStorage.setItem("nombre", nombre);
-  localStorage.setItem("telefono", telefono);
-  localStorage.setItem("direccion", direccion);
+  localStorage.setItem("nombre",n);
+  localStorage.setItem("telefono",t);
+  localStorage.setItem("direccion",d);
 
-  const pedido = {
-    cliente: { nombre, telefono, direccion },
-    producto: document.getElementById("producto").value,
-    cantidad: document.getElementById("cantidad").value
+  const pedido={
+    cliente:{nombre:n,telefono:t,direccion:d},
+    producto:producto.value,
+    cantidad:cantidad.value
   };
 
-  const form = document.getElementById("formulario");
-
-  fetch("/api/pedidos", {
+  fetch("/api/pedidos",{
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify(pedido)
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(pedido)
   })
-  .then(() => {
-    // 🔥 animación
-    form.classList.add("fade-out");
-
-    setTimeout(() => {
-      form.style.display = "none";
-      document.getElementById("exito").style.display = "flex";
-    }, 400);
+  .then(()=>{
+    formulario.classList.add("fade-out");
+    setTimeout(()=>{
+      formulario.style.display="none";
+      exito.style.display="flex";
+    },400);
   });
 }
 
-function verHistorial() {
-  const tel = document.getElementById("telefono").value || localStorage.getItem("telefono");
+function verHistorial(){
+  const tel=telefono.value || localStorage.getItem("telefono");
 
-  if (!tel) {
-    alert("Ingresá tu teléfono");
-    return;
-  }
+  if(!tel){alert("Ingresá tu teléfono");return;}
 
   fetch("/api/pedidos")
-  .then(r => r.json())
-  .then(data => {
+  .then(r=>r.json())
+  .then(data=>{
+    lista.innerHTML="";
+    const pedidos=data.filter(p=>p.cliente?.telefono==tel);
 
-    const lista = document.getElementById("lista");
-    lista.innerHTML = "";
+    pedidos.reverse().forEach(p=>{
+      const estado=p.estado||"pendiente";
+      const clase=estado==="entregado"?"entregado":"pendiente";
 
-    const pedidos = data.filter(p => p.cliente?.telefono == tel);
-
-    pedidos.reverse().forEach(p => {
-      const div = document.createElement("div");
-      div.className = "card";
-
-      const estado = p.estado || "pendiente";
-      const clase = estado === "entregado" ? "entregado" : "pendiente";
-
-      div.innerHTML = `
+      lista.innerHTML+=`
+      <div class="card">
         🥩 ${p.producto}<br>
         ⚖️ ${p.cantidad}<br>
-        📅 ${p.fecha || "-"}<br>
-
-        <div class="estado ${clase}">
-          ${estado.toUpperCase()}
-        </div>
-
-        <button class="btn-repetir" onclick='repetir(${JSON.stringify(p)})'>
-          🔁 Repetir pedido
-        </button>
-      `;
-
-      lista.appendChild(div);
+        📅 ${p.fecha||"-"}<br>
+        <div class="estado ${clase}">${estado}</div>
+        <button class="btn-repetir" onclick='repetir(${JSON.stringify(p)})'>🔁 Repetir</button>
+      </div>`;
     });
 
-    document.getElementById("formulario").style.display = "none";
-    document.getElementById("historial").style.display = "block";
+    formulario.style.display="none";
+    historial.style.display="block";
   });
 }
 
-function repetir(p) {
-  document.getElementById("nombre").value = p.cliente?.nombre || "";
-  document.getElementById("telefono").value = p.cliente?.telefono || "";
-  document.getElementById("direccion").value = p.cliente?.direccion || "";
-  document.getElementById("producto").value = p.producto || "";
-  document.getElementById("cantidad").value = p.cantidad || "";
+function repetir(p){
+  nombre.value=p.cliente?.nombre||"";
+  telefono.value=p.cliente?.telefono||"";
+  direccion.value=p.cliente?.direccion||"";
+  producto.value=p.producto||"";
+  cantidad.value=p.cantidad||"";
 
-  document.getElementById("historial").style.display = "none";
-  document.getElementById("formulario").style.display = "block";
+  historial.style.display="none";
+  formulario.style.display="block";
 }
 
-function volver() {
-  document.getElementById("exito").style.display = "none";
-  document.getElementById("historial").style.display = "none";
-
-  const form = document.getElementById("formulario");
-  form.style.display = "block";
-  form.classList.remove("fade-out");
+function volver(){
+  exito.style.display="none";
+  historial.style.display="none";
+  formulario.style.display="block";
+  formulario.classList.remove("fade-out");
 }
 
 cargarProductos();
