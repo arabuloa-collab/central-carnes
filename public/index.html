@@ -46,8 +46,10 @@ button {
   width: 260px;
 }
 
-#historial {
-  display: none;
+.btn-repetir {
+  background: #3b82f6;
+  color: white;
+  margin-top: 8px;
 }
 </style>
 </head>
@@ -74,7 +76,6 @@ button {
 <input id="cantidad" placeholder="Cantidad (kg)">
 
 <button onclick="enviar()">Enviar Pedido</button>
-
 <button onclick="verHistorial()">Ver mis pedidos</button>
 </div>
 
@@ -85,7 +86,7 @@ button {
 </div>
 
 <!-- HISTORIAL -->
-<div id="historial">
+<div id="historial" style="display:none;">
   <h2>📦 Mis pedidos</h2>
   <div id="lista"></div>
   <button onclick="volver()">Volver</button>
@@ -97,6 +98,8 @@ function cargarProductos() {
     .then(r => r.json())
     .then(data => {
       const select = document.getElementById("producto");
+      select.innerHTML = "";
+
       data.forEach(p => {
         const option = document.createElement("option");
         option.value = p.nombre;
@@ -157,7 +160,11 @@ function verHistorial() {
         🥩 ${p.producto}<br>
         ⚖️ ${p.cantidad}<br>
         📅 ${p.fecha || "-"}<br>
-        📦 ${p.estado || "pendiente"}
+        📦 ${p.estado || "pendiente"}<br>
+
+        <button class="btn-repetir" onclick='repetir(${JSON.stringify(p)})'>
+          🔁 Repetir pedido
+        </button>
       `;
 
       lista.appendChild(div);
@@ -166,6 +173,19 @@ function verHistorial() {
     document.getElementById("formulario").style.display = "none";
     document.getElementById("historial").style.display = "block";
   });
+}
+
+function repetir(p) {
+  // completar formulario
+  document.getElementById("nombre").value = p.cliente?.nombre || "";
+  document.getElementById("telefono").value = p.cliente?.telefono || "";
+  document.getElementById("direccion").value = p.cliente?.direccion || "";
+  document.getElementById("producto").value = p.producto || "";
+  document.getElementById("cantidad").value = p.cantidad || "";
+
+  // volver al form
+  document.getElementById("historial").style.display = "none";
+  document.getElementById("formulario").style.display = "block";
 }
 
 function volver() {
