@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
 <meta charset="UTF-8">
 <title>Admin PRO</title>
 
@@ -82,10 +85,12 @@ button {
 
 <body>
 
-<!-- 🔥 HEADER CON LOGO CORREGIDO -->
-<header style="display:flex; align-items:center; justify-content:center; gap:10px;">
-  <img src="logo.png" style="height:40px;">
-  <span>📦 Panel de Pedidos</span>
+<!-- 🔥 HEADER CON LOGO ARRIBA -->
+<header>
+  <div style="display:flex; flex-direction:column; align-items:center;">
+    <img src="logo.png" style="height:50px; margin-bottom:5px;">
+    <span>📦 Panel de Pedidos</span>
+  </div>
 </header>
 
 <!-- LOGIN -->
@@ -103,9 +108,7 @@ button {
   <button class="btn-out" onclick="logout()">Salir</button>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard" style="display:flex; gap:10px; margin:10px 0;">
-
   <div class="card" style="flex:1; text-align:center;">
     <div>Total</div>
     <h2 id="total">0</h2>
@@ -120,11 +123,9 @@ button {
     <div>Entregados</div>
     <h2 id="entregados">0</h2>
   </div>
-
 </div>
 
 <input id="filtro" placeholder="Buscar cliente...">
-
 <div id="lista"></div>
 
 </div>
