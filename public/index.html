@@ -52,7 +52,7 @@ button {
   margin-top: 8px;
 }
 
-/* 🔥 ESTADOS */
+/* estados */
 .estado {
   padding: 5px;
   border-radius: 6px;
@@ -112,6 +112,14 @@ button {
 </div>
 
 <script>
+
+// 🔥 AUTO COMPLETAR AL CARGAR
+window.onload = function() {
+  document.getElementById("nombre").value = localStorage.getItem("nombre") || "";
+  document.getElementById("telefono").value = localStorage.getItem("telefono") || "";
+  document.getElementById("direccion").value = localStorage.getItem("direccion") || "";
+};
+
 function cargarProductos() {
   fetch("/api/productos")
     .then(r => r.json())
@@ -129,14 +137,17 @@ function cargarProductos() {
 }
 
 function enviar() {
+  const nombre = document.getElementById("nombre").value;
   const telefono = document.getElementById("telefono").value;
+  const direccion = document.getElementById("direccion").value;
+
+  // 🔥 GUARDAR DATOS
+  localStorage.setItem("nombre", nombre);
+  localStorage.setItem("telefono", telefono);
+  localStorage.setItem("direccion", direccion);
 
   const pedido = {
-    cliente: {
-      nombre: document.getElementById("nombre").value,
-      telefono: telefono,
-      direccion: document.getElementById("direccion").value
-    },
+    cliente: { nombre, telefono, direccion },
     producto: document.getElementById("producto").value,
     cantidad: document.getElementById("cantidad").value
   };
@@ -147,8 +158,6 @@ function enviar() {
     body: JSON.stringify(pedido)
   })
   .then(() => {
-    localStorage.setItem("telefono", telefono);
-
     document.getElementById("formulario").style.display = "none";
     document.getElementById("exito").style.display = "block";
   });
@@ -218,6 +227,7 @@ function volver() {
 }
 
 cargarProductos();
+
 </script>
 
 </body>
