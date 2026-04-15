@@ -85,7 +85,11 @@ button {
 
 <body>
 
-<header>📦 Panel de Pedidos</header>
+<!-- 🔥 HEADER CON LOGO (ÚNICO CAMBIO) -->
+<header style="display:flex; align-items:center; justify-content:center; gap:10px;">
+  <img src="/logo.png" style="height:40px;">
+  <span>📦 Panel de Pedidos</span>
+</header>
 
 <!-- LOGIN -->
 <div id="login">
@@ -102,7 +106,7 @@ button {
   <button class="btn-out" onclick="logout()">Salir</button>
 </div>
 
-<!-- 🔥 DASHBOARD -->
+<!-- DASHBOARD -->
 <div id="dashboard" style="display:flex; gap:10px; margin:10px 0;">
 
   <div class="card" style="flex:1; text-align:center;">
@@ -131,14 +135,12 @@ button {
 <script>
 const TELEFONO = "5491125061324";
 
-// ELEMENTOS
 const loginDiv = document.getElementById("login");
 const panel = document.getElementById("panel");
 const usuario = document.getElementById("usuario");
 const lista = document.getElementById("lista");
 const filtro = document.getElementById("filtro");
 
-// LOGIN
 function login() {
   const user = document.getElementById("user").value.trim();
   const pass = document.getElementById("pass").value.trim();
@@ -164,13 +166,11 @@ function login() {
   .catch(() => alert("Usuario o contraseña incorrectos"));
 }
 
-// LOGOUT
 function logout() {
   localStorage.removeItem("login");
   location.reload();
 }
 
-// MOSTRAR PANEL
 function mostrar() {
   loginDiv.style.display = "none";
   panel.style.display = "block";
@@ -178,12 +178,10 @@ function mostrar() {
   cargar();
 }
 
-// SESION
 if (localStorage.getItem("login")) {
   mostrar();
 }
 
-// CARGAR
 function cargar() {
   fetch("/api/pedidos")
   .then(r => r.json())
@@ -235,13 +233,11 @@ function cargar() {
   });
 }
 
-// ELIMINAR
 function del(i) {
   fetch("/api/pedidos/" + i, { method: "DELETE" })
     .then(() => cargar());
 }
 
-// CAMBIAR ESTADO
 function cambiar(i) {
   fetch("/api/pedidos")
   .then(r => r.json())
@@ -258,7 +254,6 @@ function cambiar(i) {
   });
 }
 
-// WHATSAPP
 function wsp(i) {
   fetch("/api/pedidos")
   .then(r => r.json())
