@@ -2,12 +2,12 @@ const express = require("express");
 const app = express();
 const path = require("path");
 
-// servir archivos
+// archivos públicos
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(express.json());
 
-// 🔥 PRODUCTOS (IMPORTANTE)
+// PRODUCTOS
 app.get("/api/productos", (req, res) => {
   res.json([
     { nombre: "AGUJA RIOPLATENSE" },
@@ -21,18 +21,17 @@ app.get("/api/productos", (req, res) => {
   ]);
 });
 
-// 🔥 ruta principal
+// HOME
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-// rutas API
+// APIs
 app.use("/api/pedidos", require("./routes/pedidos"));
-
-// puerto
-const PORT = process.env.PORT || 3000;
-
 app.use("/api/login", require("./routes/login"));
+
+// PUERTO
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log("Servidor funcionando");

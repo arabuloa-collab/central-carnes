@@ -1,13 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-// 🔐 USUARIOS
 const usuarios = [
   { user: "admin", pass: "1234" },
   { user: "vendedor", pass: "1234" }
 ];
 
-// LOGIN
 router.post("/", (req, res) => {
   const { user, pass } = req.body;
 
