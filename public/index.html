@@ -1,80 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Central de Carnes</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #111;
-      color: white;
-      text-align: center;
-    }
+<meta charset="UTF-8">
+<title>Pedidos</title>
 
-    h1 { color: red; }
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+  margin: 0;
+}
 
-    form {
-      background: #222;
-      padding: 20px;
-      margin: 20px auto;
-      width: 300px;
-      border-radius: 10px;
-    }
+header {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  padding: 15px;
+}
 
-    input, select, button {
-      width: 100%;
-      margin: 5px 0;
-      padding: 8px;
-    }
+input, select {
+  display: block;
+  margin: 10px auto;
+  padding: 10px;
+  width: 250px;
+  border-radius: 8px;
+  border: none;
+}
 
-    button {
-      background: red;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-  </style>
+button {
+  padding: 12px;
+  width: 250px;
+  border: none;
+  border-radius: 8px;
+  background: #22c55e;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #16a34a;
+}
+</style>
 </head>
+
 <body>
 
-<h1>Central de Carnes</h1>
+<!-- 🔥 HEADER CON LOGO -->
+<header>
+  <div style="display:flex; flex-direction:column; align-items:center;">
+    <img src="logo.png" style="height:50px; margin-bottom:5px;">
+    <div style="font-weight:bold;">Central Carnes</div>
+  </div>
+</header>
 
-<form id="pedidoForm">
-  <h3>Datos del Cliente</h3>
+<h2>Hacer Pedido</h2>
 
-  <input type="text" id="nombre" placeholder="Nombre" required>
-  <input type="text" id="telefono" placeholder="Teléfono" required>
-  <input type="text" id="direccion" placeholder="Dirección" required>
+<input id="nombre" placeholder="Nombre">
+<input id="telefono" placeholder="Teléfono">
+<input id="direccion" placeholder="Dirección">
 
-  <h3>Pedido</h3>
+<select id="producto"></select>
 
-  <select id="producto"></select>
+<input id="cantidad" placeholder="Cantidad (kg)">
 
-  <input type="number" id="cantidad" placeholder="Cantidad" required>
-
-  <button type="submit">Enviar Pedido</button>
-</form>
+<button onclick="enviar()">Enviar Pedido</button>
 
 <script>
-// 🔥 CARGAR PRODUCTOS
-fetch("/api/productos")
-  .then(res => res.json())
-  .then(data => {
-    const select = document.getElementById("producto");
-    select.innerHTML = "";
+function cargarProductos() {
+  fetch("/api/productos")
+    .then(r => r.json())
+    .then(data => {
+      const select = document.getElementById("producto");
+      select.innerHTML = "";
 
-    data.forEach(p => {
-      const option = document.createElement("option");
-      option.value = p.nombre;
-      option.textContent = p.nombre;
-      select.appendChild(option);
+      data.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.nombre;
+        option.textContent = p.nombre;
+        select.appendChild(option);
+      });
     });
-  });
+}
 
-// 🔥 ENVIAR PEDIDO
-document.getElementById("pedidoForm").addEventListener("submit", e => {
-  e.preventDefault();
-
+function enviar() {
   const pedido = {
     cliente: {
       nombre: document.getElementById("nombre").value,
@@ -85,38 +94,21 @@ document.getElementById("pedidoForm").addEventListener("submit", e => {
     cantidad: document.getElementById("cantidad").value
   };
 
-  console.log("Pedido enviado:", pedido);
-
   fetch("/api/pedidos", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(pedido)
   })
- .then(() => {
-  // 🔥 ARMAR MENSAJE WHATSAPP
-  const mensaje = `🛒 *Nuevo Pedido*%0A
-👤 Nombre: ${pedido.cliente.nombre}%0A
-📞 Teléfono: ${pedido.cliente.telefono}%0A
-📍 Dirección: ${pedido.cliente.direccion}%0A
-🥩 Producto: ${pedido.producto}%0A
-⚖️ Cantidad: ${pedido.cantidad}`;
-
-  // 🔥 TU NÚMERO (CAMBIAR)
-  const telefono = "541125061324";
-
-  // 🔥 ABRIR WHATSAPP
-  window.open(`https://wa.me/${telefono}?text=${mensaje}`, "_blank");
-
-  alert("Pedido enviado correctamente");
-  location.reload();
-})
-  .catch(err => {
-    alert("Error enviando pedido");
-    console.error(err);
+  .then(() => {
+    alert("Pedido enviado");
+    document.getElementById("nombre").value = "";
+    document.getElementById("telefono").value = "";
+    document.getElementById("direccion").value = "";
+    document.getElementById("cantidad").value = "";
   });
-});
+}
+
+cargarProductos();
 </script>
 
 </body>
