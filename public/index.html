@@ -51,6 +51,25 @@ button {
   color: white;
   margin-top: 8px;
 }
+
+/* 🔥 ESTADOS */
+.estado {
+  padding: 5px;
+  border-radius: 6px;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.pendiente {
+  background: #facc15;
+  color: black;
+}
+
+.entregado {
+  background: #22c55e;
+  color: black;
+}
 </style>
 </head>
 
@@ -156,11 +175,17 @@ function verHistorial() {
       const div = document.createElement("div");
       div.className = "card";
 
+      const estado = p.estado || "pendiente";
+      const clase = estado === "entregado" ? "entregado" : "pendiente";
+
       div.innerHTML = `
         🥩 ${p.producto}<br>
         ⚖️ ${p.cantidad}<br>
         📅 ${p.fecha || "-"}<br>
-        📦 ${p.estado || "pendiente"}<br>
+
+        <div class="estado ${clase}">
+          ${estado.toUpperCase()}
+        </div>
 
         <button class="btn-repetir" onclick='repetir(${JSON.stringify(p)})'>
           🔁 Repetir pedido
@@ -176,14 +201,12 @@ function verHistorial() {
 }
 
 function repetir(p) {
-  // completar formulario
   document.getElementById("nombre").value = p.cliente?.nombre || "";
   document.getElementById("telefono").value = p.cliente?.telefono || "";
   document.getElementById("direccion").value = p.cliente?.direccion || "";
   document.getElementById("producto").value = p.producto || "";
   document.getElementById("cantidad").value = p.cantidad || "";
 
-  // volver al form
   document.getElementById("historial").style.display = "none";
   document.getElementById("formulario").style.display = "block";
 }
