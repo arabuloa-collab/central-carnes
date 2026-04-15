@@ -18,6 +18,22 @@ header {
   text-align: center;
 }
 
+/* 🔥 PROMOS */
+.promos {
+  padding: 10px;
+}
+
+.promo-card {
+  background: #dc2626;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: bold;
+  box-shadow: 0 0 10px #000;
+}
+
+/* CONTENEDOR */
 .container {
   max-width: 400px;
   margin: 20px auto;
@@ -84,24 +100,6 @@ button {
   background: #3b82f6;
   color: white;
 }
-
-/* MODAL QR */
-#qrModal {
-  display: none;
-  position: fixed;
-  top:0; left:0;
-  width:100%;
-  height:100%;
-  background: rgba(0,0,0,0.8);
-  justify-content:center;
-  align-items:center;
-}
-
-#qrModal img {
-  background:white;
-  padding:10px;
-  border-radius:10px;
-}
 </style>
 </head>
 
@@ -112,6 +110,24 @@ button {
   <b>Central Carnes</b>
 </header>
 
+<!-- 🔥 PROMOCIONES -->
+<div class="promos">
+
+  <div class="promo-card">
+    🔥 PROMO: 2kg de Asado + 1kg de Vacío 🔥
+  </div>
+
+  <div class="promo-card">
+    💥 OFERTA: 10% OFF pagando en efectivo 💥
+  </div>
+
+  <div class="promo-card">
+    🚚 ENVÍO GRATIS en pedidos mayores a $20.000
+  </div>
+
+</div>
+
+<!-- FORM -->
 <div id="formulario" class="container">
 
 <h2>Hacer Pedido</h2>
@@ -131,21 +147,20 @@ button {
 
 <button class="btn-main" onclick="enviar()">Enviar Pedido</button>
 <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
-
-<!-- 🔥 NUEVO -->
-<button class="btn-wsp" onclick="compartir()">Compartir por WhatsApp</button>
-<button class="btn-qr" onclick="verQR()">Ver QR del negocio</button>
+<button class="btn-wsp" onclick="compartir()">Compartir</button>
+<button class="btn-qr" onclick="verQR()">Ver QR</button>
 
 </div>
 
+<!-- HISTORIAL -->
 <div id="historial" class="container" style="display:none;">
   <h2>📦 Mis pedidos</h2>
   <div id="lista"></div>
   <button onclick="volver()">Volver</button>
 </div>
 
-<!-- 🔥 QR MODAL -->
-<div id="qrModal" onclick="cerrarQR()">
+<!-- QR -->
+<div id="qrModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000a; justify-content:center; align-items:center;" onclick="this.style.display='none'">
   <img id="qrImg">
 </div>
 
@@ -153,7 +168,6 @@ button {
 
 const URL = window.location.origin;
 
-// auto completar
 window.onload = () => {
   nombre.value = localStorage.getItem("nombre") || "";
   telefono.value = localStorage.getItem("telefono") || "";
@@ -195,21 +209,14 @@ function enviar(){
   .then(()=>alert("Pedido enviado"));
 }
 
-// 🔥 COMPARTIR WHATSAPP
 function compartir(){
-  const msg = "Hacé tu pedido acá 👉 " + URL;
+  const msg = "Hacé tu pedido 👉 " + URL;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
 }
 
-// 🔥 QR
 function verQR(){
-  const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${URL}`;
-  qrImg.src = qrURL;
-  qrModal.style.display = "flex";
-}
-
-function cerrarQR(){
-  qrModal.style.display = "none";
+  qrImg.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${URL}`;
+  qrModal.style.display="flex";
 }
 
 function verHistorial(){
@@ -232,24 +239,12 @@ function verHistorial(){
         ⚖️ ${p.cantidad}<br>
         📅 ${p.fecha||"-"}<br>
         <div class="estado ${clase}">${estado}</div>
-        <button class="btn-repetir" onclick='repetir(${JSON.stringify(p)})'>🔁 Repetir</button>
       </div>`;
     });
 
     formulario.style.display="none";
     historial.style.display="block";
   });
-}
-
-function repetir(p){
-  nombre.value=p.cliente?.nombre||"";
-  telefono.value=p.cliente?.telefono||"";
-  direccion.value=p.cliente?.direccion||"";
-  producto.value=p.producto||"";
-  cantidad.value=p.cantidad||"";
-
-  historial.style.display="none";
-  formulario.style.display="block";
 }
 
 function volver(){
