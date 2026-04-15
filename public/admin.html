@@ -1,82 +1,83 @@
- <title>Admin</title>
-  <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial;
-      text-align: center;
-    }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Admin</title>
 
-    h1 {
-      background: red;
-      padding: 10px;
-    }
+<style>
+body { background:#111; color:white; text-align:center; font-family:Arial; }
+h1 { background:red; padding:10px; }
 
-    input {
-      padding: 10px;
-      width: 250px;
-      margin: 5px;
-    }
+input { padding:10px; margin:5px; width:250px; }
 
-    .card {
-      background: #222;
-      margin: 10px auto;
-      padding: 15px;
-      width: 300px;
-      border-radius: 10px;
-    }
+.card {
+  background:#222;
+  margin:10px auto;
+  padding:15px;
+  width:300px;
+  border-radius:10px;
+}
 
-    button {
-      padding: 10px;
-      margin-top: 5px;
-      width: 100%;
-      border: none;
-      cursor: pointer;
-    }
+button {
+  padding:10px;
+  margin-top:5px;
+  width:100%;
+  border:none;
+  cursor:pointer;
+}
 
-    .btn-eliminar { background: red; color: white; }
-    .btn-wsp { background: green; color: white; }
-    .btn-logout { background: orange; color: black; }
+.btn-wsp { background:green; color:white; }
+.btn-del { background:red; color:white; }
+.btn-out { background:orange; color:black; }
 
-    #panel { display: none; }
-  </style>
+#panel { display:none; }
+</style>
 </head>
+
 <body>
 
 <h1>Panel Admin</h1>
 
 <!-- LOGIN -->
 <div id="login">
-  <input type="text" id="user" placeholder="Usuario"><br>
-  <input type="password" id="pass" placeholder="Contraseña"><br>
+  <input id="user" placeholder="Usuario"><br>
+  <input id="pass" type="password" placeholder="Contraseña"><br>
   <button onclick="login()">Ingresar</button>
 </div>
 
 <!-- PANEL -->
 <div id="panel">
 
-  <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+<button class="btn-out" onclick="logout()">Cerrar sesión</button>
 
-  <input type="text" id="filtro" placeholder="Buscar cliente...">
+<input id="filtro" placeholder="Buscar cliente...">
 
-  <div id="lista"></div>
+<div id="lista"></div>
 
 </div>
 
 <script>
 const TELEFONO = "5491125061324";
 
-// 🔐 LOGIN
+// 🔐 LOGIN REAL
 function login() {
   const user = document.getElementById("user").value;
   const pass = document.getElementById("pass").value;
 
-  if (user === "admin" && pass === "1234") {
-    localStorage.setItem("login", "true");
-    mostrarPanel();
-  } else {
-    alert("Datos incorrectos");
-  }
+  fetch("/api/login", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ user, pass })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error();
+    return res.json();
+  })
+  .then(data => {
+    localStorage.setItem("login", data.user);
+    mostrar();
+  })
+  .catch(() => alert("Usuario o contraseña incorrectos"));
 }
 
 // 🔓 LOGOUT
@@ -86,92 +87,67 @@ function logout() {
 }
 
 // 🔁 MOSTRAR PANEL
-function mostrarPanel() {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("panel").style.display = "block";
+function mostrar() {
+  document.getElementById("login").style.display="none";
+  document.getElementById("panel").style.display="block";
   cargar();
 }
 
-// 🔄 VERIFICAR SESIÓN
-if (localStorage.getItem("login") === "true") {
-  mostrarPanel();
+// 🔄 SESIÓN
+if (localStorage.getItem("login")) {
+  mostrar();
 }
 
-// 🔄 CARGAR PEDIDOS
+// 🔄 PEDIDOS
 function cargar() {
   fetch("/api/pedidos")
-    .then(res => res.json())
-    .then(data => {
-      const lista = document.getElementById("lista");
-      lista.innerHTML = "";
+  .then(r=>r.json())
+  .then(data=>{
+    const lista=document.getElementById("lista");
+    lista.innerHTML="";
 
-      const filtro = document.getElementById("filtro").value.toLowerCase();
+    const filtro=document.getElementById("filtro").value.toLowerCase();
 
-      data.forEach((p, i) => {
-        const nombre = p.cliente?.nombre || "Sin nombre";
+    data.forEach((p,i)=>{
+      const nombre=p.cliente?.nombre||"Sin nombre";
+      if(!nombre.toLowerCase().includes(filtro)) return;
 
-        if (!nombre.toLowerCase().includes(filtro)) return;
+      const div=document.createElement("div");
+      div.className="card";
 
-        const telefono = p.cliente?.telefono || "-";
-        const direccion = p.cliente?.direccion || "-";
-        const producto = p.producto || "-";
-        const cantidad = p.cantidad || "-";
-        const fecha = p.fecha || "sin fecha";
+      div.innerHTML=`
+        <b>${nombre}</b><br>
+        📞 ${p.cliente?.telefono||"-"}<br>
+        📍 ${p.cliente?.direccion||"-"}<br>
+        🥩 ${p.producto||"-"}<br>
+        ⚖️ ${p.cantidad||"-"}<br>
+        📅 ${p.fecha||"-"}<br><br>
 
-        const div = document.createElement("div");
-        div.className = "card";
+        <button class="btn-wsp" onclick="wsp(${i})">WhatsApp</button>
+        <button class="btn-del" onclick="del(${i})">Eliminar</button>
+      `;
 
-        div.innerHTML = `
-          <strong>${nombre}</strong><br>
-          📞 ${telefono}<br>
-          📍 ${direccion}<br>
-          🥩 ${producto}<br>
-          ⚖️ ${cantidad}<br>
-          📅 ${fecha}<br><br>
-
-          <button class="btn-wsp" onclick="enviarWhatsApp(${i})">
-            WhatsApp
-          </button>
-
-          <button class="btn-eliminar" onclick="eliminar(${i})">
-            Eliminar
-          </button>
-        `;
-
-        lista.appendChild(div);
-      });
+      lista.appendChild(div);
     });
+  });
 }
 
-// 🗑 ELIMINAR
-function eliminar(i) {
-  fetch("/api/pedidos/" + i, {
-    method: "DELETE"
-  })
-  .then(() => cargar());
+function del(i){
+  fetch("/api/pedidos/"+i,{method:"DELETE"}).then(()=>cargar());
 }
 
-// 📲 WHATSAPP
-function enviarWhatsApp(i) {
+function wsp(i){
   fetch("/api/pedidos")
-    .then(res => res.json())
-    .then(data => {
-      const p = data[i];
+  .then(r=>r.json())
+  .then(data=>{
+    const p=data[i];
 
-      const mensaje = `🛒 *Pedido*%0A
-👤 ${p.cliente?.nombre}%0A
-📞 ${p.cliente?.telefono}%0A
-📍 ${p.cliente?.direccion}%0A
-🥩 ${p.producto}%0A
-⚖️ ${p.cantidad}%0A
-📅 ${p.fecha}`;
-
-      window.open(`https://wa.me/${TELEFONO}?text=${mensaje}`, "_blank");
-    });
+    const msg=`Pedido%0A${p.cliente?.nombre}%0A${p.producto}%0A${p.cantidad}`;
+    window.open(`https://wa.me/${TELEFONO}?text=${msg}`);
+  });
 }
 
-// 🔍 FILTRO
-document.getElementById("filtro").addEventListener("input", cargar);
+document.getElementById("filtro").addEventListener("input",cargar);
 </script>
 
 </body>

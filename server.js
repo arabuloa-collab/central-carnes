@@ -32,6 +32,8 @@ app.use("/api/pedidos", require("./routes/pedidos"));
 // puerto
 const PORT = process.env.PORT || 3000;
 
+app.use("/api/login", require("./routes/login"));
+
 app.listen(PORT, () => {
   console.log("Servidor funcionando");
 });
