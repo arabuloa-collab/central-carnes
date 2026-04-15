@@ -18,10 +18,7 @@ header {
   text-align: center;
 }
 
-/* 🔥 PROMOS */
-.promos {
-  padding: 10px;
-}
+.promos { padding: 10px; }
 
 .promo-card {
   background: #dc2626;
@@ -31,31 +28,14 @@ header {
   text-align: center;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-.promo-card:hover {
-  transform: scale(1.05);
-}
-
-/* CONTENEDOR */
 .container {
   max-width: 400px;
   margin: 20px auto;
   background: #1e293b;
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 0 15px #000;
-}
-
-.section {
-  margin-bottom: 20px;
-}
-
-.section-title {
-  font-size: 14px;
-  color: #94a3b8;
-  margin-bottom: 5px;
 }
 
 input, select {
@@ -83,6 +63,60 @@ button {
 .btn-wsp { background: #25D366; color: black; }
 .btn-qr { background: #3b82f6; color: white; }
 
+.estado {
+  padding: 5px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.pendiente { background: #facc15; color: black; }
+.entregado { background: #22c55e; color: black; }
+
+.card {
+  background: #1e293b;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+#comboBox {
+  display: none;
+  background: #020617;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+/* EXITO */
+#exito {
+  display: none;
+  position: fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:#0f172a;
+  justify-content:center;
+  align-items:center;
+}
+
+.card-exito {
+  background:#1e293b;
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+}
+
+.check { font-size:70px; color:#22c55e; }
+
+/* QR */
+#qrModal {
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:#000a;
+  justify-content:center;
+  align-items:center;
+}
 </style>
 </head>
 
@@ -93,25 +127,21 @@ button {
   <b>Central Carnes</b>
 </header>
 
-<!-- 🔥 PROMOS CLICK -->
+<!-- PROMOS + COMBOS -->
 <div class="promos">
 
-  <div class="promo-card" onclick="aplicarPromo('ASADO FORTUNA', '2')">
-    🔥 2kg Asado Fortuna
-  </div>
+<div class="promo-card" onclick="aplicarPromo('ASADO FORTUNA','2')">
+🔥 2kg Asado
+</div>
 
-  <div class="promo-card" onclick="aplicarPromo('VACIO', '1')">
-    💥 1kg Vacío Oferta
-  </div>
-
-  <div class="promo-card" onclick="aplicarPromo('BIFE DE CHORIZO', '3')">
-    🥩 Promo Bife x3kg
-  </div>
+<div class="promo-card" onclick="combo1()">
+🥩 Combo Parrillero (2 Asado + 1 Vacío)
+</div>
 
 </div>
 
 <!-- FORM -->
-<div class="container">
+<div id="formulario" class="container">
 
 <h2>Hacer Pedido</h2>
 
@@ -120,21 +150,48 @@ button {
 <input id="direccion" placeholder="Dirección">
 
 <select id="producto"></select>
-
 <input id="cantidad" placeholder="Cantidad (kg)">
+
+<div id="comboBox"></div>
 
 <button class="btn-main" onclick="enviar()">Enviar Pedido</button>
 <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
+<button class="btn-wsp" onclick="compartir()">Compartir WhatsApp</button>
+<button class="btn-qr" onclick="verQR()">Ver QR</button>
 
+</div>
+
+<!-- HISTORIAL -->
+<div id="historial" class="container" style="display:none;">
+  <h2>📦 Mis pedidos</h2>
+  <div id="lista"></div>
+  <button onclick="volver()">Volver</button>
+</div>
+
+<!-- EXITO -->
+<div id="exito">
+  <div class="card-exito">
+    <div class="check">✅</div>
+    <h2>Pedido enviado</h2>
+    <button onclick="volver()">Volver</button>
+  </div>
+</div>
+
+<!-- QR -->
+<div id="qrModal" onclick="this.style.display='none'">
+  <img id="qrImg">
 </div>
 
 <script>
 
-// 🔥 AUTO COMPLETAR
-window.onload = () => {
-  nombre.value = localStorage.getItem("nombre") || "";
-  telefono.value = localStorage.getItem("telefono") || "";
-  direccion.value = localStorage.getItem("direccion") || "";
+let comboSeleccionado = null;
+const URL = window.location.origin;
+
+// AUTO COMPLETAR
+window.onload = ()=>{
+  nombre.value = localStorage.getItem("nombre")||"";
+  telefono.value = localStorage.getItem("telefono")||"";
+  direccion.value = localStorage.getItem("direccion")||"";
 };
 
 function cargarProductos(){
@@ -151,15 +208,24 @@ function cargarProductos(){
   });
 }
 
-// 🔥 APLICAR PROMO
-function aplicarPromo(prod, cant){
-  producto.value = prod;
-  cantidad.value = cant;
-
-  // scroll al formulario
-  window.scrollTo({ top: 300, behavior: "smooth" });
+// PROMO SIMPLE
+function aplicarPromo(p,c){
+  producto.value=p;
+  cantidad.value=c;
 }
 
+// COMBO
+function combo1(){
+  comboSeleccionado=[
+    {producto:"ASADO FORTUNA",cantidad:"2"},
+    {producto:"VACIO",cantidad:"1"}
+  ];
+
+  comboBox.style.display="block";
+  comboBox.innerHTML="<b>Combo:</b><br>🥩 Asado 2kg<br>🥩 Vacío 1kg";
+}
+
+// ENVIAR
 function enviar(){
   const n=nombre.value;
   const t=telefono.value;
@@ -169,16 +235,82 @@ function enviar(){
   localStorage.setItem("telefono",t);
   localStorage.setItem("direccion",d);
 
-  fetch("/api/pedidos",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      cliente:{nombre:n,telefono:t,direccion:d},
-      producto:producto.value,
-      cantidad:cantidad.value
-    })
-  })
-  .then(()=>alert("Pedido enviado"));
+  // combo
+  if(comboSeleccionado){
+    comboSeleccionado.forEach(item=>{
+      fetch("/api/pedidos",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          cliente:{nombre:n,telefono:t,direccion:d},
+          producto:item.producto,
+          cantidad:item.cantidad
+        })
+      });
+    });
+
+    comboSeleccionado=null;
+    comboBox.style.display="none";
+  } else {
+    fetch("/api/pedidos",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        cliente:{nombre:n,telefono:t,direccion:d},
+        producto:producto.value,
+        cantidad:cantidad.value
+      })
+    });
+  }
+
+  formulario.style.display="none";
+  exito.style.display="flex";
+}
+
+// HISTORIAL
+function verHistorial(){
+  const tel=telefono.value || localStorage.getItem("telefono");
+  if(!tel){alert("Ingresá teléfono");return;}
+
+  fetch("/api/pedidos")
+  .then(r=>r.json())
+  .then(data=>{
+    lista.innerHTML="";
+
+    data.filter(p=>p.cliente?.telefono==tel)
+    .reverse()
+    .forEach(p=>{
+      const estado=p.estado||"pendiente";
+      const clase=estado==="entregado"?"entregado":"pendiente";
+
+      lista.innerHTML+=`
+      <div class="card">
+        🥩 ${p.producto}<br>
+        ⚖️ ${p.cantidad}<br>
+        <div class="estado ${clase}">${estado}</div>
+      </div>`;
+    });
+
+    formulario.style.display="none";
+    historial.style.display="block";
+  });
+}
+
+// WHATSAPP
+function compartir(){
+  window.open(`https://wa.me/?text=Hacé tu pedido ${URL}`);
+}
+
+// QR
+function verQR(){
+  qrImg.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${URL}`;
+  qrModal.style.display="flex";
+}
+
+function volver(){
+  historial.style.display="none";
+  exito.style.display="none";
+  formulario.style.display="block";
 }
 
 cargarProductos();
