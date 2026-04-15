@@ -131,8 +131,8 @@ const TELEFONO = "5491125061324";
 
 // LOGIN
 function login() {
-  const user = userInput.value;
-  const pass = passInput.value;
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
 
   fetch("/api/login", {
     method:"POST",
