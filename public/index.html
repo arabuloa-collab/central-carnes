@@ -18,7 +18,6 @@ header {
   text-align: center;
 }
 
-/* 🔥 CONTENEDOR */
 .container {
   max-width: 400px;
   margin: 20px auto;
@@ -28,19 +27,16 @@ header {
   box-shadow: 0 0 15px #000;
 }
 
-/* 🔥 SECCIONES */
 .section {
   margin-bottom: 20px;
-  text-align: left;
 }
 
 .section-title {
   font-size: 14px;
-  margin-bottom: 5px;
   color: #94a3b8;
+  margin-bottom: 5px;
 }
 
-/* 🔥 INPUTS */
 input, select {
   width: 100%;
   padding: 12px;
@@ -51,23 +47,31 @@ input, select {
   color: white;
 }
 
-/* 🔥 BOTONES */
 button {
   padding: 14px;
   width: 100%;
   border: none;
   border-radius: 10px;
-  background: #22c55e;
-  color: black;
   font-weight: bold;
   cursor: pointer;
+  margin-top: 5px;
 }
 
-.btn-sec {
-  background: #334155;
-  color: white;
-  margin-top: 10px;
+.btn-main { background: #22c55e; color: black; }
+.btn-sec { background: #334155; color: white; }
+.btn-wsp { background: #25D366; color: black; }
+.btn-qr { background: #3b82f6; color: white; }
+
+.estado {
+  padding: 5px;
+  border-radius: 6px;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: 5px;
 }
+
+.pendiente { background: #facc15; color: black; }
+.entregado { background: #22c55e; color: black; }
 
 .card {
   background: #1e293b;
@@ -79,68 +83,24 @@ button {
 .btn-repetir {
   background: #3b82f6;
   color: white;
-  margin-top: 8px;
 }
 
-/* estados */
-.estado {
-  padding: 5px;
-  border-radius: 6px;
-  font-weight: bold;
-  display: inline-block;
-  margin-top: 5px;
-}
-
-.pendiente {
-  background: #facc15;
-  color: black;
-}
-
-.entregado {
-  background: #22c55e;
-  color: black;
-}
-
-/* animación */
-.fade-out {
-  animation: fadeOut 0.4s forwards;
-}
-
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-}
-
-#exito {
+/* MODAL QR */
+#qrModal {
   display: none;
   position: fixed;
-  top:0;
-  left:0;
+  top:0; left:0;
   width:100%;
   height:100%;
-  background:#0f172a;
+  background: rgba(0,0,0,0.8);
   justify-content:center;
   align-items:center;
 }
 
-.card-exito {
-  background:#1e293b;
-  padding:30px;
-  border-radius:15px;
-  text-align:center;
-  animation:zoomIn 0.3s;
-}
-
-@keyframes zoomIn {
-  from {transform:scale(0.6); opacity:0;}
-  to {transform:scale(1); opacity:1;}
-}
-
-.check {
-  font-size:70px;
-  color:#22c55e;
+#qrModal img {
+  background:white;
+  padding:10px;
+  border-radius:10px;
 }
 </style>
 </head>
@@ -152,55 +112,55 @@ button {
   <b>Central Carnes</b>
 </header>
 
-<!-- FORM -->
 <div id="formulario" class="container">
 
 <h2>Hacer Pedido</h2>
 
 <div class="section">
-  <div class="section-title">Datos del cliente</div>
-  <input id="nombre" placeholder="Nombre completo">
+  <div class="section-title">Datos</div>
+  <input id="nombre" placeholder="Nombre">
   <input id="telefono" placeholder="Teléfono">
-  <input id="direccion" placeholder="Dirección de entrega">
+  <input id="direccion" placeholder="Dirección">
 </div>
 
 <div class="section">
-  <div class="section-title">Detalle del pedido</div>
+  <div class="section-title">Pedido</div>
   <select id="producto"></select>
-  <input id="cantidad" placeholder="Cantidad en kg">
+  <input id="cantidad" placeholder="Cantidad (kg)">
 </div>
 
-<button onclick="enviar()">Enviar Pedido</button>
+<button class="btn-main" onclick="enviar()">Enviar Pedido</button>
 <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
 
+<!-- 🔥 NUEVO -->
+<button class="btn-wsp" onclick="compartir()">Compartir por WhatsApp</button>
+<button class="btn-qr" onclick="verQR()">Ver QR del negocio</button>
+
 </div>
 
-<!-- EXITO -->
-<div id="exito">
-  <div class="card-exito">
-    <div class="check">✅</div>
-    <h2>Pedido enviado</h2>
-    <button onclick="volver()">Hacer otro pedido</button>
-  </div>
-</div>
-
-<!-- HISTORIAL -->
 <div id="historial" class="container" style="display:none;">
   <h2>📦 Mis pedidos</h2>
   <div id="lista"></div>
   <button onclick="volver()">Volver</button>
 </div>
 
+<!-- 🔥 QR MODAL -->
+<div id="qrModal" onclick="cerrarQR()">
+  <img id="qrImg">
+</div>
+
 <script>
 
+const URL = window.location.origin;
+
 // auto completar
-window.onload = function() {
+window.onload = () => {
   nombre.value = localStorage.getItem("nombre") || "";
   telefono.value = localStorage.getItem("telefono") || "";
   direccion.value = localStorage.getItem("direccion") || "";
 };
 
-function cargarProductos() {
+function cargarProductos(){
   fetch("/api/productos")
   .then(r=>r.json())
   .then(data=>{
@@ -223,29 +183,37 @@ function enviar(){
   localStorage.setItem("telefono",t);
   localStorage.setItem("direccion",d);
 
-  const pedido={
-    cliente:{nombre:n,telefono:t,direccion:d},
-    producto:producto.value,
-    cantidad:cantidad.value
-  };
-
   fetch("/api/pedidos",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(pedido)
+    body:JSON.stringify({
+      cliente:{nombre:n,telefono:t,direccion:d},
+      producto:producto.value,
+      cantidad:cantidad.value
+    })
   })
-  .then(()=>{
-    formulario.classList.add("fade-out");
-    setTimeout(()=>{
-      formulario.style.display="none";
-      exito.style.display="flex";
-    },400);
-  });
+  .then(()=>alert("Pedido enviado"));
+}
+
+// 🔥 COMPARTIR WHATSAPP
+function compartir(){
+  const msg = "Hacé tu pedido acá 👉 " + URL;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+}
+
+// 🔥 QR
+function verQR(){
+  const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${URL}`;
+  qrImg.src = qrURL;
+  qrModal.style.display = "flex";
+}
+
+function cerrarQR(){
+  qrModal.style.display = "none";
 }
 
 function verHistorial(){
   const tel=telefono.value || localStorage.getItem("telefono");
-
   if(!tel){alert("Ingresá tu teléfono");return;}
 
   fetch("/api/pedidos")
@@ -285,10 +253,8 @@ function repetir(p){
 }
 
 function volver(){
-  exito.style.display="none";
   historial.style.display="none";
   formulario.style.display="block";
-  formulario.classList.remove("fade-out");
 }
 
 cargarProductos();
