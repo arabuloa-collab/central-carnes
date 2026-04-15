@@ -1,4 +1,3 @@
-<p>VERSION NUEVA</p>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -71,20 +70,27 @@ function cargar() {
       const filtro = document.getElementById("filtro").value.toLowerCase();
 
       data.forEach((p, i) => {
-        if (!p.cliente || !p.cliente.nombre) return;
 
-        if (!p.cliente.nombre.toLowerCase().includes(filtro)) return;
+        const nombre = p.cliente?.nombre || "Sin nombre";
+
+        if (!nombre.toLowerCase().includes(filtro)) return;
+
+        const telefono = p.cliente?.telefono || "-";
+        const direccion = p.cliente?.direccion || "-";
+        const producto = p.producto || "-";
+        const cantidad = p.cantidad || "-";
+        const fecha = p.fecha || "sin fecha";
 
         const div = document.createElement("div");
         div.className = "card";
 
         div.innerHTML = `
-          <strong>${p.cliente.nombre}</strong><br>
-          📞 ${p.cliente.telefono}<br>
-          📍 ${p.cliente.direccion}<br>
-          🥩 ${p.producto}<br>
-          ⚖️ ${p.cantidad}<br>
-          📅 ${p.fecha || "sin fecha"}<br><br>
+          <strong>${nombre}</strong><br>
+          📞 ${telefono}<br>
+          📍 ${direccion}<br>
+          🥩 ${producto}<br>
+          ⚖️ ${cantidad}<br>
+          📅 ${fecha}<br><br>
 
           <button class="btn-wsp" onclick="enviarWhatsApp(${i})">
             Enviar por WhatsApp
@@ -113,13 +119,20 @@ function enviarWhatsApp(i) {
     .then(data => {
       const p = data[i];
 
+      const nombre = p.cliente?.nombre || "Sin nombre";
+      const telefono = p.cliente?.telefono || "-";
+      const direccion = p.cliente?.direccion || "-";
+      const producto = p.producto || "-";
+      const cantidad = p.cantidad || "-";
+      const fecha = p.fecha || "-";
+
       const mensaje = `🛒 *Pedido*%0A
-👤 ${p.cliente.nombre}%0A
-📞 ${p.cliente.telefono}%0A
-📍 ${p.cliente.direccion}%0A
-🥩 ${p.producto}%0A
-⚖️ ${p.cantidad}%0A
-📅 ${p.fecha}`;
+👤 ${nombre}%0A
+📞 ${telefono}%0A
+📍 ${direccion}%0A
+🥩 ${producto}%0A
+⚖️ ${cantidad}%0A
+📅 ${fecha}`;
 
       window.open(`https://wa.me/${TELEFONO}?text=${mensaje}`, "_blank");
     });
