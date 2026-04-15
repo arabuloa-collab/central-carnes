@@ -127,7 +127,7 @@ button {
   <b>Central Carnes</b>
 </header>
 
-<!-- PROMOS + COMBOS -->
+<!-- PROMOS -->
 <div class="promos">
 
 <div class="promo-card" onclick="aplicarPromo('ASADO FORTUNA','2')">
@@ -156,7 +156,7 @@ button {
 
 <button class="btn-main" onclick="enviar()">Enviar Pedido</button>
 <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
-<button class="btn-wsp" onclick="compartir()">Compartir WhatsApp</button>
+<button class="btn-wsp" onclick="compartir()">Compartir negocio</button>
 <button class="btn-qr" onclick="verQR()">Ver QR</button>
 
 </div>
@@ -186,6 +186,7 @@ button {
 
 let comboSeleccionado = null;
 const URL = window.location.origin;
+const TELEFONO = "5491125061324";
 
 // AUTO COMPLETAR
 window.onload = ()=>{
@@ -208,7 +209,7 @@ function cargarProductos(){
   });
 }
 
-// PROMO SIMPLE
+// PROMO
 function aplicarPromo(p,c){
   producto.value=p;
   cantidad.value=c;
@@ -231,43 +232,59 @@ function enviar(){
   const t=telefono.value;
   const d=direccion.value;
 
+  const ahora = new Date();
+  const fecha = ahora.toLocaleDateString();
+  const hora = ahora.toLocaleTimeString();
+
   localStorage.setItem("nombre",n);
   localStorage.setItem("telefono",t);
   localStorage.setItem("direccion",d);
 
-  // combo
+  let mensaje = `🛒 *PEDIDO*%0A👤 ${n}%0A📞 ${t}%0A📍 ${d}%0A`;
+
   if(comboSeleccionado){
     comboSeleccionado.forEach(item=>{
+      mensaje += `🥩 ${item.producto} - ${item.cantidad}kg%0A`;
+
       fetch("/api/pedidos",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
           cliente:{nombre:n,telefono:t,direccion:d},
           producto:item.producto,
-          cantidad:item.cantidad
+          cantidad:item.cantidad,
+          fecha: fecha+" "+hora
         })
       });
     });
 
     comboSeleccionado=null;
     comboBox.style.display="none";
+
   } else {
+    mensaje += `🥩 ${producto.value}%0A⚖️ ${cantidad.value}kg%0A`;
+
     fetch("/api/pedidos",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
         cliente:{nombre:n,telefono:t,direccion:d},
         producto:producto.value,
-        cantidad:cantidad.value
+        cantidad:cantidad.value,
+        fecha: fecha+" "+hora
       })
     });
   }
+
+  mensaje += `📅 ${fecha}%0A⏰ ${hora}`;
+
+  window.open(`https://wa.me/${TELEFONO}?text=${mensaje}`, "_blank");
 
   formulario.style.display="none";
   exito.style.display="flex";
 }
 
-// HISTORIAL
+// HISTORIAL COMPLETO
 function verHistorial(){
   const tel=telefono.value || localStorage.getItem("telefono");
   if(!tel){alert("Ingresá teléfono");return;}
@@ -277,16 +294,27 @@ function verHistorial(){
   .then(data=>{
     lista.innerHTML="";
 
-    data.filter(p=>p.cliente?.telefono==tel)
-    .reverse()
-    .forEach(p=>{
+    const pedidos=data.filter(p=>p.cliente?.telefono==tel);
+
+    if(pedidos.length===0){
+      lista.innerHTML="<p>No tenés pedidos</p>";
+    }
+
+    pedidos.reverse().forEach(p=>{
       const estado=p.estado||"pendiente";
       const clase=estado==="entregado"?"entregado":"pendiente";
 
       lista.innerHTML+=`
       <div class="card">
+        <b>👤 ${p.cliente?.nombre||"-"}</b><br>
+        📞 ${p.cliente?.telefono||"-"}<br>
+        📍 ${p.cliente?.direccion||"-"}<br><br>
+
         🥩 ${p.producto}<br>
-        ⚖️ ${p.cantidad}<br>
+        ⚖️ ${p.cantidad}kg<br><br>
+
+        📅 ${p.fecha||"-"}<br>
+
         <div class="estado ${clase}">${estado}</div>
       </div>`;
     });
@@ -296,7 +324,7 @@ function verHistorial(){
   });
 }
 
-// WHATSAPP
+// COMPARTIR
 function compartir(){
   window.open(`https://wa.me/?text=Hacé tu pedido ${URL}`);
 }
