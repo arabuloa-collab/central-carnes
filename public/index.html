@@ -38,51 +38,31 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  background: #16a34a;
-}
-
-/* 🔥 PANTALLA ÉXITO */
-#exito {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #0f172a;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-.check {
-  font-size: 80px;
-  color: #22c55e;
-}
-
-.card-exito {
+.card {
   background: #1e293b;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 0 20px #000;
+  margin: 10px auto;
+  padding: 15px;
+  border-radius: 10px;
+  width: 260px;
+}
+
+#historial {
+  display: none;
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <header>
   <div style="display:flex; flex-direction:column; align-items:center;">
-    <img src="logo.png" style="height:50px; margin-bottom:5px;">
-    <div style="font-weight:bold;">Central Carnes</div>
+    <img src="logo.png" style="height:50px;">
+    <div><b>Central Carnes</b></div>
   </div>
 </header>
 
 <!-- FORM -->
 <div id="formulario">
-
 <h2>Hacer Pedido</h2>
 
 <input id="nombre" placeholder="Nombre">
@@ -95,16 +75,20 @@ button:hover {
 
 <button onclick="enviar()">Enviar Pedido</button>
 
+<button onclick="verHistorial()">Ver mis pedidos</button>
 </div>
 
-<!-- 🔥 PANTALLA DE ÉXITO -->
-<div id="exito">
-  <div class="card-exito">
-    <div class="check">✅</div>
-    <h2>Pedido enviado</h2>
-    <p>Nos vamos a comunicar con vos a la brevedad</p>
-    <button onclick="volver()">Hacer otro pedido</button>
-  </div>
+<!-- EXITO -->
+<div id="exito" style="display:none;">
+  <h2>✅ Pedido enviado</h2>
+  <button onclick="volver()">Volver</button>
+</div>
+
+<!-- HISTORIAL -->
+<div id="historial">
+  <h2>📦 Mis pedidos</h2>
+  <div id="lista"></div>
+  <button onclick="volver()">Volver</button>
 </div>
 
 <script>
@@ -113,8 +97,6 @@ function cargarProductos() {
     .then(r => r.json())
     .then(data => {
       const select = document.getElementById("producto");
-      select.innerHTML = "";
-
       data.forEach(p => {
         const option = document.createElement("option");
         option.value = p.nombre;
@@ -125,10 +107,12 @@ function cargarProductos() {
 }
 
 function enviar() {
+  const telefono = document.getElementById("telefono").value;
+
   const pedido = {
     cliente: {
       nombre: document.getElementById("nombre").value,
-      telefono: document.getElementById("telefono").value,
+      telefono: telefono,
       direccion: document.getElementById("direccion").value
     },
     producto: document.getElementById("producto").value,
@@ -136,26 +120,57 @@ function enviar() {
   };
 
   fetch("/api/pedidos", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
     body: JSON.stringify(pedido)
   })
   .then(() => {
+    localStorage.setItem("telefono", telefono);
 
-    // limpiar
-    document.getElementById("nombre").value = "";
-    document.getElementById("telefono").value = "";
-    document.getElementById("direccion").value = "";
-    document.getElementById("cantidad").value = "";
-
-    // mostrar pantalla pro
     document.getElementById("formulario").style.display = "none";
-    document.getElementById("exito").style.display = "flex";
+    document.getElementById("exito").style.display = "block";
+  });
+}
+
+function verHistorial() {
+  const tel = document.getElementById("telefono").value || localStorage.getItem("telefono");
+
+  if (!tel) {
+    alert("Ingresá tu teléfono");
+    return;
+  }
+
+  fetch("/api/pedidos")
+  .then(r => r.json())
+  .then(data => {
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    const pedidos = data.filter(p => p.cliente?.telefono == tel);
+
+    pedidos.reverse().forEach(p => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        🥩 ${p.producto}<br>
+        ⚖️ ${p.cantidad}<br>
+        📅 ${p.fecha || "-"}<br>
+        📦 ${p.estado || "pendiente"}
+      `;
+
+      lista.appendChild(div);
+    });
+
+    document.getElementById("formulario").style.display = "none";
+    document.getElementById("historial").style.display = "block";
   });
 }
 
 function volver() {
   document.getElementById("exito").style.display = "none";
+  document.getElementById("historial").style.display = "none";
   document.getElementById("formulario").style.display = "block";
 }
 
