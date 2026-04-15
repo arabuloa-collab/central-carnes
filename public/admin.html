@@ -18,8 +18,8 @@
 
     input {
       padding: 10px;
-      width: 300px;
-      margin: 10px;
+      width: 250px;
+      margin: 5px;
     }
 
     .card {
@@ -31,35 +31,57 @@
     }
 
     button {
-      margin-top: 5px;
       padding: 10px;
+      margin-top: 5px;
+      width: 100%;
       border: none;
       cursor: pointer;
-      width: 100%;
     }
 
-    .btn-eliminar {
-      background: red;
-      color: white;
-    }
+    .btn-eliminar { background: red; color: white; }
+    .btn-wsp { background: green; color: white; }
 
-    .btn-wsp {
-      background: green;
-      color: white;
-    }
+    #panel { display: none; }
   </style>
 </head>
 <body>
 
-<h1>Panel de Pedidos</h1>
+<h1>Panel Admin</h1>
 
-<input type="text" id="filtro" placeholder="Buscar cliente...">
+<!-- 🔐 LOGIN -->
+<div id="login">
+  <input type="text" id="user" placeholder="Usuario"><br>
+  <input type="password" id="pass" placeholder="Contraseña"><br>
+  <button onclick="login()">Ingresar</button>
+</div>
 
-<div id="lista"></div>
+<!-- 🔥 PANEL -->
+<div id="panel">
+
+  <input type="text" id="filtro" placeholder="Buscar cliente...">
+
+  <div id="lista"></div>
+
+</div>
 
 <script>
 const TELEFONO = "5491125061324";
 
+// 🔐 LOGIN
+function login() {
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
+
+  if (user === "admin" && pass === "1234") {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    cargar();
+  } else {
+    alert("Datos incorrectos");
+  }
+}
+
+// 🔄 CARGAR PEDIDOS
 function cargar() {
   fetch("/api/pedidos")
     .then(res => res.json())
@@ -70,7 +92,6 @@ function cargar() {
       const filtro = document.getElementById("filtro").value.toLowerCase();
 
       data.forEach((p, i) => {
-
         const nombre = p.cliente?.nombre || "Sin nombre";
 
         if (!nombre.toLowerCase().includes(filtro)) return;
@@ -93,7 +114,7 @@ function cargar() {
           📅 ${fecha}<br><br>
 
           <button class="btn-wsp" onclick="enviarWhatsApp(${i})">
-            Enviar por WhatsApp
+            WhatsApp
           </button>
 
           <button class="btn-eliminar" onclick="eliminar(${i})">
@@ -106,6 +127,7 @@ function cargar() {
     });
 }
 
+// 🗑 ELIMINAR
 function eliminar(i) {
   fetch("/api/pedidos/" + i, {
     method: "DELETE"
@@ -113,34 +135,27 @@ function eliminar(i) {
   .then(() => cargar());
 }
 
+// 📲 WHATSAPP
 function enviarWhatsApp(i) {
   fetch("/api/pedidos")
     .then(res => res.json())
     .then(data => {
       const p = data[i];
 
-      const nombre = p.cliente?.nombre || "Sin nombre";
-      const telefono = p.cliente?.telefono || "-";
-      const direccion = p.cliente?.direccion || "-";
-      const producto = p.producto || "-";
-      const cantidad = p.cantidad || "-";
-      const fecha = p.fecha || "-";
-
       const mensaje = `🛒 *Pedido*%0A
-👤 ${nombre}%0A
-📞 ${telefono}%0A
-📍 ${direccion}%0A
-🥩 ${producto}%0A
-⚖️ ${cantidad}%0A
-📅 ${fecha}`;
+👤 ${p.cliente?.nombre}%0A
+📞 ${p.cliente?.telefono}%0A
+📍 ${p.cliente?.direccion}%0A
+🥩 ${p.producto}%0A
+⚖️ ${p.cantidad}%0A
+📅 ${p.fecha}`;
 
       window.open(`https://wa.me/${TELEFONO}?text=${mensaje}`, "_blank");
     });
 }
 
+// 🔍 FILTRO
 document.getElementById("filtro").addEventListener("input", cargar);
-
-cargar();
 </script>
 
 </body>
