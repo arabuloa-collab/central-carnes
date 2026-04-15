@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -89,7 +89,7 @@ button {
 
 <!-- LOGIN -->
 <div id="login">
-  <input id="user" placeholder="Usuario"><br>
+  <input id="user" type="text" placeholder="Usuario"><br>
   <input id="pass" type="password" placeholder="Contraseña"><br>
   <button onclick="login()">Ingresar</button>
 </div>
@@ -100,6 +100,26 @@ button {
 <div class="topbar">
   <div>👤 <span id="usuario"></span></div>
   <button class="btn-out" onclick="logout()">Salir</button>
+</div>
+
+<!-- 🔥 DASHBOARD -->
+<div id="dashboard" style="display:flex; gap:10px; margin:10px 0;">
+
+  <div class="card" style="flex:1; text-align:center;">
+    <div>Total</div>
+    <h2 id="total">0</h2>
+  </div>
+
+  <div class="card" style="flex:1; text-align:center;">
+    <div>Pendientes</div>
+    <h2 id="pendientes">0</h2>
+  </div>
+
+  <div class="card" style="flex:1; text-align:center;">
+    <div>Entregados</div>
+    <h2 id="entregados">0</h2>
+  </div>
+
 </div>
 
 <input id="filtro" placeholder="Buscar cliente...">
@@ -118,7 +138,7 @@ const usuario = document.getElementById("usuario");
 const lista = document.getElementById("lista");
 const filtro = document.getElementById("filtro");
 
-// LOGIN (FIX DEFINITIVO)
+// LOGIN
 function login() {
   const user = document.getElementById("user").value.trim();
   const pass = document.getElementById("pass").value.trim();
@@ -163,20 +183,30 @@ if (localStorage.getItem("login")) {
   mostrar();
 }
 
-// CARGAR PEDIDOS
+// CARGAR
 function cargar() {
   fetch("/api/pedidos")
   .then(r => r.json())
   .then(data => {
+
     lista.innerHTML = "";
+
+    let total = data.length;
+    let pendientes = 0;
+    let entregados = 0;
 
     const f = filtro.value.toLowerCase();
 
     data.forEach((p, i) => {
+
+      const estado = p.estado || "pendiente";
+
+      if (estado === "pendiente") pendientes++;
+      if (estado === "entregado") entregados++;
+
       const nombre = p.cliente?.nombre || "Sin nombre";
       if (!nombre.toLowerCase().includes(f)) return;
 
-      const estado = p.estado || "pendiente";
       const clase = estado === "entregado" ? "entregado" : "pendiente";
 
       const div = document.createElement("div");
@@ -198,6 +228,10 @@ function cargar() {
 
       lista.appendChild(div);
     });
+
+    document.getElementById("total").innerText = total;
+    document.getElementById("pendientes").innerText = pendientes;
+    document.getElementById("entregados").innerText = entregados;
   });
 }
 
