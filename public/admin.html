@@ -40,6 +40,7 @@
 
     .btn-eliminar { background: red; color: white; }
     .btn-wsp { background: green; color: white; }
+    .btn-logout { background: orange; color: black; }
 
     #panel { display: none; }
   </style>
@@ -48,15 +49,17 @@
 
 <h1>Panel Admin</h1>
 
-<!-- 🔐 LOGIN -->
+<!-- LOGIN -->
 <div id="login">
   <input type="text" id="user" placeholder="Usuario"><br>
   <input type="password" id="pass" placeholder="Contraseña"><br>
   <button onclick="login()">Ingresar</button>
 </div>
 
-<!-- 🔥 PANEL -->
+<!-- PANEL -->
 <div id="panel">
+
+  <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
 
   <input type="text" id="filtro" placeholder="Buscar cliente...">
 
@@ -73,12 +76,29 @@ function login() {
   const pass = document.getElementById("pass").value;
 
   if (user === "admin" && pass === "1234") {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-    cargar();
+    localStorage.setItem("login", "true");
+    mostrarPanel();
   } else {
     alert("Datos incorrectos");
   }
+}
+
+// 🔓 LOGOUT
+function logout() {
+  localStorage.removeItem("login");
+  location.reload();
+}
+
+// 🔁 MOSTRAR PANEL
+function mostrarPanel() {
+  document.getElementById("login").style.display = "none";
+  document.getElementById("panel").style.display = "block";
+  cargar();
+}
+
+// 🔄 VERIFICAR SESIÓN
+if (localStorage.getItem("login") === "true") {
+  mostrarPanel();
 }
 
 // 🔄 CARGAR PEDIDOS
