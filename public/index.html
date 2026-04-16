@@ -1,141 +1,84 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pedidos - Central Carnes</title>
-
 <style>
-* { box-sizing: border-box; }
+*{box-sizing:border-box;}
 
-body {
-  font-family: Arial, sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(239,68,68,0.15), transparent 25%),
-    linear-gradient(180deg, #0f172a 0%, #111827 100%);
-  color: white;
-  margin: 0;
-  min-height: 100vh;
-}
-
-header {
-  background: linear-gradient(90deg, #b91c1c, #ef4444);
-  padding: 18px 15px;
-  text-align: center;
-}
-
-header img { height: 54px; margin-bottom: 6px; }
-
-.promos {
-  max-width: 980px;
-  margin: 20px auto;
-  padding: 0 14px;
-}
-
-.promos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-}
-
-.promo-card {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  padding: 16px;
-  border-radius: 18px;
-  text-align: center;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.container {
-  max-width: 980px;
-  margin: 20px auto;
-  background: rgba(30, 41, 59, 0.88);
-  padding: 24px;
-  border-radius: 22px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.field { display: flex; flex-direction: column; }
-
-.field.full { grid-column: 1 / -1; }
-
-input, select {
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  background: #0f172a;
-  color: white;
-}
-
-.actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 20px;
-}
-
-button {
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.btn-main { background:#22c55e; color:black; }
-.btn-sec { background:#334155; color:white; }
-.btn-wsp { background:#25D366; color:black; }
-.btn-qr { background:#2563eb; color:white; }
-
-.estado { padding:6px; border-radius:6px; }
-.pendiente { background:#facc15; color:black; }
-.entregado { background:#22c55e; color:black; }
-
-.card {
-  background:#1e293b;
-  margin:10px 0;
-  padding:14px;
-  border-radius:14px;
-}
-
-/* carrito */
-#carritoBox {
-  margin-top:10px;
-  background:#020617;
-  padding:14px;
-  border-radius:14px;
-  border:1px dashed rgba(255,255,255,0.14);
-}
-
-#exito {
-  display:none;
-  position:fixed;
-  inset:0;
+body{
+  font-family:Arial;
   background:#0f172a;
-  justify-content:center;
-  align-items:center;
+  color:white;
+  margin:0;
 }
 
-.card-exito {
-  background:#1e293b;
-  padding:30px;
-  border-radius:20px;
+header{
+  background:#dc2626;
+  padding:15px;
   text-align:center;
 }
 
-#qrModal {
+header img{height:50px;}
+
+.container{
+  max-width:900px;
+  margin:20px auto;
+  background:#1e293b;
+  padding:20px;
+  border-radius:20px;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+.field{display:flex;flex-direction:column;}
+.field.full{grid-column:1/-1;}
+
+input,select{
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:#0f172a;
+  color:white;
+}
+
+button{
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.btn-main{background:#22c55e;color:black;}
+.btn-sec{background:#334155;color:white;}
+.btn-add{background:#facc15;color:black;}
+.btn-clear{background:#475569;color:white;}
+
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:15px;
+}
+
+#comboBox{
   display:none;
-  position:fixed;
-  inset:0;
-  background:#000a;
-  justify-content:center;
-  align-items:center;
+  background:#020617;
+  padding:10px;
+  border-radius:10px;
+}
+
+/* carrito SIN romper estética */
+#carritoBox{
+  background:#020617;
+  padding:10px;
+  border-radius:10px;
+}
+
+.carrito-item{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:6px;
 }
 </style>
 </head>
@@ -143,211 +86,170 @@ button {
 <body>
 
 <header>
-  <img src="logo.png">
-  <b>Central Carnes</b>
+<img src="logo.png">
+<br>
+<b>Central Carnes</b>
 </header>
 
-<div class="promos">
-  <div class="promos-grid">
-    <div class="promo-card" onclick="aplicarPromo('ASADO FORTUNA','2')">
-      🔥 2kg Asado
-    </div>
-
-    <div class="promo-card" onclick="combo1()">
-      🥩 Combo Parrillero
-    </div>
-  </div>
-</div>
-
-<div id="formulario" class="container">
+<div class="container">
 
 <div class="form-grid">
-  <div class="field">
-    <label>Nombre</label>
-    <input id="nombre">
-  </div>
 
-  <div class="field">
-    <label>Teléfono</label>
-    <input id="telefono">
-  </div>
-
-  <div class="field full">
-    <label>Dirección</label>
-    <input id="direccion">
-  </div>
-
-  <div class="field">
-    <label>Producto</label>
-    <select id="producto"></select>
-  </div>
-
-  <div class="field">
-    <label>Cantidad</label>
-    <input id="cantidad">
-  </div>
-
-  <div class="field full">
-    <div id="comboBox"></div>
-  </div>
+<div class="field">
+<label>Nombre</label>
+<input id="nombre">
 </div>
 
-<!-- CARRITO -->
+<div class="field">
+<label>Teléfono</label>
+<input id="telefono">
+</div>
+
+<div class="field full">
+<label>Dirección</label>
+<input id="direccion">
+</div>
+
+<div class="field">
+<label>Producto</label>
+<select id="producto"></select>
+</div>
+
+<div class="field">
+<label>Cantidad</label>
+<input id="cantidad">
+</div>
+
+<div class="field full">
+<label>Combo seleccionado</label>
+<div id="comboBox"></div>
+</div>
+
+<!-- 🔥 CARRITO BIEN INTEGRADO -->
+<div class="field full">
+<label>Carrito</label>
+
 <div id="carritoBox">
-  <b>🛒 Carrito</b>
-  <div id="carritoLista">No hay productos</div>
-  <button onclick="vaciarCarrito()">Vaciar</button>
+
+<div id="carritoLista">
+No hay productos
 </div>
 
 <div class="actions">
-  <button onclick="agregarAlCarrito()">Agregar</button>
-  <button class="btn-main" onclick="enviar()">Enviar</button>
-  <button class="btn-sec" onclick="verHistorial()">Historial</button>
-  <button class="btn-wsp" onclick="compartir()">Compartir</button>
-  <button class="btn-qr" onclick="verQR()">QR</button>
+<button class="btn-add" onclick="agregarAlCarrito()">Agregar</button>
+<button class="btn-clear" onclick="vaciarCarrito()">Vaciar</button>
 </div>
 
 </div>
 
-<div id="historial" class="container" style="display:none;">
-  <div id="lista"></div>
-  <button onclick="volver()">Volver</button>
 </div>
 
-<div id="exito">
-  <div class="card-exito">
-    <h2>Pedido enviado</h2>
-    <button onclick="volver()">Volver</button>
-  </div>
 </div>
 
-<div id="qrModal" onclick="this.style.display='none'">
-  <img id="qrImg">
+<div class="actions">
+<button class="btn-main" onclick="enviar()">Enviar</button>
+<button class="btn-sec" onclick="verHistorial()">Historial</button>
+</div>
+
 </div>
 
 <script>
-let comboSeleccionado=null;
-let carrito=[];
 
-const TELEFONO="5491125061324";
-const URL=window.location.origin;
+let carrito=[];
+let comboSeleccionado=null;
 
 window.onload=()=>{
-  nombre.value=localStorage.getItem("nombre")||"";
-  telefono.value=localStorage.getItem("telefono")||"";
-  direccion.value=localStorage.getItem("direccion")||"";
+nombre.value=localStorage.getItem("nombre")||"";
+telefono.value=localStorage.getItem("telefono")||"";
+direccion.value=localStorage.getItem("direccion")||"";
 };
 
 function cargarProductos(){
-  fetch("/api/productos")
-  .then(r=>r.json())
-  .then(data=>{
-    producto.innerHTML="";
-    data.forEach(p=>{
-      let o=document.createElement("option");
-      o.value=p.nombre;
-      o.textContent=p.nombre;
-      producto.appendChild(o);
-    });
-  });
-}
-
-function aplicarPromo(p,c){
-  producto.value=p;
-  cantidad.value=c;
-}
-
-function combo1(){
-  comboSeleccionado=[
-    {producto:"ASADO FORTUNA",cantidad:"2"},
-    {producto:"VACIO",cantidad:"1"}
-  ];
-  comboBox.style.display="block";
-  comboBox.innerHTML="Combo cargado";
+fetch("/api/productos")
+.then(r=>r.json())
+.then(data=>{
+producto.innerHTML="";
+data.forEach(p=>{
+let o=document.createElement("option");
+o.value=p.nombre;
+o.textContent=p.nombre;
+producto.appendChild(o);
+});
+});
 }
 
 function agregarAlCarrito(){
-  if(comboSeleccionado){
-    comboSeleccionado.forEach(i=>carrito.push(i));
-    comboSeleccionado=null;
-    comboBox.style.display="none";
-  } else {
-    carrito.push({producto:producto.value,cantidad:cantidad.value});
-  }
-  renderCarrito();
+
+if(comboSeleccionado){
+comboSeleccionado.forEach(i=>carrito.push(i));
+comboSeleccionado=null;
+comboBox.style.display="none";
+}else{
+
+if(!producto.value||!cantidad.value){
+alert("Seleccioná producto y cantidad");
+return;
+}
+
+carrito.push({
+producto:producto.value,
+cantidad:cantidad.value
+});
+}
+
+cantidad.value="";
+renderCarrito();
 }
 
 function renderCarrito(){
-  if(carrito.length==0){
-    carritoLista.innerHTML="No hay productos";
-    return;
-  }
 
-  carritoLista.innerHTML="";
-  carrito.forEach((i,x)=>{
-    carritoLista.innerHTML+=`
-    <div>
-      ${i.producto} - ${i.cantidad}kg
-      <button onclick="carrito.splice(${x},1);renderCarrito()">X</button>
-    </div>`;
-  });
+if(carrito.length==0){
+carritoLista.innerHTML="No hay productos";
+return;
+}
+
+carritoLista.innerHTML="";
+
+carrito.forEach((i,x)=>{
+carritoLista.innerHTML+=`
+<div class="carrito-item">
+<span>${i.producto} - ${i.cantidad}kg</span>
+<button onclick="carrito.splice(${x},1);renderCarrito()">X</button>
+</div>`;
+});
 }
 
 function vaciarCarrito(){
-  carrito=[];
-  renderCarrito();
+carrito=[];
+renderCarrito();
 }
 
 function enviar(){
-  const n=nombre.value;
-  const t=telefono.value;
-  const d=direccion.value;
 
-  const ahora=new Date();
-  const fecha=ahora.toLocaleDateString();
-  const hora=ahora.toLocaleTimeString();
+const n=nombre.value;
+const t=telefono.value;
+const d=direccion.value;
 
-  let mensaje=`🛒 PEDIDO\n${n}\n${t}\n${d}\n`;
+const ahora=new Date();
+const fecha=ahora.toLocaleDateString();
+const hora=ahora.toLocaleTimeString();
 
-  carrito.forEach(i=>{
-    mensaje+=`${i.producto} ${i.cantidad}kg\n`;
-  });
+let mensaje=`🛒 PEDIDO\n${n}\n${t}\n${d}\n`;
 
-  window.open(`https://wa.me/${TELEFONO}?text=${encodeURIComponent(mensaje)}`);
+carrito.forEach(i=>{
+mensaje+=`${i.producto} ${i.cantidad}kg\n`;
+});
 
-  formulario.style.display="none";
-  exito.style.display="flex";
+window.open(`https://wa.me/5491125061324?text=${encodeURIComponent(mensaje)}`);
+
 }
 
 function verHistorial(){
-  fetch("/api/pedidos")
-  .then(r=>r.json())
-  .then(data=>{
-    lista.innerHTML="";
-    data.forEach(p=>{
-      lista.innerHTML+=`<div class="card">${p.producto}</div>`;
-    });
-    formulario.style.display="none";
-    historial.style.display="block";
-  });
-}
-
-function compartir(){
-  window.open(`https://wa.me/?text=Pedido ${URL}`);
-}
-
-function verQR(){
-  qrImg.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${URL}`;
-  qrModal.style.display="flex";
-}
-
-function volver(){
-  historial.style.display="none";
-  exito.style.display="none";
-  formulario.style.display="block";
+alert("historial activo");
 }
 
 cargarProductos();
+
 </script>
 
 </body>
