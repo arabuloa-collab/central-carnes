@@ -2,120 +2,372 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Pedidos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedidos - Central Carnes</title>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial;
-  background: #0f172a;
+  font-family: Arial, sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(239,68,68,0.15), transparent 25%),
+    linear-gradient(180deg, #0f172a 0%, #111827 100%);
   color: white;
   margin: 0;
+  min-height: 100vh;
 }
 
+/* HEADER */
 header {
-  background: linear-gradient(90deg, #dc2626, #ef4444);
-  padding: 15px;
+  background: linear-gradient(90deg, #b91c1c, #ef4444);
+  padding: 18px 15px;
   text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.promos { padding: 10px; }
+header img {
+  height: 54px;
+  margin-bottom: 6px;
+}
+
+header b {
+  font-size: 22px;
+  letter-spacing: 0.5px;
+}
+
+/* PROMOS */
+.promos {
+  width: 100%;
+  max-width: 980px;
+  margin: 22px auto 10px;
+  padding: 0 14px;
+}
+
+.promos-title {
+  margin: 0 0 14px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.promos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
 
 .promo-card {
-  background: #dc2626;
-  margin: 10px;
-  padding: 15px;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  padding: 18px 16px;
+  border-radius: 18px;
   text-align: center;
   font-weight: bold;
   cursor: pointer;
+  box-shadow: 0 12px 22px rgba(220, 38, 38, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
+.promo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 28px rgba(220, 38, 38, 0.36);
+  filter: brightness(1.03);
+}
+
+.promo-card small {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: normal;
+  opacity: 0.95;
+}
+
+/* CONTAINER */
 .container {
-  max-width: 400px;
-  margin: 20px auto;
-  background: #1e293b;
-  padding: 20px;
-  border-radius: 15px;
+  width: calc(100% - 28px);
+  max-width: 980px;
+  margin: 18px auto 30px;
+  background: rgba(30, 41, 59, 0.88);
+  backdrop-filter: blur(10px);
+  padding: 24px;
+  border-radius: 22px;
+  box-shadow: 0 16px 38px rgba(0,0,0,0.30);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* FORM CARD */
+.form-top {
+  margin-bottom: 22px;
+}
+
+.form-badge {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(239,68,68,0.18);
+  color: #fecaca;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  border: 1px solid rgba(239,68,68,0.22);
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.form-desc {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field.full {
+  grid-column: 1 / -1;
+}
+
+label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #e2e8f0;
 }
 
 input, select {
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  margin-bottom: 10px;
+  padding: 14px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 0;
   background: #0f172a;
   color: white;
+  outline: none;
+  transition: all 0.2s ease;
+  font-size: 15px;
 }
 
-button {
-  padding: 14px;
-  width: 100%;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 5px;
+input::placeholder {
+  color: #94a3b8;
 }
 
-.btn-main { background: #22c55e; color: black; }
-.btn-sec { background: #334155; color: white; }
-.btn-wsp { background: #25D366; color: black; }
-.btn-qr { background: #3b82f6; color: white; }
-
-.estado {
-  padding: 5px;
-  border-radius: 6px;
-  font-weight: bold;
+input:focus, select:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239,68,68,0.14);
+  background: #111827;
 }
 
-.pendiente { background: #facc15; color: black; }
-.entregado { background: #22c55e; color: black; }
-
-.card {
-  background: #1e293b;
-  margin: 10px;
-  padding: 15px;
-  border-radius: 10px;
-}
-
+/* combo box */
 #comboBox {
   display: none;
   background: #020617;
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  color: #f8fafc;
+  border: 1px dashed rgba(255,255,255,0.14);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+/* BUTTONS */
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+
+button {
+  padding: 15px 14px;
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 0;
+  transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+  font-size: 15px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+}
+
+.btn-main {
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  color: #052e16;
+  box-shadow: 0 10px 24px rgba(34,197,94,0.22);
+}
+
+.btn-sec {
+  background: linear-gradient(135deg, #334155, #475569);
+  color: white;
+}
+
+.btn-wsp {
+  background: linear-gradient(135deg, #25D366, #4ade80);
+  color: #052e16;
+}
+
+.btn-qr {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+}
+
+/* HISTORIAL */
+.historial-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.historial-sub {
+  color: #cbd5e1;
+  font-size: 14px;
+  margin: 0;
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95));
+  margin: 12px 0;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+}
+
+.estado {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: bold;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.pendiente {
+  background: #facc15;
+  color: black;
+}
+
+.entregado {
+  background: #22c55e;
+  color: black;
 }
 
 /* EXITO */
 #exito {
   display: none;
   position: fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:#0f172a;
-  justify-content:center;
-  align-items:center;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.94);
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  padding: 20px;
 }
 
 .card-exito {
-  background:#1e293b;
-  padding:30px;
-  border-radius:15px;
-  text-align:center;
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  padding: 34px 24px;
+  border-radius: 22px;
+  text-align: center;
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
 }
 
-.check { font-size:70px; color:#22c55e; }
+.check {
+  font-size: 74px;
+  color: #22c55e;
+  margin-bottom: 10px;
+}
+
+.card-exito h2 {
+  margin-bottom: 16px;
+}
 
 /* QR */
 #qrModal {
-  display:none;
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:#000a;
-  justify-content:center;
-  align-items:center;
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  justify-content: center;
+  align-items: center;
+  z-index: 101;
+  padding: 20px;
+}
+
+#qrModal img {
+  background: white;
+  padding: 14px;
+  border-radius: 18px;
+  max-width: 90vw;
+  width: 240px;
+  height: auto;
+  box-shadow: 0 18px 35px rgba(0,0,0,0.45);
+}
+
+/* HELP BOX */
+.info-box {
+  margin-top: 18px;
+  background: rgba(15,23,42,0.72);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 16px;
+  padding: 14px;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .container {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .form-grid,
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+
+  .promos {
+    margin-top: 18px;
+  }
+
+  .promo-card {
+    border-radius: 16px;
+  }
 }
 </style>
 </head>
@@ -123,49 +375,92 @@ button {
 <body>
 
 <header>
-  <img src="logo.png" style="height:50px;"><br>
+  <img src="logo.png" style="height:50px;" alt="Logo Central Carnes"><br>
   <b>Central Carnes</b>
 </header>
 
 <!-- PROMOS -->
 <div class="promos">
+  <h3 class="promos-title">🔥 Promociones destacadas</h3>
 
-<div class="promo-card" onclick="aplicarPromo('ASADO FORTUNA','2')">
-🔥 2kg Asado
-</div>
+  <div class="promos-grid">
+    <div class="promo-card" onclick="aplicarPromo('ASADO FORTUNA','2')">
+      🔥 2kg Asado
+      <small>Toque rápido para cargar la promo</small>
+    </div>
 
-<div class="promo-card" onclick="combo1()">
-🥩 Combo Parrillero (2 Asado + 1 Vacío)
-</div>
-
+    <div class="promo-card" onclick="combo1()">
+      🥩 Combo Parrillero
+      <small>2 Asado + 1 Vacío</small>
+    </div>
+  </div>
 </div>
 
 <!-- FORM -->
 <div id="formulario" class="container">
 
-<h2>Hacer Pedido</h2>
+  <div class="form-top">
+    <div class="form-badge">PEDIDOS ONLINE</div>
+    <h2>Hacer Pedido</h2>
+    <p class="form-desc">Cargá tus datos y armá el pedido sin perder nada de lo que ya venías usando.</p>
+  </div>
 
-<input id="nombre" placeholder="Nombre">
-<input id="telefono" placeholder="Teléfono">
-<input id="direccion" placeholder="Dirección">
+  <div class="form-grid">
+    <div class="field">
+      <label for="nombre">Nombre</label>
+      <input id="nombre" placeholder="Ingresá tu nombre">
+    </div>
 
-<select id="producto"></select>
-<input id="cantidad" placeholder="Cantidad (kg)">
+    <div class="field">
+      <label for="telefono">Teléfono</label>
+      <input id="telefono" placeholder="Ej: 11 2345 6789">
+    </div>
 
-<div id="comboBox"></div>
+    <div class="field full">
+      <label for="direccion">Dirección</label>
+      <input id="direccion" placeholder="Ingresá tu dirección">
+    </div>
 
-<button class="btn-main" onclick="enviar()">Enviar Pedido</button>
-<button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
-<button class="btn-wsp" onclick="compartir()">Compartir negocio</button>
-<button class="btn-qr" onclick="verQR()">Ver QR</button>
+    <div class="field">
+      <label for="producto">Producto</label>
+      <select id="producto"></select>
+    </div>
+
+    <div class="field">
+      <label for="cantidad">Cantidad (kg)</label>
+      <input id="cantidad" placeholder="Ej: 2">
+    </div>
+
+    <div class="field full">
+      <label>Combo seleccionado</label>
+      <div id="comboBox"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-main" onclick="enviar()">Enviar Pedido</button>
+    <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
+    <button class="btn-wsp" onclick="compartir()">Compartir negocio</button>
+    <button class="btn-qr" onclick="verQR()">Ver QR</button>
+  </div>
+
+  <div class="info-box">
+    Podés cargar promociones, combos, ver tu historial y compartir el negocio sin cambiar la lógica anterior.
+  </div>
 
 </div>
 
 <!-- HISTORIAL -->
 <div id="historial" class="container" style="display:none;">
-  <h2>📦 Mis pedidos</h2>
+  <div class="historial-head">
+    <div>
+      <h2 style="margin:0;">📦 Mis pedidos</h2>
+      <p class="historial-sub">Acá vas a ver el detalle completo de tus pedidos guardados.</p>
+    </div>
+  </div>
+
   <div id="lista"></div>
-  <button onclick="volver()">Volver</button>
+  <button class="btn-sec" onclick="volver()">Volver</button>
 </div>
 
 <!-- EXITO -->
@@ -173,17 +468,16 @@ button {
   <div class="card-exito">
     <div class="check">✅</div>
     <h2>Pedido enviado</h2>
-    <button onclick="volver()">Volver</button>
+    <button class="btn-main" onclick="volver()">Volver</button>
   </div>
 </div>
 
 <!-- QR -->
 <div id="qrModal" onclick="this.style.display='none'">
-  <img id="qrImg">
+  <img id="qrImg" alt="QR del negocio">
 </div>
 
 <script>
-
 let comboSeleccionado = null;
 const URL = window.location.origin;
 const TELEFONO = "5491125061324";
@@ -195,6 +489,7 @@ window.onload = ()=>{
   direccion.value = localStorage.getItem("direccion")||"";
 };
 
+// CARGAR PRODUCTOS
 function cargarProductos(){
   fetch("/api/productos")
   .then(r=>r.json())
@@ -342,7 +637,6 @@ function volver(){
 }
 
 cargarProductos();
-
 </script>
 
 </body>
