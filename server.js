@@ -28,10 +28,11 @@ app.get("/", (req, res) => {
 // APIs
 app.use("/api/pedidos", require("./routes/pedidos"));
 app.use("/api/login", require("./routes/login"));
+app.use("/api/clientes", require("./routes/clientes"));
 
 // PUERTO
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log("Servidor funcionando");
-})
+});

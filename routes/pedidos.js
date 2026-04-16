@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const FILE_PATH = path.join(__dirname, "..", "pedidos.json");
+const CLIENTES_FILE_PATH = path.join(__dirname, "..", "clientes.json");
 
 let pedidosDB = [];
 
@@ -28,10 +29,10 @@ function formatFechaArgentina(dateInput = new Date()) {
   });
 }
 
-function safeReadJSON() {
+function safeReadJSON(filePath) {
   try {
-    if (!fs.existsSync(FILE_PATH)) return [];
-    const raw = fs.readFileSync(FILE_PATH, "utf8");
+    if (!fs.existsSync(filePath)) return [];
+    const raw = fs.readFileSync(filePath, "utf8");
     if (!raw.trim()) return [];
     return JSON.parse(raw);
   } catch {
@@ -51,10 +52,14 @@ function nextPedidoNumero() {
   return max + 1;
 }
 
+function onlyDigits(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
 function normalizeCliente(cliente = {}) {
   return {
     nombre: String(cliente.nombre || "").trim(),
-    telefono: String(cliente.telefono || "").trim(),
+    telefono: onlyDigits(cliente.telefono),
     direccion: String(cliente.direccion || "").trim()
   };
 }
@@ -80,7 +85,7 @@ function normalizeItems(body) {
 function sameCliente(a = {}, b = {}) {
   return (
     String(a.nombre || "").trim() === String(b.nombre || "").trim() &&
-    String(a.telefono || "").trim() === String(b.telefono || "").trim() &&
+    onlyDigits(a.telefono) === onlyDigits(b.telefono) &&
     String(a.direccion || "").trim() === String(b.direccion || "").trim()
   );
 }
@@ -145,6 +150,7 @@ function migrateData(raw) {
       id: p.id || Date.now() + Math.random(),
       pedidoNumero: p.pedidoNumero || nextPedidoNumero(),
       cliente: normalizeCliente(p.cliente),
+      clienteDni: onlyDigits(p.clienteDni || ""),
       items: (p.items || []).map(i => ({
         producto: String(i.producto || "").trim(),
         cantidad: String(i.cantidad || "").trim()
@@ -162,6 +168,7 @@ function migrateData(raw) {
     id: Date.now() + Math.random(),
     pedidoNumero: numero++,
     cliente: normalizeCliente(p.cliente),
+    clienteDni: onlyDigits(p.clienteDni || ""),
     items: [{
       producto: String(p.producto || "").trim(),
       cantidad: String(p.cantidad || "").trim()
@@ -178,6 +185,7 @@ function groupedPedidosForAdmin() {
     id: order.id,
     pedidoNumero: order.pedidoNumero,
     cliente: order.cliente,
+    clienteDni: order.clienteDni || "",
     items: order.items || [],
     fecha: order.fecha,
     estado: order.estado,
@@ -193,11 +201,16 @@ function csvEscape(value) {
   return str;
 }
 
+function buscarClientePorDni(dni) {
+  const clientes = safeReadJSON(CLIENTES_FILE_PATH);
+  return clientes.find(c => onlyDigits(c.dni) === onlyDigits(dni));
+}
+
 /* =========================
    Init
 ========================= */
 
-pedidosDB = migrateData(safeReadJSON());
+pedidosDB = migrateData(safeReadJSON(FILE_PATH));
 saveDB();
 
 /* =========================
@@ -219,6 +232,7 @@ router.get("/export.csv", (req, res) => {
   const headers = [
     "PedidoNumero",
     "Cliente",
+    "DNI",
     "Telefono",
     "Direccion",
     "Fecha",
@@ -237,6 +251,7 @@ router.get("/export.csv", (req, res) => {
       lines.push([
         csvEscape(order.pedidoNumero),
         csvEscape(order.cliente?.nombre || ""),
+        csvEscape(order.clienteDni || ""),
         csvEscape(order.cliente?.telefono || ""),
         csvEscape(order.cliente?.direccion || ""),
         csvEscape(order.fecha || ""),
@@ -258,20 +273,36 @@ router.get("/export.csv", (req, res) => {
 // POST crear pedido / agrupar carrito
 router.post("/", (req, res) => {
   const body = req.body || {};
-  const cliente = normalizeCliente(body.cliente);
   const items = normalizeItems(body);
-
-  if (!cliente.nombre || !cliente.telefono || !cliente.direccion) {
-    return res.status(400).json({ ok: false, error: "Cliente incompleto" });
-  }
 
   if (items.length === 0) {
     return res.status(400).json({ ok: false, error: "Sin productos" });
   }
 
+  const clienteDni = onlyDigits(body.clienteDni || "");
+  let clienteFinal = normalizeCliente(body.cliente || {});
+
+  if (clienteDni) {
+    const clienteRegistrado = buscarClientePorDni(clienteDni);
+
+    if (!clienteRegistrado) {
+      return res.status(400).json({ ok: false, error: "Cliente no registrado" });
+    }
+
+    clienteFinal = {
+      nombre: String(clienteRegistrado.nombre || "").trim(),
+      telefono: onlyDigits(clienteRegistrado.telefono),
+      direccion: String(clienteRegistrado.direccion || "").trim()
+    };
+  }
+
+  if (!clienteFinal.nombre || !clienteFinal.telefono || !clienteFinal.direccion) {
+    return res.status(400).json({ ok: false, error: "Cliente incompleto" });
+  }
+
   const lastOrder = pedidosDB[pedidosDB.length - 1];
 
-  if (canAppendToLastOrder(lastOrder, cliente)) {
+  if (canAppendToLastOrder(lastOrder, clienteFinal)) {
     lastOrder.items.push(...items);
     lastOrder.actualizado = formatFechaArgentina();
     saveDB();
@@ -286,7 +317,8 @@ router.post("/", (req, res) => {
   const nuevoPedido = {
     id: Date.now() + Math.random(),
     pedidoNumero: nextPedidoNumero(),
-    cliente,
+    cliente: clienteFinal,
+    clienteDni,
     items,
     fecha: formatFechaArgentina(),
     createdAt: nowISO(),
@@ -405,4 +437,4 @@ router.put("/:index", (req, res) => {
   res.json({ ok: true });
 });
 
-module.exports = router;
+module.exports = router;module.exports = router;

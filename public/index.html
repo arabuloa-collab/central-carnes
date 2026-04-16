@@ -1,4 +1,5 @@
 
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -441,6 +442,19 @@ button:hover {
   font-size: 14px;
 }
 
+.auth-mini {
+  margin-top: 10px;
+  color: #cbd5e1;
+  font-size: 14px;
+  text-align: center;
+}
+
+.auth-link {
+  color: #93c5fd;
+  cursor: pointer;
+  font-weight: bold;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .container {
@@ -497,7 +511,74 @@ button:hover {
   </div>
 </div>
 
-<div id="formulario" class="container">
+<!-- REGISTRO / LOGIN CLIENTE -->
+<div id="authContainer" class="container">
+  <div class="form-top">
+    <div class="form-badge">ACCESO CLIENTE</div>
+    <h2 id="authTitle">Crear cuenta</h2>
+    <p class="form-desc">Para hacer pedidos primero tenés que registrarte o iniciar sesión con tu DNI.</p>
+  </div>
+
+  <div id="registerBox">
+    <div class="form-grid">
+      <div class="field">
+        <label for="regNombre">Nombre</label>
+        <input id="regNombre" placeholder="Ingresá tu nombre">
+      </div>
+
+      <div class="field">
+        <label for="regDni">DNI</label>
+        <input id="regDni" placeholder="Solo números">
+      </div>
+
+      <div class="field">
+        <label for="regTelefono">Teléfono</label>
+        <input id="regTelefono" placeholder="Ej: 1123456789">
+      </div>
+
+      <div class="field">
+        <label for="regPassword">Contraseña</label>
+        <input id="regPassword" type="password" placeholder="Mínimo 4 caracteres">
+      </div>
+
+      <div class="field full">
+        <label for="regDireccion">Dirección</label>
+        <input id="regDireccion" placeholder="Ingresá tu dirección">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-main" onclick="registrarCliente()">Crear cuenta</button>
+      <button class="btn-sec" onclick="mostrarLogin()">Ya tengo cuenta</button>
+    </div>
+  </div>
+
+  <div id="loginBox" style="display:none;">
+    <div class="form-grid">
+      <div class="field">
+        <label for="logDni">DNI</label>
+        <input id="logDni" placeholder="Ingresá tu DNI">
+      </div>
+
+      <div class="field">
+        <label for="logPassword">Contraseña</label>
+        <input id="logPassword" type="password" placeholder="Ingresá tu contraseña">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-main" onclick="loginCliente()">Ingresar</button>
+      <button class="btn-sec" onclick="mostrarRegistro()">Crear cuenta</button>
+    </div>
+  </div>
+
+  <div class="info-box">
+    Validamos formato de DNI, teléfono y dirección. Para verificar datos “reales” al 100% haría falta integrar servicios externos.
+  </div>
+</div>
+
+<!-- FORMULARIO PEDIDO -->
+<div id="formulario" class="container" style="display:none;">
 
   <div class="form-top">
     <div class="form-badge">PEDIDOS ONLINE</div>
@@ -563,7 +644,8 @@ button:hover {
   </div>
 
   <div class="info-box">
-    Podés cargar promociones, combos, ver tu historial, compartir el negocio y sumar varios productos al carrito sin cambiar la lógica anterior.
+    <div><b>Cliente:</b> <span id="clienteActualNombre">-</span> · DNI <span id="clienteActualDni">-</span></div>
+    <div class="auth-mini"><span class="auth-link" onclick="cerrarSesionCliente()">Cerrar sesión</span></div>
   </div>
 
 </div>
@@ -601,10 +683,203 @@ let historialInterval = null;
 const URL = window.location.origin;
 const TELEFONO = "5491125061324";
 
+/* =========================
+   Cliente sesión
+========================= */
+
+function onlyDigits(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function getClienteSesion() {
+  try {
+    return JSON.parse(localStorage.getItem("clienteSesion")) || null;
+  } catch {
+    return null;
+  }
+}
+
+function setClienteSesion(cliente) {
+  localStorage.setItem("clienteSesion", JSON.stringify(cliente));
+}
+
+function clearClienteSesion() {
+  localStorage.removeItem("clienteSesion");
+}
+
+function mostrarRegistro() {
+  document.getElementById("registerBox").style.display = "block";
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("authTitle").innerText = "Crear cuenta";
+}
+
+function mostrarLogin() {
+  document.getElementById("registerBox").style.display = "none";
+  document.getElementById("loginBox").style.display = "block";
+  document.getElementById("authTitle").innerText = "Iniciar sesión";
+}
+
+function validarDni(dni) {
+  return /^\d{7,8}$/.test(onlyDigits(dni));
+}
+
+function validarTelefono(telefono) {
+  return /^\d{10,13}$/.test(onlyDigits(telefono));
+}
+
+function validarDireccion(direccion) {
+  return String(direccion || "").trim().length >= 6;
+}
+
+function registrarCliente() {
+  const payload = {
+    nombre: document.getElementById("regNombre").value.trim(),
+    dni: onlyDigits(document.getElementById("regDni").value),
+    telefono: onlyDigits(document.getElementById("regTelefono").value),
+    direccion: document.getElementById("regDireccion").value.trim(),
+    password: document.getElementById("regPassword").value.trim()
+  };
+
+  if (payload.nombre.length < 3) {
+    alert("Nombre inválido");
+    return;
+  }
+
+  if (!validarDni(payload.dni)) {
+    alert("DNI inválido");
+    return;
+  }
+
+  if (!validarTelefono(payload.telefono)) {
+    alert("Teléfono inválido");
+    return;
+  }
+
+  if (!validarDireccion(payload.direccion)) {
+    alert("Dirección inválida");
+    return;
+  }
+
+  if (payload.password.length < 4) {
+    alert("Contraseña inválida");
+    return;
+  }
+
+  fetch("/api/clientes/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(async res => {
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "No se pudo registrar");
+    return data;
+  })
+  .then(data => {
+    setClienteSesion(data.cliente);
+    aplicarClienteSesion();
+  })
+  .catch(err => alert(err.message));
+}
+
+function loginCliente() {
+  const payload = {
+    dni: onlyDigits(document.getElementById("logDni").value),
+    password: document.getElementById("logPassword").value.trim()
+  };
+
+  if (!validarDni(payload.dni)) {
+    alert("DNI inválido");
+    return;
+  }
+
+  if (!payload.password) {
+    alert("Ingresá la contraseña");
+    return;
+  }
+
+  fetch("/api/clientes/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(async res => {
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "No se pudo iniciar sesión");
+    return data;
+  })
+  .then(data => {
+    setClienteSesion(data.cliente);
+    aplicarClienteSesion();
+  })
+  .catch(err => alert(err.message));
+}
+
+function cerrarSesionCliente() {
+  clearClienteSesion();
+  carrito = [];
+  comboSeleccionado = null;
+  renderCarrito();
+  document.getElementById("authContainer").style.display = "block";
+  document.getElementById("formulario").style.display = "none";
+  document.getElementById("historial").style.display = "none";
+  document.getElementById("exito").style.display = "none";
+}
+
+function aplicarClienteSesion() {
+  const cliente = getClienteSesion();
+
+  if (!cliente) {
+    document.getElementById("authContainer").style.display = "block";
+    document.getElementById("formulario").style.display = "none";
+    return;
+  }
+
+  document.getElementById("authContainer").style.display = "none";
+  document.getElementById("formulario").style.display = "block";
+
+  nombre.value = cliente.nombre || "";
+  telefono.value = cliente.telefono || "";
+  direccion.value = cliente.direccion || "";
+
+  nombre.readOnly = true;
+  telefono.readOnly = true;
+  direccion.readOnly = true;
+
+  document.getElementById("clienteActualNombre").innerText = cliente.nombre || "-";
+  document.getElementById("clienteActualDni").innerText = cliente.dni || "-";
+}
+
+function validarSesionClienteAlCargar() {
+  const cliente = getClienteSesion();
+  if (!cliente || !cliente.dni) {
+    mostrarRegistro();
+    return;
+  }
+
+  fetch("/api/clientes/" + onlyDigits(cliente.dni))
+    .then(async res => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    })
+    .then(data => {
+      setClienteSesion(data.cliente);
+      aplicarClienteSesion();
+    })
+    .catch(() => {
+      clearClienteSesion();
+      mostrarRegistro();
+      document.getElementById("authContainer").style.display = "block";
+      document.getElementById("formulario").style.display = "none";
+    });
+}
+
+/* =========================
+   Pedido / carrito
+========================= */
+
 window.onload = ()=>{
-  nombre.value = localStorage.getItem("nombre") || "";
-  telefono.value = localStorage.getItem("telefono") || "";
-  direccion.value = localStorage.getItem("direccion") || "";
+  validarSesionClienteAlCargar();
   renderCarrito();
 };
 
@@ -647,6 +922,12 @@ function combo1(){
 }
 
 function agregarAlCarrito(){
+  const cliente = getClienteSesion();
+  if (!cliente) {
+    alert("Primero tenés que iniciar sesión");
+    return;
+  }
+
   if (comboSeleccionado && comboSeleccionado.length > 0) {
     comboSeleccionado.forEach(item=>{
       carrito.push({
@@ -730,22 +1011,24 @@ function renderCarrito(){
 }
 
 function enviar(){
+  const cliente = getClienteSesion();
+  if (!cliente) {
+    alert("Primero tenés que iniciar sesión");
+    return;
+  }
+
   const n = nombre.value.trim();
   const t = telefono.value.trim();
   const d = direccion.value.trim();
 
   if(!n || !t || !d){
-    alert("Completá nombre, teléfono y dirección");
+    alert("Datos de cliente incompletos");
     return;
   }
 
   const ahora = new Date();
   const fecha = ahora.toLocaleDateString();
   const hora = ahora.toLocaleTimeString();
-
-  localStorage.setItem("nombre", n);
-  localStorage.setItem("telefono", t);
-  localStorage.setItem("direccion", d);
 
   let itemsAEnviar = [];
 
@@ -768,7 +1051,7 @@ function enviar(){
     }];
   }
 
-  let mensaje = `🛒 *PEDIDO*%0A👤 ${n}%0A📞 ${t}%0A📍 ${d}%0A`;
+  let mensaje = `🛒 *PEDIDO*%0A👤 ${n}%0A🪪 DNI ${cliente.dni}%0A📞 ${t}%0A📍 ${d}%0A`;
 
   const totalEstimado = itemsAEnviar.reduce((acc, item) => {
     const precio = Number(productosConPrecio[item.producto] || 0);
@@ -780,7 +1063,7 @@ function enviar(){
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
-      cliente:{nombre:n,telefono:t,direccion:d},
+      clienteDni: cliente.dni,
       items: itemsAEnviar
     })
   });
@@ -801,14 +1084,14 @@ function enviar(){
   renderCarrito();
   cantidad.value = "";
 
-  formulario.style.display = "none";
-  exito.style.display = "flex";
+  document.getElementById("formulario").style.display = "none";
+  document.getElementById("exito").style.display = "flex";
 }
 
 function cargarHistorialAgrupado() {
-  const tel = telefono.value || localStorage.getItem("telefono");
-  if(!tel){
-    lista.innerHTML = "<p>Ingresá teléfono</p>";
+  const cliente = getClienteSesion();
+  if(!cliente){
+    lista.innerHTML = "<p>Primero iniciá sesión</p>";
     return;
   }
 
@@ -817,7 +1100,7 @@ function cargarHistorialAgrupado() {
   .then(data=>{
     lista.innerHTML = "";
 
-    const pedidos = data.filter(p=>p.cliente?.telefono == tel);
+    const pedidos = data.filter(p=>String(p.clienteDni || "") === String(cliente.dni || ""));
 
     if(pedidos.length === 0){
       lista.innerHTML = "<p>No tenés pedidos</p>";
@@ -847,6 +1130,7 @@ function cargarHistorialAgrupado() {
         lista.innerHTML += `
         <div class="card">
           <b>👤 ${p.cliente?.nombre || "-"}</b><br>
+          🪪 DNI ${p.clienteDni || "-"}<br>
           📞 ${p.cliente?.telefono || "-"}<br>
           📍 ${p.cliente?.direccion || "-"}<br><br>
 
@@ -866,20 +1150,20 @@ function cargarHistorialAgrupado() {
 }
 
 function verHistorial(){
-  const tel=telefono.value || localStorage.getItem("telefono");
-  if(!tel){
-    alert("Ingresá teléfono");
+  const cliente = getClienteSesion();
+  if(!cliente){
+    alert("Primero tenés que iniciar sesión");
     return;
   }
 
-  formulario.style.display="none";
-  historial.style.display="block";
+  document.getElementById("formulario").style.display="none";
+  document.getElementById("historial").style.display="block";
 
   cargarHistorialAgrupado();
 
   if (historialInterval) clearInterval(historialInterval);
   historialInterval = setInterval(() => {
-    if (historial.style.display === "block") {
+    if (document.getElementById("historial").style.display === "block") {
       cargarHistorialAgrupado();
     }
   }, 10000);
@@ -895,9 +1179,9 @@ function verQR(){
 }
 
 function volver(){
-  historial.style.display="none";
-  exito.style.display="none";
-  formulario.style.display="block";
+  document.getElementById("historial").style.display="none";
+  document.getElementById("exito").style.display="none";
+  aplicarClienteSesion();
 
   if (historialInterval) {
     clearInterval(historialInterval);
