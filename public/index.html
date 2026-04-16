@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -188,7 +188,7 @@ input:focus, select:focus {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
 }
 
-/* CARRITO - integrado sin cambiar estética */
+/* CARRITO */
 #carritoBox {
   background: #020617;
   padding: 14px;
@@ -246,6 +246,15 @@ input:focus, select:focus {
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-top: 12px;
+}
+
+.carrito-total {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 15px;
+  font-weight: bold;
+  color: #e2e8f0;
 }
 
 .btn-add {
@@ -531,6 +540,8 @@ button:hover {
 
         <div id="carritoLista" class="carrito-empty">No hay productos agregados</div>
 
+        <div id="carritoTotal" class="carrito-total">Total estimado: $0</div>
+
         <div class="carrito-actions">
           <button class="btn-add" onclick="agregarAlCarrito()">Agregar al carrito</button>
           <button class="btn-clear" onclick="vaciarCarrito()">Vaciar carrito</button>
@@ -582,6 +593,7 @@ button:hover {
 <script>
 let comboSeleccionado = null;
 let carrito = [];
+let productosConPrecio = {};
 const URL = window.location.origin;
 const TELEFONO = "5491125061324";
 
@@ -598,13 +610,19 @@ function cargarProductos(){
   fetch("/api/productos")
   .then(r=>r.json())
   .then(data=>{
-    producto.innerHTML="";
+    producto.innerHTML = "";
+    productosConPrecio = {};
+
     data.forEach(p=>{
-      let o=document.createElement("option");
-      o.value=p.nombre;
-      o.textContent=p.nombre;
+      let o = document.createElement("option");
+      o.value = p.nombre;
+      o.textContent = p.nombre;
       producto.appendChild(o);
+
+      productosConPrecio[p.nombre] = Number(p.precio || 0);
     });
+
+    renderCarrito();
   });
 }
 
@@ -672,25 +690,44 @@ function vaciarCarrito(){
   renderCarrito();
 }
 
+function calcularTotalCarrito(){
+  return carrito.reduce((acc, item) => {
+    const precio = Number(productosConPrecio[item.producto] || 0);
+    const cantidad = Number(item.cantidad || 0);
+    return acc + (precio * cantidad);
+  }, 0);
+}
+
+function formatMoney(value){
+  return value.toLocaleString("es-AR");
+}
+
 function renderCarrito(){
   if (carrito.length === 0) {
     carritoLista.innerHTML = '<div class="carrito-empty">No hay productos agregados</div>';
+    carritoTotal.innerText = "Total estimado: $0";
     return;
   }
 
   carritoLista.innerHTML = "";
 
   carrito.forEach((item, i)=>{
+    const precio = Number(productosConPrecio[item.producto] || 0);
+    const cantidad = Number(item.cantidad || 0);
+    const subtotal = precio * cantidad;
+
     carritoLista.innerHTML += `
       <div class="carrito-item">
         <div>
           <strong>🥩 ${item.producto}</strong>
-          <span>⚖️ ${item.cantidad} kg</span>
+          <span>⚖️ ${item.cantidad} kg · $${formatMoney(subtotal)}</span>
         </div>
         <button class="btn-remove-item" onclick="quitarDelCarrito(${i})">Quitar</button>
       </div>
     `;
   });
+
+  carritoTotal.innerText = `Total estimado: $${formatMoney(calcularTotalCarrito())}`;
 }
 
 // ENVIAR
@@ -743,13 +780,21 @@ function enviar(){
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
         cliente:{nombre:n,telefono:t,direccion:d},
-        producto:item.producto,
-        cantidad:item.cantidad,
-        fecha: fecha+" "+hora
+        items:[{
+          producto:item.producto,
+          cantidad:item.cantidad
+        }]
       })
     });
   });
 
+  const totalEstimado = itemsAEnviar.reduce((acc, item) => {
+    const precio = Number(productosConPrecio[item.producto] || 0);
+    const cantidad = Number(item.cantidad || 0);
+    return acc + (precio * cantidad);
+  }, 0);
+
+  mensaje += `💲 Total estimado: $${formatMoney(totalEstimado)}%0A`;
   mensaje += `📅 ${fecha}%0A⏰ ${hora}`;
 
   window.open(`https://wa.me/${TELEFONO}?text=${mensaje}`, "_blank");
@@ -795,6 +840,7 @@ function verHistorial(){
         ⚖️ ${p.cantidad}kg<br><br>
 
         📅 ${p.fecha||"-"}<br>
+        #️⃣ Pedido: ${p.pedidoNumero||"-"}<br>
 
         <div class="estado ${clase}">${estado}</div>
       </div>`;

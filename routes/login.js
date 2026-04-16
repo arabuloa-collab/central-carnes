@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-// usuarios con rol
 const usuarios = [
   { user: "admin", pass: "1234", role: "admin" },
   { user: "vendedor", pass: "1234", role: "vendedor" }

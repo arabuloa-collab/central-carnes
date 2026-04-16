@@ -6,17 +6,17 @@ const path = require("path");
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-// PRODUCTOS
+// PRODUCTOS con precio
 app.get("/api/productos", (req, res) => {
   res.json([
-    { nombre: "AGUJA RIOPLATENSE" },
-    { nombre: "ALITAS CAMELIAS" },
-    { nombre: "ALITAS SOYCHU" },
-    { nombre: "ASADO FORTUNA" },
-    { nombre: "BIFE DE CHORIZO" },
-    { nombre: "CUADRIL" },
-    { nombre: "LOMO" },
-    { nombre: "VACIO" }
+    { nombre: "AGUJA RIOPLATENSE", precio: 6500 },
+    { nombre: "ALITAS CAMELIAS", precio: 4200 },
+    { nombre: "ALITAS SOYCHU", precio: 4300 },
+    { nombre: "ASADO FORTUNA", precio: 9800 },
+    { nombre: "BIFE DE CHORIZO", precio: 12500 },
+    { nombre: "CUADRIL", precio: 11800 },
+    { nombre: "LOMO", precio: 14900 },
+    { nombre: "VACIO", precio: 11000 }
   ]);
 });
 
@@ -34,4 +34,4 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log("Servidor funcionando");
-});
+})

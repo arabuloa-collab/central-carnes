@@ -93,7 +93,6 @@ function canAppendToLastOrder(lastOrder, cliente) {
   const lastCreated = new Date(lastOrder.createdAt || 0).getTime();
   const now = Date.now();
 
-  // 2 minutos de ventana para agrupar carrito/combos
   return now - lastCreated <= 2 * 60 * 1000;
 }
 
@@ -139,7 +138,6 @@ function getFlatReferenceByIndex(index) {
 function migrateData(raw) {
   if (!Array.isArray(raw)) return [];
 
-  // si ya está en formato agrupado
   const grouped = raw.every(p => Array.isArray(p.items));
   if (grouped) {
     return raw.map(p => ({
@@ -156,7 +154,6 @@ function migrateData(raw) {
     }));
   }
 
-  // migrar formato viejo (plano)
   let numero = 1001;
 
   return raw.map(p => ({
@@ -260,7 +257,7 @@ router.delete("/:index", (req, res) => {
   res.json({ ok: true });
 });
 
-// PUT cambiar estado (admin y vendedor)
+// PUT cambiar estado
 router.put("/:index", (req, res) => {
   const role = String(req.headers["x-role"] || "").trim();
   if (!["admin", "vendedor"].includes(role)) {
