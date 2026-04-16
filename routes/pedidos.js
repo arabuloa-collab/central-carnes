@@ -110,6 +110,7 @@ function flattenPedidos() {
         cantidad: item.cantidad,
         fecha: order.fecha,
         estado: order.estado,
+        actualizado: order.actualizado || order.fecha,
         __orderId: order.id,
         __itemIndex: itemIndex
       });
@@ -150,7 +151,8 @@ function migrateData(raw) {
       })),
       fecha: p.fecha || formatFechaArgentina(),
       createdAt: p.createdAt || nowISO(),
-      estado: p.estado || "pendiente"
+      estado: p.estado || "pendiente",
+      actualizado: p.actualizado || p.fecha || formatFechaArgentina()
     }));
   }
 
@@ -166,7 +168,8 @@ function migrateData(raw) {
     }],
     fecha: p.fecha || formatFechaArgentina(),
     createdAt: p.createdAt || nowISO(),
-    estado: p.estado || "pendiente"
+    estado: p.estado || "pendiente",
+    actualizado: p.actualizado || p.fecha || formatFechaArgentina()
   }));
 }
 
@@ -177,7 +180,8 @@ function groupedPedidosForAdmin() {
     cliente: order.cliente,
     items: order.items || [],
     fecha: order.fecha,
-    estado: order.estado
+    estado: order.estado,
+    actualizado: order.actualizado || order.fecha
   }));
 }
 
@@ -218,6 +222,7 @@ router.get("/export.csv", (req, res) => {
     "Telefono",
     "Direccion",
     "Fecha",
+    "Actualizado",
     "Estado",
     "Producto",
     "Cantidad"
@@ -235,6 +240,7 @@ router.get("/export.csv", (req, res) => {
         csvEscape(order.cliente?.telefono || ""),
         csvEscape(order.cliente?.direccion || ""),
         csvEscape(order.fecha || ""),
+        csvEscape(order.actualizado || ""),
         csvEscape(order.estado || ""),
         csvEscape(item.producto || ""),
         csvEscape(item.cantidad || "")
@@ -267,6 +273,7 @@ router.post("/", (req, res) => {
 
   if (canAppendToLastOrder(lastOrder, cliente)) {
     lastOrder.items.push(...items);
+    lastOrder.actualizado = formatFechaArgentina();
     saveDB();
 
     return res.json({
@@ -283,7 +290,8 @@ router.post("/", (req, res) => {
     items,
     fecha: formatFechaArgentina(),
     createdAt: nowISO(),
-    estado: "pendiente"
+    estado: "pendiente",
+    actualizado: formatFechaArgentina()
   };
 
   pedidosDB.push(nuevoPedido);
@@ -329,12 +337,15 @@ router.put("/grouped/:pedidoNumero", (req, res) => {
     return res.status(404).json({ ok: false, error: "No existe" });
   }
 
-  const estado = String(req.body.estado || "").trim();
-  if (!estado) {
+  const estado = String(req.body.estado || "").trim().toLowerCase();
+  const estadosValidos = ["pendiente", "en preparación", "entregado", "cancelado"];
+
+  if (!estadosValidos.includes(estado)) {
     return res.status(400).json({ ok: false, error: "Estado inválido" });
   }
 
   pedido.estado = estado;
+  pedido.actualizado = formatFechaArgentina();
   saveDB();
 
   res.json({ ok: true });
@@ -358,6 +369,8 @@ router.delete("/:index", (req, res) => {
 
   if (pedidosDB[ref.orderIndex].items.length === 0) {
     pedidosDB.splice(ref.orderIndex, 1);
+  } else {
+    pedidosDB[ref.orderIndex].actualizado = formatFechaArgentina();
   }
 
   saveDB();
@@ -378,12 +391,15 @@ router.put("/:index", (req, res) => {
     return res.status(404).json({ ok: false, error: "No existe" });
   }
 
-  const estado = String(req.body.estado || "").trim();
-  if (!estado) {
+  const estado = String(req.body.estado || "").trim().toLowerCase();
+  const estadosValidos = ["pendiente", "en preparación", "entregado", "cancelado"];
+
+  if (!estadosValidos.includes(estado)) {
     return res.status(400).json({ ok: false, error: "Estado inválido" });
   }
 
   pedidosDB[ref.orderIndex].estado = estado;
+  pedidosDB[ref.orderIndex].actualizado = formatFechaArgentina();
   saveDB();
 
   res.json({ ok: true });

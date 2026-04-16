@@ -302,7 +302,7 @@ function cargar(esPrimeraCarga = false) {
       .forEach((p) => {
         const estado = p.estado || "pendiente";
 
-        if (estado === "pendiente") pendientes++;
+        if (estado === "pendiente" || estado === "en preparación") pendientes++;
         if (estado === "entregado") entregados++;
 
         const nombre = p.cliente?.nombre || "Sin nombre";
@@ -336,6 +336,7 @@ Cliente: ${p.cliente?.nombre || "-"}
 Teléfono: ${p.cliente?.telefono || "-"}
 Dirección: ${p.cliente?.direccion || "-"}
 Fecha: ${p.fecha || "-"}
+Actualizado: ${p.actualizado || "-"}
 Estado: ${p.estado || "-"}
 ${(p.items || []).map(item => `- ${item.producto || "-"} (${item.cantidad || "-"} kg)`).join("\n")}
 Total estimado: $${formatMoney(totalPedido)}`;
@@ -348,6 +349,7 @@ Total estimado: $${formatMoney(totalPedido)}`;
           📞 ${p.cliente?.telefono || "-"}<br>
           📍 ${p.cliente?.direccion || "-"}<br>
           📅 ${p.fecha || "-"}<br>
+          🕒 Actualizado: ${p.actualizado || "-"}<br>
           #️⃣ Pedido: ${p.pedidoNumero || "-"}<br>
           💲 Total estimado: $${formatMoney(totalPedido)}<br>
           📦 Estado: <span class="${clase}">${estado}</span><br><br>
@@ -356,7 +358,7 @@ Total estimado: $${formatMoney(totalPedido)}`;
             ${itemsHTML}
           </div>
 
-          <button class="btn-wsp" onclick="wsp('${p.cliente?.nombre || "-"}','${p.cliente?.telefono || "-"}','${p.cliente?.direccion || "-"}','${p.fecha || "-"}','${p.pedidoNumero || "-"}', \`${msgItems}\`, '${formatMoney(totalPedido)}')">WhatsApp</button>
+          <button class="btn-wsp" onclick="wsp('${p.cliente?.nombre || "-"}','${p.cliente?.telefono || "-"}','${p.cliente?.direccion || "-"}','${p.fecha || "-"}','${p.pedidoNumero || "-"}', \`${msgItems}\`, '${formatMoney(totalPedido)}', '${p.actualizado || "-"}', '${p.estado || "-"}')">WhatsApp</button>
           <button class="btn-copy" onclick="copiarPedido(\`${textoCopiar}\`)">Copiar pedido</button>
           <button class="btn-state" onclick="cambiar(${p.pedidoNumero})">Cambiar estado</button>
           ${puedeEliminar ? `<button class="btn-del" onclick="delPedido(${p.pedidoNumero})">Eliminar</button>` : ""}
@@ -398,23 +400,33 @@ function delPedido(pedidoNumero) {
 }
 
 function cambiar(pedidoNumero) {
-  fetch("/api/pedidos/grouped")
-  .then(r => r.json())
-  .then(data => {
-    const pedido = data.find(x => Number(x.pedidoNumero) === Number(pedidoNumero));
-    if (!pedido) throw new Error("Pedido no encontrado");
+  const opciones = ["pendiente", "en preparación", "entregado", "cancelado"];
 
-    const actual = pedido.estado || "pendiente";
-    const nuevo = actual === "pendiente" ? "entregado" : "pendiente";
+  let estado = prompt(
+`Estados:
+- pendiente
+- en preparación
+- entregado
+- cancelado
 
-    return fetch("/api/pedidos/grouped/" + pedidoNumero, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...getSesionHeaders()
-      },
-      body: JSON.stringify({ estado: nuevo })
-    });
+Escribí el nuevo estado:`);
+
+  if (!estado) return;
+
+  estado = estado.toLowerCase();
+
+  if (!opciones.includes(estado)) {
+    alert("Estado inválido");
+    return;
+  }
+
+  fetch("/api/pedidos/grouped/" + pedidoNumero, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...getSesionHeaders()
+    },
+    body: JSON.stringify({ estado })
   })
   .then(async res => {
     if (!res.ok) {
@@ -427,7 +439,7 @@ function cambiar(pedidoNumero) {
   .catch(err => alert(err.message));
 }
 
-function wsp(nombre, telefono, direccion, fecha, pedidoNumero, items, total) {
+function wsp(nombre, telefono, direccion, fecha, pedidoNumero, items, total, actualizado, estado) {
   const msg =
     `🛒 *PEDIDO*%0A` +
     `👤 ${nombre}%0A` +
@@ -436,6 +448,8 @@ function wsp(nombre, telefono, direccion, fecha, pedidoNumero, items, total) {
     `${items}%0A` +
     `💲 Total estimado: $${total}%0A` +
     `📅 ${fecha}%0A` +
+    `🕒 Actualizado: ${actualizado}%0A` +
+    `📦 Estado: ${estado}%0A` +
     `#️⃣ Pedido: ${pedidoNumero}`;
 
   window.open(`https://wa.me/${TELEFONO}?text=${msg}`, "_blank");
