@@ -1,64 +1,288 @@
 const express = require("express");
 const router = express.Router();
 const fs = require("fs");
+const path = require("path");
 
-let pedidos = [];
+const FILE_PATH = path.join(__dirname, "..", "pedidos.json");
 
-// cargar archivo
-if (fs.existsSync("pedidos.json")) {
+let pedidosDB = [];
+
+/* =========================
+   Helpers
+========================= */
+
+function nowISO() {
+  return new Date().toISOString();
+}
+
+function formatFechaArgentina(dateInput = new Date()) {
+  const d = new Date(dateInput);
+  return d.toLocaleString("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+function safeReadJSON() {
   try {
-    const data = fs.readFileSync("pedidos.json", "utf-8");
-    pedidos = data ? JSON.parse(data) : [];
+    if (!fs.existsSync(FILE_PATH)) return [];
+    const raw = fs.readFileSync(FILE_PATH, "utf8");
+    if (!raw.trim()) return [];
+    return JSON.parse(raw);
   } catch {
-    pedidos = [];
+    return [];
   }
 }
 
-// GET
+function saveDB() {
+  fs.writeFileSync(FILE_PATH, JSON.stringify(pedidosDB, null, 2));
+}
+
+function nextPedidoNumero() {
+  const max = pedidosDB.reduce((acc, p) => {
+    const n = Number(p.pedidoNumero || 0);
+    return n > acc ? n : acc;
+  }, 1000);
+  return max + 1;
+}
+
+function normalizeCliente(cliente = {}) {
+  return {
+    nombre: String(cliente.nombre || "").trim(),
+    telefono: String(cliente.telefono || "").trim(),
+    direccion: String(cliente.direccion || "").trim()
+  };
+}
+
+function normalizeItems(body) {
+  if (Array.isArray(body.items) && body.items.length > 0) {
+    return body.items
+      .map(i => ({
+        producto: String(i.producto || "").trim(),
+        cantidad: String(i.cantidad || "").trim()
+      }))
+      .filter(i => i.producto && i.cantidad);
+  }
+
+  const producto = String(body.producto || "").trim();
+  const cantidad = String(body.cantidad || "").trim();
+
+  if (!producto || !cantidad) return [];
+
+  return [{ producto, cantidad }];
+}
+
+function sameCliente(a = {}, b = {}) {
+  return (
+    String(a.nombre || "").trim() === String(b.nombre || "").trim() &&
+    String(a.telefono || "").trim() === String(b.telefono || "").trim() &&
+    String(a.direccion || "").trim() === String(b.direccion || "").trim()
+  );
+}
+
+function canAppendToLastOrder(lastOrder, cliente) {
+  if (!lastOrder) return false;
+  if (lastOrder.estado !== "pendiente") return false;
+  if (!sameCliente(lastOrder.cliente, cliente)) return false;
+
+  const lastCreated = new Date(lastOrder.createdAt || 0).getTime();
+  const now = Date.now();
+
+  // 2 minutos de ventana para agrupar carrito/combos
+  return now - lastCreated <= 2 * 60 * 1000;
+}
+
+function flattenPedidos() {
+  const flat = [];
+
+  pedidosDB.forEach(order => {
+    const items = Array.isArray(order.items) ? order.items : [];
+
+    items.forEach((item, itemIndex) => {
+      flat.push({
+        pedidoNumero: order.pedidoNumero,
+        cliente: order.cliente,
+        producto: item.producto,
+        cantidad: item.cantidad,
+        fecha: order.fecha,
+        estado: order.estado,
+        __orderId: order.id,
+        __itemIndex: itemIndex
+      });
+    });
+  });
+
+  return flat;
+}
+
+function getFlatReferenceByIndex(index) {
+  const flatRefs = [];
+
+  pedidosDB.forEach((order, orderIndex) => {
+    const items = Array.isArray(order.items) ? order.items : [];
+    items.forEach((item, itemIndex) => {
+      flatRefs.push({
+        orderIndex,
+        itemIndex
+      });
+    });
+  });
+
+  return flatRefs[index] || null;
+}
+
+function migrateData(raw) {
+  if (!Array.isArray(raw)) return [];
+
+  // si ya está en formato agrupado
+  const grouped = raw.every(p => Array.isArray(p.items));
+  if (grouped) {
+    return raw.map(p => ({
+      id: p.id || Date.now() + Math.random(),
+      pedidoNumero: p.pedidoNumero || nextPedidoNumero(),
+      cliente: normalizeCliente(p.cliente),
+      items: (p.items || []).map(i => ({
+        producto: String(i.producto || "").trim(),
+        cantidad: String(i.cantidad || "").trim()
+      })),
+      fecha: p.fecha || formatFechaArgentina(),
+      createdAt: p.createdAt || nowISO(),
+      estado: p.estado || "pendiente"
+    }));
+  }
+
+  // migrar formato viejo (plano)
+  let numero = 1001;
+
+  return raw.map(p => ({
+    id: Date.now() + Math.random(),
+    pedidoNumero: numero++,
+    cliente: normalizeCliente(p.cliente),
+    items: [{
+      producto: String(p.producto || "").trim(),
+      cantidad: String(p.cantidad || "").trim()
+    }],
+    fecha: p.fecha || formatFechaArgentina(),
+    createdAt: p.createdAt || nowISO(),
+    estado: p.estado || "pendiente"
+  }));
+}
+
+/* =========================
+   Init
+========================= */
+
+pedidosDB = migrateData(safeReadJSON());
+saveDB();
+
+/* =========================
+   Routes
+========================= */
+
+// GET compatibilidad con front actual
 router.get("/", (req, res) => {
-  res.json(pedidos);
+  res.json(flattenPedidos());
 });
 
-// POST
+// POST crear pedido / agrupar carrito
 router.post("/", (req, res) => {
-  const nuevoPedido = req.body;
+  const body = req.body || {};
+  const cliente = normalizeCliente(body.cliente);
+  const items = normalizeItems(body);
 
-  nuevoPedido.fecha = new Date().toLocaleString();
-  nuevoPedido.estado = "pendiente";
+  if (!cliente.nombre || !cliente.telefono || !cliente.direccion) {
+    return res.status(400).json({ ok: false, error: "Cliente incompleto" });
+  }
 
-  pedidos.push(nuevoPedido);
+  if (items.length === 0) {
+    return res.status(400).json({ ok: false, error: "Sin productos" });
+  }
 
-  fs.writeFileSync("pedidos.json", JSON.stringify(pedidos, null, 2));
+  const lastOrder = pedidosDB[pedidosDB.length - 1];
 
+  if (canAppendToLastOrder(lastOrder, cliente)) {
+    lastOrder.items.push(...items);
+    saveDB();
+
+    return res.json({
+      ok: true,
+      agrupado: true,
+      pedidoNumero: lastOrder.pedidoNumero
+    });
+  }
+
+  const nuevoPedido = {
+    id: Date.now() + Math.random(),
+    pedidoNumero: nextPedidoNumero(),
+    cliente,
+    items,
+    fecha: formatFechaArgentina(),
+    createdAt: nowISO(),
+    estado: "pendiente"
+  };
+
+  pedidosDB.push(nuevoPedido);
+  saveDB();
+
+  res.json({
+    ok: true,
+    agrupado: false,
+    pedidoNumero: nuevoPedido.pedidoNumero
+  });
+});
+
+// DELETE solo admin
+router.delete("/:index", (req, res) => {
+  const role = String(req.headers["x-role"] || "").trim();
+  if (role !== "admin") {
+    return res.status(403).json({ ok: false, error: "Sin permisos" });
+  }
+
+  const index = parseInt(req.params.index, 10);
+  const ref = getFlatReferenceByIndex(index);
+
+  if (!ref) {
+    return res.status(404).json({ ok: false, error: "No existe" });
+  }
+
+  pedidosDB[ref.orderIndex].items.splice(ref.itemIndex, 1);
+
+  if (pedidosDB[ref.orderIndex].items.length === 0) {
+    pedidosDB.splice(ref.orderIndex, 1);
+  }
+
+  saveDB();
   res.json({ ok: true });
 });
 
-// DELETE
-router.delete("/:index", (req, res) => {
-  const i = parseInt(req.params.index);
-
-  if (i >= 0 && i < pedidos.length) {
-    pedidos.splice(i, 1);
-    fs.writeFileSync("pedidos.json", JSON.stringify(pedidos, null, 2));
-    res.json({ ok: true });
-  } else {
-    res.status(404).json({ error: "No existe" });
-  }
-});
-
-// PUT (estado)
+// PUT cambiar estado (admin y vendedor)
 router.put("/:index", (req, res) => {
-  const i = parseInt(req.params.index);
-
-  if (i >= 0 && i < pedidos.length) {
-    pedidos[i].estado = req.body.estado;
-
-    fs.writeFileSync("pedidos.json", JSON.stringify(pedidos, null, 2));
-
-    res.json({ ok: true });
-  } else {
-    res.status(404).json({ error: "No existe" });
+  const role = String(req.headers["x-role"] || "").trim();
+  if (!["admin", "vendedor"].includes(role)) {
+    return res.status(403).json({ ok: false, error: "Sin permisos" });
   }
+
+  const index = parseInt(req.params.index, 10);
+  const ref = getFlatReferenceByIndex(index);
+
+  if (!ref) {
+    return res.status(404).json({ ok: false, error: "No existe" });
+  }
+
+  const estado = String(req.body.estado || "").trim();
+  if (!estado) {
+    return res.status(400).json({ ok: false, error: "Estado inválido" });
+  }
+
+  pedidosDB[ref.orderIndex].estado = estado;
+  saveDB();
+
+  res.json({ ok: true });
 });
 
 module.exports = router;

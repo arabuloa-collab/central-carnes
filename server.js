@@ -4,7 +4,6 @@ const path = require("path");
 
 // archivos públicos
 app.use(express.static(path.join(__dirname, "public")));
-
 app.use(express.json());
 
 // PRODUCTOS
