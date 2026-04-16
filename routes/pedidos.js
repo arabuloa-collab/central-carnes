@@ -181,6 +181,14 @@ function groupedPedidosForAdmin() {
   }));
 }
 
+function csvEscape(value) {
+  const str = String(value ?? "");
+  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
 /* =========================
    Init
 ========================= */
@@ -197,9 +205,48 @@ router.get("/", (req, res) => {
   res.json(flattenPedidos());
 });
 
-// GET agrupado para admin
+// GET agrupado para admin / historial cliente
 router.get("/grouped", (req, res) => {
   res.json(groupedPedidosForAdmin());
+});
+
+// EXPORT CSV compatible con Excel
+router.get("/export.csv", (req, res) => {
+  const headers = [
+    "PedidoNumero",
+    "Cliente",
+    "Telefono",
+    "Direccion",
+    "Fecha",
+    "Estado",
+    "Producto",
+    "Cantidad"
+  ];
+
+  const lines = [headers.join(",")];
+
+  pedidosDB.forEach(order => {
+    const items = Array.isArray(order.items) ? order.items : [];
+
+    items.forEach(item => {
+      lines.push([
+        csvEscape(order.pedidoNumero),
+        csvEscape(order.cliente?.nombre || ""),
+        csvEscape(order.cliente?.telefono || ""),
+        csvEscape(order.cliente?.direccion || ""),
+        csvEscape(order.fecha || ""),
+        csvEscape(order.estado || ""),
+        csvEscape(item.producto || ""),
+        csvEscape(item.cantidad || "")
+      ].join(","));
+    });
+  });
+
+  const csv = "\uFEFF" + lines.join("\n");
+
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="pedidos.csv"');
+  res.send(csv);
 });
 
 // POST crear pedido / agrupar carrito

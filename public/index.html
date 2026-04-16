@@ -1,4 +1,4 @@
-
+!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -368,6 +368,13 @@ button:hover {
   color: black;
 }
 
+.items-box {
+  background: rgba(15,23,42,0.6);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
+}
+
 /* EXITO */
 #exito {
   display: none;
@@ -474,7 +481,6 @@ button:hover {
   <b>Central Carnes</b>
 </header>
 
-<!-- PROMOS -->
 <div class="promos">
   <h3 class="promos-title">🔥 Promociones destacadas</h3>
 
@@ -491,7 +497,6 @@ button:hover {
   </div>
 </div>
 
-<!-- FORM -->
 <div id="formulario" class="container">
 
   <div class="form-top">
@@ -563,7 +568,6 @@ button:hover {
 
 </div>
 
-<!-- HISTORIAL -->
 <div id="historial" class="container" style="display:none;">
   <div class="historial-head">
     <div>
@@ -576,7 +580,6 @@ button:hover {
   <button class="btn-sec" onclick="volver()">Volver</button>
 </div>
 
-<!-- EXITO -->
 <div id="exito">
   <div class="card-exito">
     <div class="check">✅</div>
@@ -585,7 +588,6 @@ button:hover {
   </div>
 </div>
 
-<!-- QR -->
 <div id="qrModal" onclick="this.style.display='none'">
   <img id="qrImg" alt="QR del negocio">
 </div>
@@ -594,10 +596,11 @@ button:hover {
 let comboSeleccionado = null;
 let carrito = [];
 let productosConPrecio = {};
+let historialInterval = null;
+
 const URL = window.location.origin;
 const TELEFONO = "5491125061324";
 
-// AUTO COMPLETAR
 window.onload = ()=>{
   nombre.value = localStorage.getItem("nombre") || "";
   telefono.value = localStorage.getItem("telefono") || "";
@@ -605,7 +608,6 @@ window.onload = ()=>{
   renderCarrito();
 };
 
-// CARGAR PRODUCTOS
 function cargarProductos(){
   fetch("/api/productos")
   .then(r=>r.json())
@@ -626,7 +628,6 @@ function cargarProductos(){
   });
 }
 
-// PROMO
 function aplicarPromo(p,c){
   comboSeleccionado = null;
   comboBox.style.display = "none";
@@ -635,7 +636,6 @@ function aplicarPromo(p,c){
   cantidad.value = c;
 }
 
-// COMBO
 function combo1(){
   comboSeleccionado = [
     {producto:"ASADO FORTUNA",cantidad:"2"},
@@ -646,7 +646,6 @@ function combo1(){
   comboBox.innerHTML = "<b>Combo:</b><br>🥩 Asado 2kg<br>🥩 Vacío 1kg";
 }
 
-// CARRITO
 function agregarAlCarrito(){
   if (comboSeleccionado && comboSeleccionado.length > 0) {
     comboSeleccionado.forEach(item=>{
@@ -699,7 +698,7 @@ function calcularTotalCarrito(){
 }
 
 function formatMoney(value){
-  return value.toLocaleString("es-AR");
+  return Number(value || 0).toLocaleString("es-AR");
 }
 
 function renderCarrito(){
@@ -730,7 +729,6 @@ function renderCarrito(){
   carritoTotal.innerText = `Total estimado: $${formatMoney(calcularTotalCarrito())}`;
 }
 
-// ENVIAR
 function enviar(){
   const n = nombre.value.trim();
   const t = telefono.value.trim();
@@ -772,27 +770,24 @@ function enviar(){
 
   let mensaje = `🛒 *PEDIDO*%0A👤 ${n}%0A📞 ${t}%0A📍 ${d}%0A`;
 
-  itemsAEnviar.forEach(item=>{
-    mensaje += `🥩 ${item.producto} - ${item.cantidad}kg%0A`;
-
-    fetch("/api/pedidos",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        cliente:{nombre:n,telefono:t,direccion:d},
-        items:[{
-          producto:item.producto,
-          cantidad:item.cantidad
-        }]
-      })
-    });
-  });
-
   const totalEstimado = itemsAEnviar.reduce((acc, item) => {
     const precio = Number(productosConPrecio[item.producto] || 0);
     const cantidad = Number(item.cantidad || 0);
     return acc + (precio * cantidad);
   }, 0);
+
+  fetch("/api/pedidos",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      cliente:{nombre:n,telefono:t,direccion:d},
+      items: itemsAEnviar
+    })
+  });
+
+  itemsAEnviar.forEach(item=>{
+    mensaje += `🥩 ${item.producto} - ${item.cantidad}kg%0A`;
+  });
 
   mensaje += `💲 Total estimado: $${formatMoney(totalEstimado)}%0A`;
   mensaje += `📅 ${fecha}%0A⏰ ${hora}`;
@@ -810,53 +805,89 @@ function enviar(){
   exito.style.display = "flex";
 }
 
-// HISTORIAL COMPLETO
-function verHistorial(){
-  const tel=telefono.value || localStorage.getItem("telefono");
-  if(!tel){alert("Ingresá teléfono");return;}
+function cargarHistorialAgrupado() {
+  const tel = telefono.value || localStorage.getItem("telefono");
+  if(!tel){
+    lista.innerHTML = "<p>Ingresá teléfono</p>";
+    return;
+  }
 
-  fetch("/api/pedidos")
+  fetch("/api/pedidos/grouped")
   .then(r=>r.json())
   .then(data=>{
-    lista.innerHTML="";
+    lista.innerHTML = "";
 
-    const pedidos=data.filter(p=>p.cliente?.telefono==tel);
+    const pedidos = data.filter(p=>p.cliente?.telefono == tel);
 
-    if(pedidos.length===0){
-      lista.innerHTML="<p>No tenés pedidos</p>";
+    if(pedidos.length === 0){
+      lista.innerHTML = "<p>No tenés pedidos</p>";
+      return;
     }
 
-    pedidos.reverse().forEach(p=>{
-      const estado=p.estado||"pendiente";
-      const clase=estado==="entregado"?"entregado":"pendiente";
+    pedidos
+      .slice()
+      .sort((a, b) => Number(b.pedidoNumero) - Number(a.pedidoNumero))
+      .forEach(p=>{
+        const estado = p.estado || "pendiente";
+        const clase = estado === "entregado" ? "entregado" : "pendiente";
 
-      lista.innerHTML+=`
-      <div class="card">
-        <b>👤 ${p.cliente?.nombre||"-"}</b><br>
-        📞 ${p.cliente?.telefono||"-"}<br>
-        📍 ${p.cliente?.direccion||"-"}<br><br>
+        const totalPedido = (p.items || []).reduce((acc, item) => {
+          const precio = Number(productosConPrecio[item.producto] || 0);
+          const cantidad = Number(item.cantidad || 0);
+          return acc + (precio * cantidad);
+        }, 0);
 
-        🥩 ${p.producto}<br>
-        ⚖️ ${p.cantidad}kg<br><br>
+        const itemsHTML = (p.items || []).map(item => `
+          <div>
+            🥩 ${item.producto}<br>
+            ⚖️ ${item.cantidad}kg
+          </div>
+        `).join("<hr style='border-color: rgba(255,255,255,0.08);'>");
 
-        📅 ${p.fecha||"-"}<br>
-        #️⃣ Pedido: ${p.pedidoNumero||"-"}<br>
+        lista.innerHTML += `
+        <div class="card">
+          <b>👤 ${p.cliente?.nombre || "-"}</b><br>
+          📞 ${p.cliente?.telefono || "-"}<br>
+          📍 ${p.cliente?.direccion || "-"}<br><br>
 
-        <div class="estado ${clase}">${estado}</div>
-      </div>`;
-    });
+          <div class="items-box">
+            ${itemsHTML}
+          </div>
 
-    formulario.style.display="none";
-    historial.style.display="block";
+          💲 Total estimado: $${formatMoney(totalPedido)}<br>
+          📅 ${p.fecha || "-"}<br>
+          #️⃣ Pedido: ${p.pedidoNumero || "-"}<br>
+
+          <div class="estado ${clase}">${estado}</div>
+        </div>`;
+      });
   });
 }
 
-// COMPARTIR
+function verHistorial(){
+  const tel=telefono.value || localStorage.getItem("telefono");
+  if(!tel){
+    alert("Ingresá teléfono");
+    return;
+  }
+
+  formulario.style.display="none";
+  historial.style.display="block";
+
+  cargarHistorialAgrupado();
+
+  if (historialInterval) clearInterval(historialInterval);
+  historialInterval = setInterval(() => {
+    if (historial.style.display === "block") {
+      cargarHistorialAgrupado();
+    }
+  }, 10000);
+}
+
 function compartir(){
   window.open(`https://wa.me/?text=Hacé tu pedido ${URL}`);
 }
 
-// QR
 function verQR(){
   qrImg.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${URL}`;
   qrModal.style.display="flex";
@@ -866,6 +897,11 @@ function volver(){
   historial.style.display="none";
   exito.style.display="none";
   formulario.style.display="block";
+
+  if (historialInterval) {
+    clearInterval(historialInterval);
+    historialInterval = null;
+  }
 }
 
 cargarProductos();

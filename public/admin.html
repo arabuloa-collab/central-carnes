@@ -75,6 +75,8 @@ button {
 .btn-wsp { background: #22c55e; color: black; }
 .btn-del { background: #dc2626; color: white; }
 .btn-state { background: #3b82f6; color: white; }
+.btn-copy { background: #64748b; color: white; }
+.btn-export { background: #0ea5e9; color: white; }
 
 .card button {
   width: 100%;
@@ -131,6 +133,8 @@ button {
 
 </div>
 
+<button class="btn-export" onclick="exportarCSV()">Exportar a Excel</button>
+
 <input id="filtro" placeholder="Buscar cliente o número de pedido...">
 
 <div id="lista"></div>
@@ -178,9 +182,38 @@ function playNuevoPedidoSound() {
 
     oscillator.start();
     oscillator.stop(audioCtx.currentTime + 0.36);
-  } catch (e) {
-    // sin romper nada si el navegador bloquea audio
-  }
+  } catch (e) {}
+}
+
+function getTotalPedido(items) {
+  const precios = {
+    "AGUJA RIOPLATENSE": 6500,
+    "ALITAS CAMELIAS": 4200,
+    "ALITAS SOYCHU": 4300,
+    "ASADO FORTUNA": 9800,
+    "BIFE DE CHORIZO": 12500,
+    "CUADRIL": 11800,
+    "LOMO": 14900,
+    "VACIO": 11000
+  };
+
+  return (items || []).reduce((acc, item) => {
+    const precio = Number(precios[item.producto] || 0);
+    const cantidad = Number(item.cantidad || 0);
+    return acc + (precio * cantidad);
+  }, 0);
+}
+
+function formatMoney(value) {
+  return Number(value || 0).toLocaleString("es-AR");
+}
+
+function getSesionHeaders() {
+  const sesion = getSesion();
+  return {
+    "X-Role": sesion?.role || "",
+    "X-User": sesion?.user || ""
+  };
 }
 
 function login() {
@@ -284,6 +317,7 @@ function cargar(esPrimeraCarga = false) {
 
         const clase = estado === "entregado" ? "entregado" : "pendiente";
         const puedeEliminar = sesion?.role === "admin";
+        const totalPedido = getTotalPedido(p.items);
 
         const itemsHTML = (p.items || []).map(item => `
           <div>
@@ -296,6 +330,16 @@ function cargar(esPrimeraCarga = false) {
           `🥩 ${item.producto || "-"} - ${item.cantidad || "-"} kg`
         ).join("%0A");
 
+        const textoCopiar =
+`Pedido #${p.pedidoNumero || "-"}
+Cliente: ${p.cliente?.nombre || "-"}
+Teléfono: ${p.cliente?.telefono || "-"}
+Dirección: ${p.cliente?.direccion || "-"}
+Fecha: ${p.fecha || "-"}
+Estado: ${p.estado || "-"}
+${(p.items || []).map(item => `- ${item.producto || "-"} (${item.cantidad || "-"} kg)`).join("\n")}
+Total estimado: $${formatMoney(totalPedido)}`;
+
         const div = document.createElement("div");
         div.className = "card";
 
@@ -305,13 +349,15 @@ function cargar(esPrimeraCarga = false) {
           📍 ${p.cliente?.direccion || "-"}<br>
           📅 ${p.fecha || "-"}<br>
           #️⃣ Pedido: ${p.pedidoNumero || "-"}<br>
+          💲 Total estimado: $${formatMoney(totalPedido)}<br>
           📦 Estado: <span class="${clase}">${estado}</span><br><br>
 
           <div class="items-box">
             ${itemsHTML}
           </div>
 
-          <button class="btn-wsp" onclick="wsp('${p.cliente?.nombre || "-"}','${p.cliente?.telefono || "-"}','${p.cliente?.direccion || "-"}','${p.fecha || "-"}','${p.pedidoNumero || "-"}', \`${msgItems}\`)">WhatsApp</button>
+          <button class="btn-wsp" onclick="wsp('${p.cliente?.nombre || "-"}','${p.cliente?.telefono || "-"}','${p.cliente?.direccion || "-"}','${p.fecha || "-"}','${p.pedidoNumero || "-"}', \`${msgItems}\`, '${formatMoney(totalPedido)}')">WhatsApp</button>
+          <button class="btn-copy" onclick="copiarPedido(\`${textoCopiar}\`)">Copiar pedido</button>
           <button class="btn-state" onclick="cambiar(${p.pedidoNumero})">Cambiar estado</button>
           ${puedeEliminar ? `<button class="btn-del" onclick="delPedido(${p.pedidoNumero})">Eliminar</button>` : ""}
         `;
@@ -325,16 +371,20 @@ function cargar(esPrimeraCarga = false) {
   });
 }
 
-function delPedido(pedidoNumero) {
-  const sesion = getSesion();
-  if (!sesion) return;
+function copiarPedido(texto) {
+  navigator.clipboard.writeText(texto)
+    .then(() => alert("Pedido copiado"))
+    .catch(() => alert("No se pudo copiar"));
+}
 
+function exportarCSV() {
+  window.open("/api/pedidos/export.csv", "_blank");
+}
+
+function delPedido(pedidoNumero) {
   fetch("/api/pedidos/grouped/" + pedidoNumero, {
     method: "DELETE",
-    headers: {
-      "X-Role": sesion.role,
-      "X-User": sesion.user
-    }
+    headers: getSesionHeaders()
   })
   .then(async res => {
     if (!res.ok) {
@@ -348,9 +398,6 @@ function delPedido(pedidoNumero) {
 }
 
 function cambiar(pedidoNumero) {
-  const sesion = getSesion();
-  if (!sesion) return;
-
   fetch("/api/pedidos/grouped")
   .then(r => r.json())
   .then(data => {
@@ -360,35 +407,34 @@ function cambiar(pedidoNumero) {
     const actual = pedido.estado || "pendiente";
     const nuevo = actual === "pendiente" ? "entregado" : "pendiente";
 
-    fetch("/api/pedidos/grouped/" + pedidoNumero, {
+    return fetch("/api/pedidos/grouped/" + pedidoNumero, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "X-Role": sesion.role,
-        "X-User": sesion.user
+        ...getSesionHeaders()
       },
       body: JSON.stringify({ estado: nuevo })
-    })
-    .then(async res => {
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "No se pudo cambiar el estado");
-      }
-      return res.json();
-    })
-    .then(() => cargar(true))
-    .catch(err => alert(err.message));
+    });
   })
+  .then(async res => {
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "No se pudo cambiar el estado");
+    }
+    return res.json();
+  })
+  .then(() => cargar(true))
   .catch(err => alert(err.message));
 }
 
-function wsp(nombre, telefono, direccion, fecha, pedidoNumero, items) {
+function wsp(nombre, telefono, direccion, fecha, pedidoNumero, items, total) {
   const msg =
     `🛒 *PEDIDO*%0A` +
     `👤 ${nombre}%0A` +
     `📞 ${telefono}%0A` +
     `📍 ${direccion}%0A` +
     `${items}%0A` +
+    `💲 Total estimado: $${total}%0A` +
     `📅 ${fecha}%0A` +
     `#️⃣ Pedido: ${pedidoNumero}`;
 
