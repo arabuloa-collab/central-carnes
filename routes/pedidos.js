@@ -170,6 +170,17 @@ function migrateData(raw) {
   }));
 }
 
+function groupedPedidosForAdmin() {
+  return pedidosDB.map(order => ({
+    id: order.id,
+    pedidoNumero: order.pedidoNumero,
+    cliente: order.cliente,
+    items: order.items || [],
+    fecha: order.fecha,
+    estado: order.estado
+  }));
+}
+
 /* =========================
    Init
 ========================= */
@@ -181,9 +192,14 @@ saveDB();
    Routes
 ========================= */
 
-// GET compatibilidad con front actual
+// GET compatibilidad con front cliente actual
 router.get("/", (req, res) => {
   res.json(flattenPedidos());
+});
+
+// GET agrupado para admin
+router.get("/grouped", (req, res) => {
+  res.json(groupedPedidosForAdmin());
 });
 
 // POST crear pedido / agrupar carrito
@@ -233,7 +249,51 @@ router.post("/", (req, res) => {
   });
 });
 
-// DELETE solo admin
+// DELETE pedido completo por numero (solo admin)
+router.delete("/grouped/:pedidoNumero", (req, res) => {
+  const role = String(req.headers["x-role"] || "").trim();
+  if (role !== "admin") {
+    return res.status(403).json({ ok: false, error: "Sin permisos" });
+  }
+
+  const pedidoNumero = Number(req.params.pedidoNumero);
+  const index = pedidosDB.findIndex(p => Number(p.pedidoNumero) === pedidoNumero);
+
+  if (index === -1) {
+    return res.status(404).json({ ok: false, error: "No existe" });
+  }
+
+  pedidosDB.splice(index, 1);
+  saveDB();
+  res.json({ ok: true });
+});
+
+// PUT cambiar estado por numero (admin y vendedor)
+router.put("/grouped/:pedidoNumero", (req, res) => {
+  const role = String(req.headers["x-role"] || "").trim();
+  if (!["admin", "vendedor"].includes(role)) {
+    return res.status(403).json({ ok: false, error: "Sin permisos" });
+  }
+
+  const pedidoNumero = Number(req.params.pedidoNumero);
+  const pedido = pedidosDB.find(p => Number(p.pedidoNumero) === pedidoNumero);
+
+  if (!pedido) {
+    return res.status(404).json({ ok: false, error: "No existe" });
+  }
+
+  const estado = String(req.body.estado || "").trim();
+  if (!estado) {
+    return res.status(400).json({ ok: false, error: "Estado inválido" });
+  }
+
+  pedido.estado = estado;
+  saveDB();
+
+  res.json({ ok: true });
+});
+
+// DELETE compatibilidad vieja (solo admin)
 router.delete("/:index", (req, res) => {
   const role = String(req.headers["x-role"] || "").trim();
   if (role !== "admin") {
@@ -257,7 +317,7 @@ router.delete("/:index", (req, res) => {
   res.json({ ok: true });
 });
 
-// PUT cambiar estado
+// PUT compatibilidad vieja
 router.put("/:index", (req, res) => {
   const role = String(req.headers["x-role"] || "").trim();
   if (!["admin", "vendedor"].includes(role)) {

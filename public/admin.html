@@ -80,6 +80,13 @@ button {
   width: 100%;
   margin-top: 5px;
 }
+
+.items-box {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
+}
 </style>
 </head>
 
@@ -140,11 +147,39 @@ const rol = document.getElementById("rol");
 const lista = document.getElementById("lista");
 const filtro = document.getElementById("filtro");
 
+let ultimoPedidoNumeroVisto = Number(localStorage.getItem("ultimoPedidoNumeroVisto") || 0);
+let intervaloPedidos = null;
+
 function getSesion() {
   try {
     return JSON.parse(localStorage.getItem("sesion")) || null;
   } catch {
     return null;
+  }
+}
+
+function playNuevoPedidoSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+    oscillator.frequency.setValueAtTime(660, audioCtx.currentTime + 0.12);
+
+    gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.15, audioCtx.currentTime + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.36);
+  } catch (e) {
+    // sin romper nada si el navegador bloquea audio
   }
 }
 
@@ -178,6 +213,7 @@ function login() {
 
 function logout() {
   localStorage.removeItem("sesion");
+  if (intervaloPedidos) clearInterval(intervaloPedidos);
   location.reload();
 }
 
@@ -189,15 +225,19 @@ function mostrar() {
   panel.style.display = "block";
   usuario.innerText = sesion.user;
   rol.innerText = sesion.role;
-  cargar();
+
+  cargar(true);
+
+  if (intervaloPedidos) clearInterval(intervaloPedidos);
+  intervaloPedidos = setInterval(() => cargar(false), 10000);
 }
 
 if (getSesion()) {
   mostrar();
 }
 
-function cargar() {
-  fetch("/api/pedidos")
+function cargar(esPrimeraCarga = false) {
+  fetch("/api/pedidos/grouped")
   .then(r => r.json())
   .then(data => {
     lista.innerHTML = "";
@@ -209,45 +249,75 @@ function cargar() {
     const f = filtro.value.toLowerCase().trim();
     const sesion = getSesion();
 
-    data.forEach((p, i) => {
-      const estado = p.estado || "pendiente";
+    const maxNumeroActual = data.reduce((acc, p) => {
+      const n = Number(p.pedidoNumero || 0);
+      return n > acc ? n : acc;
+    }, 0);
 
-      if (estado === "pendiente") pendientes++;
-      if (estado === "entregado") entregados++;
+    if (!esPrimeraCarga && maxNumeroActual > ultimoPedidoNumeroVisto) {
+      playNuevoPedidoSound();
+    }
 
-      const nombre = p.cliente?.nombre || "Sin nombre";
-      const numero = String(p.pedidoNumero || "");
+    if (maxNumeroActual > ultimoPedidoNumeroVisto) {
+      ultimoPedidoNumeroVisto = maxNumeroActual;
+      localStorage.setItem("ultimoPedidoNumeroVisto", String(ultimoPedidoNumeroVisto));
+    }
 
-      const coincide =
-        !f ||
-        nombre.toLowerCase().includes(f) ||
-        numero.toLowerCase().includes(f);
+    data
+      .slice()
+      .sort((a, b) => Number(b.pedidoNumero) - Number(a.pedidoNumero))
+      .forEach((p) => {
+        const estado = p.estado || "pendiente";
 
-      if (!coincide) return;
+        if (estado === "pendiente") pendientes++;
+        if (estado === "entregado") entregados++;
 
-      const clase = estado === "entregado" ? "entregado" : "pendiente";
-      const puedeEliminar = sesion?.role === "admin";
+        const nombre = p.cliente?.nombre || "Sin nombre";
+        const numero = String(p.pedidoNumero || "");
 
-      const div = document.createElement("div");
-      div.className = "card";
+        const coincide =
+          !f ||
+          nombre.toLowerCase().includes(f) ||
+          numero.toLowerCase().includes(f);
 
-      div.innerHTML = `
-        <b>${nombre}</b><br>
-        📞 ${p.cliente?.telefono || "-"}<br>
-        📍 ${p.cliente?.direccion || "-"}<br>
-        🥩 ${p.producto || "-"}<br>
-        ⚖️ ${p.cantidad || "-"}<br>
-        📅 ${p.fecha || "-"}<br>
-        #️⃣ Pedido: ${p.pedidoNumero || "-"}<br>
-        📦 Estado: <span class="${clase}">${estado}</span><br><br>
+        if (!coincide) return;
 
-        <button class="btn-wsp" onclick="wsp(${i})">WhatsApp</button>
-        <button class="btn-state" onclick="cambiar(${i})">Cambiar estado</button>
-        ${puedeEliminar ? `<button class="btn-del" onclick="delPedido(${i})">Eliminar</button>` : ""}
-      `;
+        const clase = estado === "entregado" ? "entregado" : "pendiente";
+        const puedeEliminar = sesion?.role === "admin";
 
-      lista.appendChild(div);
-    });
+        const itemsHTML = (p.items || []).map(item => `
+          <div>
+            🥩 ${item.producto || "-"}<br>
+            ⚖️ ${item.cantidad || "-"} kg
+          </div>
+        `).join("<hr style='border-color: rgba(255,255,255,0.08);'>");
+
+        const msgItems = (p.items || []).map(item =>
+          `🥩 ${item.producto || "-"} - ${item.cantidad || "-"} kg`
+        ).join("%0A");
+
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+          <b>${nombre}</b><br>
+          📞 ${p.cliente?.telefono || "-"}<br>
+          📍 ${p.cliente?.direccion || "-"}<br>
+          📅 ${p.fecha || "-"}<br>
+          #️⃣ Pedido: ${p.pedidoNumero || "-"}<br>
+          📦 Estado: <span class="${clase}">${estado}</span><br><br>
+
+          <div class="items-box">
+            ${itemsHTML}
+          </div>
+
+          <button class="btn-wsp" onclick="wsp('${p.cliente?.nombre || "-"}','${p.cliente?.telefono || "-"}','${p.cliente?.direccion || "-"}','${p.fecha || "-"}','${p.pedidoNumero || "-"}', \`${msgItems}\`)">WhatsApp</button>
+          <button class="btn-state" onclick="cambiar(${p.pedidoNumero})">Cambiar estado</button>
+          ${puedeEliminar ? `<button class="btn-del" onclick="delPedido(${p.pedidoNumero})">Eliminar</button>` : ""}
+        `;
+
+        lista.appendChild(div);
+      });
 
     document.getElementById("total").innerText = total;
     document.getElementById("pendientes").innerText = pendientes;
@@ -255,11 +325,11 @@ function cargar() {
   });
 }
 
-function delPedido(i) {
+function delPedido(pedidoNumero) {
   const sesion = getSesion();
   if (!sesion) return;
 
-  fetch("/api/pedidos/" + i, {
+  fetch("/api/pedidos/grouped/" + pedidoNumero, {
     method: "DELETE",
     headers: {
       "X-Role": sesion.role,
@@ -273,21 +343,24 @@ function delPedido(i) {
     }
     return res.json();
   })
-  .then(() => cargar())
+  .then(() => cargar(true))
   .catch(err => alert(err.message));
 }
 
-function cambiar(i) {
+function cambiar(pedidoNumero) {
   const sesion = getSesion();
   if (!sesion) return;
 
-  fetch("/api/pedidos")
+  fetch("/api/pedidos/grouped")
   .then(r => r.json())
   .then(data => {
-    const actual = data[i].estado || "pendiente";
+    const pedido = data.find(x => Number(x.pedidoNumero) === Number(pedidoNumero));
+    if (!pedido) throw new Error("Pedido no encontrado");
+
+    const actual = pedido.estado || "pendiente";
     const nuevo = actual === "pendiente" ? "entregado" : "pendiente";
 
-    fetch("/api/pedidos/" + i, {
+    fetch("/api/pedidos/grouped/" + pedidoNumero, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -303,32 +376,26 @@ function cambiar(i) {
       }
       return res.json();
     })
-    .then(() => cargar())
+    .then(() => cargar(true))
     .catch(err => alert(err.message));
-  });
+  })
+  .catch(err => alert(err.message));
 }
 
-function wsp(i) {
-  fetch("/api/pedidos")
-  .then(r => r.json())
-  .then(data => {
-    const p = data[i];
+function wsp(nombre, telefono, direccion, fecha, pedidoNumero, items) {
+  const msg =
+    `🛒 *PEDIDO*%0A` +
+    `👤 ${nombre}%0A` +
+    `📞 ${telefono}%0A` +
+    `📍 ${direccion}%0A` +
+    `${items}%0A` +
+    `📅 ${fecha}%0A` +
+    `#️⃣ Pedido: ${pedidoNumero}`;
 
-    const msg =
-      `🛒 *PEDIDO*%0A` +
-      `👤 ${p.cliente?.nombre || "-"}%0A` +
-      `📞 ${p.cliente?.telefono || "-"}%0A` +
-      `📍 ${p.cliente?.direccion || "-"}%0A` +
-      `🥩 ${p.producto || "-"}%0A` +
-      `⚖️ ${p.cantidad || "-"} kg%0A` +
-      `📅 ${p.fecha || "-"}%0A` +
-      `#️⃣ Pedido: ${p.pedidoNumero || "-"}`;
-
-    window.open(`https://wa.me/${TELEFONO}?text=${msg}`, "_blank");
-  });
+  window.open(`https://wa.me/${TELEFONO}?text=${msg}`, "_blank");
 }
 
-filtro.addEventListener("input", cargar);
+filtro.addEventListener("input", () => cargar(true));
 </script>
 
 </body>
