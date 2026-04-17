@@ -175,6 +175,31 @@ input:focus, select:focus {
   background: #111827;
 }
 
+/* CARTA */
+.carta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.carta-item {
+  background: rgba(15,23,42,0.8);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.carta-item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.carta-item span {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
 /* combo box */
 #comboBox {
   display: none;
@@ -463,7 +488,8 @@ button:hover {
 
   .form-grid,
   .actions,
-  .carrito-actions {
+  .carrito-actions,
+  .carta-grid {
     grid-template-columns: 1fr;
   }
 
@@ -498,14 +524,14 @@ button:hover {
   <h3 class="promos-title">🔥 Promociones destacadas</h3>
 
   <div class="promos-grid">
-    <div class="promo-card" onclick="aplicarPromo('ASADO FORTUNA','2')">
+    <div class="promo-card" onclick="aplicarPromo('ASADO completo','2')">
       🔥 2kg Asado
       <small>Toque rápido para cargar la promo</small>
     </div>
 
     <div class="promo-card" onclick="combo1()">
       🥩 Combo Parrillero
-      <small>2 Asado + 1 Vacío</small>
+      <small>2 Asado + 1 Vacío Premium</small>
     </div>
   </div>
 </div>
@@ -574,6 +600,17 @@ button:hover {
   <div class="info-box">
     Validamos formato de DNI, teléfono y dirección. Para verificar datos “reales” al 100% haría falta integrar servicios externos.
   </div>
+</div>
+
+<!-- CARTA DE CORTES -->
+<div id="cartaContainer" class="container" style="display:none;">
+  <div class="form-top">
+    <div class="form-badge">LISTA DE PRECIOS</div>
+    <h2>Carta de cortes</h2>
+    <p class="form-desc">Precios por kilo y presentaciones según lista vigente.</p>
+  </div>
+
+  <div id="cartaGrid" class="carta-grid"></div>
 </div>
 
 <!-- FORMULARIO PEDIDO -->
@@ -821,6 +858,7 @@ function cerrarSesionCliente() {
   comboSeleccionado = null;
   renderCarrito();
   document.getElementById("authContainer").style.display = "block";
+  document.getElementById("cartaContainer").style.display = "none";
   document.getElementById("formulario").style.display = "none";
   document.getElementById("historial").style.display = "none";
   document.getElementById("exito").style.display = "none";
@@ -831,11 +869,13 @@ function aplicarClienteSesion() {
 
   if (!cliente) {
     document.getElementById("authContainer").style.display = "block";
+    document.getElementById("cartaContainer").style.display = "none";
     document.getElementById("formulario").style.display = "none";
     return;
   }
 
   document.getElementById("authContainer").style.display = "none";
+  document.getElementById("cartaContainer").style.display = "block";
   document.getElementById("formulario").style.display = "block";
 
   nombre.value = cliente.nombre || "";
@@ -870,6 +910,7 @@ function validarSesionClienteAlCargar() {
       clearClienteSesion();
       mostrarRegistro();
       document.getElementById("authContainer").style.display = "block";
+      document.getElementById("cartaContainer").style.display = "none";
       document.getElementById("formulario").style.display = "none";
     });
 }
@@ -924,6 +965,20 @@ window.onload = ()=>{
   renderCarrito();
 };
 
+function renderCarta(productos) {
+  const cartaGrid = document.getElementById("cartaGrid");
+  cartaGrid.innerHTML = "";
+
+  productos.forEach(p => {
+    cartaGrid.innerHTML += `
+      <div class="carta-item">
+        <strong>${p.nombre}</strong>
+        <span>$${formatMoney(p.precio)}</span>
+      </div>
+    `;
+  });
+}
+
 function cargarProductos(){
   fetch("/api/productos")
   .then(r=>r.json())
@@ -940,6 +995,7 @@ function cargarProductos(){
       productosConPrecio[p.nombre] = Number(p.precio || 0);
     });
 
+    renderCarta(data);
     renderCarrito();
   });
 }
@@ -954,12 +1010,12 @@ function aplicarPromo(p,c){
 
 function combo1(){
   comboSeleccionado = [
-    {producto:"ASADO FORTUNA",cantidad:"2"},
-    {producto:"VACIO",cantidad:"1"}
+    {producto:"ASADO completo",cantidad:"2"},
+    {producto:"VACIO PREMIUM",cantidad:"1"}
   ];
 
   comboBox.style.display = "block";
-  comboBox.innerHTML = "<b>Combo:</b><br>🥩 Asado 2kg<br>🥩 Vacío 1kg";
+  comboBox.innerHTML = "<b>Combo:</b><br>🥩 Asado 2kg<br>🥩 Vacío Premium 1kg";
 }
 
 function agregarAlCarrito(){
@@ -1235,3 +1291,4 @@ cargarProductos();
 
 </body>
 </html>
+

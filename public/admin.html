@@ -144,6 +144,77 @@ button {
 <script>
 const TELEFONO = "5491125061324";
 
+const PRECIOS = {
+  "ASADO completo": 15600,
+  "ASADO plancha": 12500,
+  "ASADO plancha cortado/marcado": 13200,
+  "ASADO centro": 20500,
+  "ASADO puntas": 8800,
+  "BIFE DE CHORIZO B": 15400,
+  "BIFE DE CHORIZO PREMIUM": 22000,
+  "BIFE DE COSTILLA": 15400,
+  "BOLA DE LOMO": 15500,
+  "BOLA DE LOMO FETEADA": 16000,
+  "CARNE CUBETEADA comun": 11000,
+  "CARNE CUBETEADA premium": 18000,
+  "CARNE PICADA": 8200,
+  "CARNE PICADA de Roast Beef": 11500,
+  "COLITA": 19500,
+  "COLITA ECONOMICA": 13500,
+  "CUADRADA": 15500,
+  "CUADRADA FETEADA": 16000,
+  "CUADRIL CT": 15500,
+  "CUADRIL ST": 16000,
+  "ENTRAÑA": 28000,
+  "LOMO CC": 26500,
+  "LOMO SC": 30500,
+  "MATAMBRE ECONOMICO": 10500,
+  "MATAMBRE PREMIUM": 15000,
+  "NALGA con tapa": 16500,
+  "NALGA FETEADA": 18500,
+  "NALGA SIN TAPA": 17700,
+  "OJO DE BIFE B": 19000,
+  "OJO DE BIFE PREMIUM": 31300,
+  "OSOBUCO | Entero o cortado": 8200,
+  "PALETA": 12500,
+  "PALETA ECONOMICA": 11100,
+  "PECETO": 18500,
+  "PECETO ECONOMICO": 14000,
+  "RECORTE ROJO": 8300,
+  "RECORTE 80/20": 7000,
+  "ROAST BEEF": 13800,
+  "ROAST BEEF ECONOMICO": 11500,
+  "TAPA DE ASADO": 11900,
+  "TAPA DE ASADO ECONOMICA": 11000,
+  "TAPA DE BIFE": 9500,
+  "TAPA DE NALGA": 11800,
+  "VACIO ECONOMICO": 11800,
+  "VACIO PREMIUM": 17900,
+  "CHORIZOS PURO CERDO": 6800,
+  "SALCHICHA PARRILLERA": 7700,
+  "MORCILLA": 5900,
+  "SALCHICHA AHUMADA CON PIEL": 10500,
+  "ASADO Ventana": 28000,
+  "BLEND HAMBURGUESAS | Bolsa 5k": 11000,
+  "BLEND HAMBURGUESAS | MEDALLONES": 11700,
+  "HUESO C/ TUETANO": 1800,
+  "OSOBUCO Frances": 10000,
+  "RIBS NOVILLO": 6500,
+  "TAPA ASADO LIMPIA | brisket": 13500,
+  "CIMA PARRILLERA": 12500,
+  "GRASA PELLA": 1900,
+  "VACIO FINO": 26000,
+  "VACIO PULPON": 26000,
+  "BASTONES DE MOZZARELLA  X5K": 10000,
+  "NUGGETS X5K": 8000,
+  "MEDALLON DE CARNE CJA 60UN X 80G": 11000,
+  "HAMBURGUESA CJA 60UN X 80G": 13000,
+  "MEDALLON DE POLLO 60G": 9000,
+  "MILANESA POLLO": 9500,
+  "SALCHICHAS": 6000,
+  "MEDALLON DE CARNE ECONOMICO 60UN X 80G": 8000
+};
+
 const loginDiv = document.getElementById("login");
 const panel = document.getElementById("panel");
 const usuario = document.getElementById("usuario");
@@ -165,7 +236,6 @@ function getSesion() {
 function playNuevoPedidoSound() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
@@ -186,19 +256,8 @@ function playNuevoPedidoSound() {
 }
 
 function getTotalPedido(items) {
-  const precios = {
-    "AGUJA RIOPLATENSE": 6500,
-    "ALITAS CAMELIAS": 4200,
-    "ALITAS SOYCHU": 4300,
-    "ASADO FORTUNA": 9800,
-    "BIFE DE CHORIZO": 12500,
-    "CUADRIL": 11800,
-    "LOMO": 14900,
-    "VACIO": 11000
-  };
-
   return (items || []).reduce((acc, item) => {
-    const precio = Number(precios[item.producto] || 0);
+    const precio = Number(PRECIOS[item.producto] || 0);
     const cantidad = Number(item.cantidad || 0);
     return acc + (precio * cantidad);
   }, 0);
