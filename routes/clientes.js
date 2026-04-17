@@ -160,4 +160,50 @@ router.get("/:dni", (req, res) => {
   });
 });
 
+// ACTUALIZAR DATOS CLIENTE
+router.put("/:dni", (req, res) => {
+  const clientes = safeReadJSON();
+  const dni = onlyDigits(req.params.dni);
+
+  const index = clientes.findIndex(c => c.dni === dni);
+
+  if (index === -1) {
+    return res.status(404).json({ ok: false, error: "Cliente no encontrado" });
+  }
+
+  const actual = clientes[index];
+
+  const telefono = onlyDigits(req.body?.telefono);
+  const direccion = String(req.body?.direccion || "").trim();
+
+  if (!validarTelefono(telefono)) {
+    return res.status(400).json({ ok: false, error: "Teléfono inválido" });
+  }
+
+  if (!validarDireccion(direccion)) {
+    return res.status(400).json({ ok: false, error: "Dirección inválida" });
+  }
+
+  const telefonoUsadoPorOtro = clientes.some((c, i) => i !== index && c.telefono === telefono);
+  if (telefonoUsadoPorOtro) {
+    return res.status(400).json({ ok: false, error: "Ese teléfono ya está registrado" });
+  }
+
+  actual.telefono = telefono;
+  actual.direccion = direccion;
+
+  clientes[index] = actual;
+  saveJSON(clientes);
+
+  res.json({
+    ok: true,
+    cliente: {
+      nombre: actual.nombre,
+      dni: actual.dni,
+      telefono: actual.telefono,
+      direccion: actual.direccion
+    }
+  });
+});
+
 module.exports = router;
