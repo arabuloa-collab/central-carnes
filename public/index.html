@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -171,6 +171,14 @@ input:focus, select:focus {
   background: #111827;
 }
 
+/* CARTA */
+.carta-filtros {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
 .carta-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -183,6 +191,17 @@ input:focus, select:focus {
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: 12px;
   padding: 12px;
+}
+
+.carta-categoria {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+  background: rgba(148,163,184,0.15);
+  color: #cbd5e1;
 }
 
 .carta-item strong {
@@ -232,6 +251,7 @@ input:focus, select:focus {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
 }
 
+/* CARRITO */
 #carritoBox {
   background: #020617;
   padding: 14px;
@@ -263,15 +283,19 @@ input:focus, select:focus {
 }
 
 .carrito-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
   background: rgba(15,23,42,0.8);
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 12px;
   margin-bottom: 8px;
+}
+
+.carrito-item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 10px;
 }
 
 .carrito-item strong {
@@ -282,6 +306,31 @@ input:focus, select:focus {
 .carrito-item span {
   color: #cbd5e1;
   font-size: 14px;
+}
+
+.carrito-edit {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.carrito-cantidad-input {
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  color: white;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.btn-save-item {
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  color: white;
+  width: auto;
+  min-width: 90px;
+  border-radius: 10px;
+  padding: 10px 12px;
 }
 
 .carrito-actions-main {
@@ -320,6 +369,7 @@ input:focus, select:focus {
   font-size: 13px;
 }
 
+/* BUTTONS */
 .actions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -501,11 +551,13 @@ button:hover {
   .form-grid,
   .actions,
   .carrito-actions-main,
-  .carta-grid {
+  .carta-grid,
+  .carta-filtros {
     grid-template-columns: 1fr;
   }
 
-  .carta-actions {
+  .carta-actions,
+  .carrito-edit {
     grid-template-columns: 1fr;
   }
 
@@ -521,9 +573,8 @@ button:hover {
     border-radius: 16px;
   }
 
-  .carrito-item {
+  .carrito-item-top {
     flex-direction: column;
-    align-items: stretch;
   }
 }
 </style>
@@ -621,12 +672,25 @@ button:hover {
   <div class="form-top">
     <div class="form-badge">LISTA DE PRECIOS</div>
     <h2>Carta de cortes</h2>
-    <p class="form-desc">Elegís el corte, ponés los kilos y lo agregás directo al carrito.</p>
+    <p class="form-desc">Buscá, elegí categoría, poné los kilos y agregá directo al carrito.</p>
   </div>
 
-  <div class="field full" style="margin-bottom: 10px;">
-    <label for="buscadorCarta">Buscar corte</label>
-    <input id="buscadorCarta" placeholder="Ej: vacío, nalga, asado..." oninput="aplicarFiltroCarta()">
+  <div class="carta-filtros">
+    <div class="field">
+      <label for="buscadorCarta">Buscar corte</label>
+      <input id="buscadorCarta" placeholder="Ej: vacío, nalga, asado..." oninput="aplicarFiltroCarta()">
+    </div>
+
+    <div class="field">
+      <label for="categoriaCarta">Categoría</label>
+      <select id="categoriaCarta" onchange="aplicarFiltroCarta()">
+        <option value="todos">Todas</option>
+        <option value="vacuna">Vacuna</option>
+        <option value="chacinados">Chacinados</option>
+        <option value="congelados">Congelados</option>
+        <option value="otros">Otros</option>
+      </select>
+    </div>
   </div>
 
   <div id="cartaGrid" class="carta-grid"></div>
@@ -756,6 +820,27 @@ function normalizarCantidadTexto(value) {
 
 function formatMoney(value){
   return Number(value || 0).toLocaleString("es-AR");
+}
+
+function getCategoriaProducto(nombre) {
+  const n = String(nombre || "").toLowerCase();
+
+  const chacinados = [
+    "chorizos", "morcilla", "salchicha", "salchichas"
+  ];
+
+  const congelados = [
+    "nuggets", "bastones de mozzarella", "medallon", "hamburguesa", "milanesa pollo"
+  ];
+
+  const otros = [
+    "hueso", "grasa pella", "blend"
+  ];
+
+  if (chacinados.some(p => n.includes(p))) return "chacinados";
+  if (congelados.some(p => n.includes(p))) return "congelados";
+  if (otros.some(p => n.includes(p))) return "otros";
+  return "vacuna";
 }
 
 function getClienteSesion() {
@@ -1012,8 +1097,11 @@ function renderCarta(productos) {
   }
 
   productos.forEach((p, index) => {
+    const categoria = getCategoriaProducto(p.nombre);
+
     cartaGrid.innerHTML += `
       <div class="carta-item">
+        <div class="carta-categoria">${categoria.toUpperCase()}</div>
         <strong>${p.nombre}</strong>
         <span>$${formatMoney(p.precio)}</span>
         <div class="carta-actions">
@@ -1027,16 +1115,14 @@ function renderCarta(productos) {
 
 function aplicarFiltroCarta() {
   const texto = (document.getElementById("buscadorCarta").value || "").toLowerCase().trim();
+  const categoria = document.getElementById("categoriaCarta").value;
 
-  if (!texto) {
-    productosCartaFiltrados = [...productosCarta];
-    renderCarta(productosCartaFiltrados);
-    return;
-  }
-
-  productosCartaFiltrados = productosCarta.filter(p =>
-    String(p.nombre || "").toLowerCase().includes(texto)
-  );
+  productosCartaFiltrados = productosCarta.filter(p => {
+    const coincideTexto = !texto || String(p.nombre || "").toLowerCase().includes(texto);
+    const categoriaProducto = getCategoriaProducto(p.nombre);
+    const coincideCategoria = categoria === "todos" || categoriaProducto === categoria;
+    return coincideTexto && coincideCategoria;
+  });
 
   renderCarta(productosCartaFiltrados);
 }
@@ -1153,6 +1239,22 @@ function agregarAlCarrito(){
   renderCarrito();
 }
 
+function actualizarCantidadCarrito(index) {
+  const input = document.getElementById(`carritoCantidad_${index}`);
+  if (!input) return;
+
+  const cantidadTexto = normalizarCantidadTexto(input.value);
+  const cantidadNumero = parseCantidad(cantidadTexto);
+
+  if (!cantidadTexto || cantidadNumero <= 0) {
+    alert("Ingresá una cantidad válida");
+    return;
+  }
+
+  carrito[index].cantidad = cantidadTexto;
+  renderCarrito();
+}
+
 function quitarDelCarrito(index){
   carrito.splice(index, 1);
   renderCarrito();
@@ -1187,11 +1289,19 @@ function renderCarrito(){
 
     carritoLista.innerHTML += `
       <div class="carrito-item">
-        <div>
-          <strong>🥩 ${item.producto}</strong>
-          <span>⚖️ ${item.cantidad} kg · $${formatMoney(subtotal)}</span>
+        <div class="carrito-item-top">
+          <div>
+            <strong>🥩 ${item.producto}</strong>
+            <span>Subtotal: $${formatMoney(subtotal)}</span>
+          </div>
+          <button class="btn-remove-item" onclick="quitarDelCarrito(${i})">Quitar</button>
         </div>
-        <button class="btn-remove-item" onclick="quitarDelCarrito(${i})">Quitar</button>
+
+        <div class="carrito-edit">
+          <input id="carritoCantidad_${i}" class="carrito-cantidad-input" type="text" value="${item.cantidad}" placeholder="Kg ej: 1.5">
+          <button class="btn-save-item" onclick="actualizarCantidadCarrito(${i})">Guardar</button>
+          <span>⚖️ ${item.cantidad} kg</span>
+        </div>
       </div>
     `;
   });
@@ -1380,6 +1490,29 @@ function volver(){
     clearInterval(historialInterval);
     historialInterval = null;
   }
+}
+
+function cargarProductos(){
+  fetch("/api/productos")
+  .then(r=>r.json())
+  .then(data=>{
+    producto.innerHTML = "";
+    productosConPrecio = {};
+
+    data.forEach(p=>{
+      let o = document.createElement("option");
+      o.value = p.nombre;
+      o.textContent = p.nombre;
+      producto.appendChild(o);
+
+      productosConPrecio[p.nombre] = Number(p.precio || 0);
+    });
+
+    productosCarta = [...data];
+    productosCartaFiltrados = [...data];
+    renderCarta(productosCartaFiltrados);
+    renderCarrito();
+  });
 }
 
 cargarProductos();
