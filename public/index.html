@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -198,6 +198,14 @@ input:focus, select:focus {
 .carta-item span {
   color: #cbd5e1;
   font-size: 14px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.carta-btn {
+  background: linear-gradient(135deg, #475569, #64748b);
+  color: white;
+  width: 100%;
 }
 
 /* combo box */
@@ -607,7 +615,7 @@ button:hover {
   <div class="form-top">
     <div class="form-badge">LISTA DE PRECIOS</div>
     <h2>Carta de cortes</h2>
-    <p class="form-desc">Precios por kilo y presentaciones según lista vigente.</p>
+    <p class="form-desc">Podés tocar un corte para cargarlo directo en el formulario.</p>
   </div>
 
   <div id="cartaGrid" class="carta-grid"></div>
@@ -645,7 +653,7 @@ button:hover {
 
     <div class="field">
       <label for="cantidad">Cantidad (kg)</label>
-      <input id="cantidad" placeholder="Ej: 2">
+      <input id="cantidad" placeholder="Ej: 2 o 12.5">
     </div>
 
     <div class="field full">
@@ -721,12 +729,30 @@ const URL = window.location.origin;
 const TELEFONO = "5491125061324";
 
 /* =========================
-   Cliente sesión
+   Helpers
 ========================= */
 
 function onlyDigits(value) {
   return String(value || "").replace(/\D/g, "");
 }
+
+function parseCantidad(value) {
+  const normalizado = String(value || "").trim().replace(",", ".");
+  const n = parseFloat(normalizado);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function normalizarCantidadTexto(value) {
+  return String(value || "").trim().replace(",", ".");
+}
+
+function formatMoney(value){
+  return Number(value || 0).toLocaleString("es-AR");
+}
+
+/* =========================
+   Cliente sesión
+========================= */
 
 function getClienteSesion() {
   try {
@@ -738,6 +764,9 @@ function getClienteSesion() {
 
 function setClienteSesion(cliente) {
   localStorage.setItem("clienteSesion", JSON.stringify(cliente));
+  if (cliente?.dni) {
+    localStorage.setItem("clienteUltimoDni", cliente.dni);
+  }
 }
 
 function clearClienteSesion() {
@@ -754,6 +783,11 @@ function mostrarLogin() {
   document.getElementById("registerBox").style.display = "none";
   document.getElementById("loginBox").style.display = "block";
   document.getElementById("authTitle").innerText = "Iniciar sesión";
+
+  const ultimoDni = localStorage.getItem("clienteUltimoDni") || "";
+  if (ultimoDni) {
+    document.getElementById("logDni").value = ultimoDni;
+  }
 }
 
 function validarDni(dni) {
@@ -862,6 +896,7 @@ function cerrarSesionCliente() {
   document.getElementById("formulario").style.display = "none";
   document.getElementById("historial").style.display = "none";
   document.getElementById("exito").style.display = "none";
+  mostrarLogin();
 }
 
 function aplicarClienteSesion() {
@@ -892,10 +927,16 @@ function aplicarClienteSesion() {
 
 function validarSesionClienteAlCargar() {
   const cliente = getClienteSesion();
+
   if (!cliente || !cliente.dni) {
-    mostrarRegistro();
+    document.getElementById("authContainer").style.display = "block";
+    document.getElementById("cartaContainer").style.display = "none";
+    document.getElementById("formulario").style.display = "none";
+    mostrarLogin();
     return;
   }
+
+  aplicarClienteSesion();
 
   fetch("/api/clientes/" + onlyDigits(cliente.dni))
     .then(async res => {
@@ -907,11 +948,7 @@ function validarSesionClienteAlCargar() {
       aplicarClienteSesion();
     })
     .catch(() => {
-      clearClienteSesion();
-      mostrarRegistro();
-      document.getElementById("authContainer").style.display = "block";
-      document.getElementById("cartaContainer").style.display = "none";
-      document.getElementById("formulario").style.display = "none";
+      aplicarClienteSesion();
     });
 }
 
@@ -969,14 +1006,27 @@ function renderCarta(productos) {
   const cartaGrid = document.getElementById("cartaGrid");
   cartaGrid.innerHTML = "";
 
-  productos.forEach(p => {
+  productos.forEach((p, index) => {
     cartaGrid.innerHTML += `
       <div class="carta-item">
         <strong>${p.nombre}</strong>
         <span>$${formatMoney(p.precio)}</span>
+        <button class="carta-btn" type="button" onclick="seleccionarProductoCarta(${index})">Cargar</button>
       </div>
     `;
   });
+
+  window.productosCarta = productos;
+}
+
+function seleccionarProductoCarta(index) {
+  const productoElegido = (window.productosCarta || [])[index];
+  if (!productoElegido) return;
+
+  producto.value = productoElegido.nombre;
+  cantidad.value = "1";
+  cantidad.focus();
+  document.getElementById("formulario").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function cargarProductos(){
@@ -1006,6 +1056,7 @@ function aplicarPromo(p,c){
   comboBox.innerHTML = "";
   producto.value = p;
   cantidad.value = c;
+  document.getElementById("formulario").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function combo1(){
@@ -1016,6 +1067,7 @@ function combo1(){
 
   comboBox.style.display = "block";
   comboBox.innerHTML = "<b>Combo:</b><br>🥩 Asado 2kg<br>🥩 Vacío Premium 1kg";
+  document.getElementById("formulario").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function agregarAlCarrito(){
@@ -1029,7 +1081,7 @@ function agregarAlCarrito(){
     comboSeleccionado.forEach(item=>{
       carrito.push({
         producto: item.producto,
-        cantidad: item.cantidad
+        cantidad: normalizarCantidadTexto(item.cantidad)
       });
     });
 
@@ -1041,16 +1093,17 @@ function agregarAlCarrito(){
   }
 
   const prod = producto.value;
-  const cant = cantidad.value.trim();
+  const cantTexto = normalizarCantidadTexto(cantidad.value);
+  const cantNumero = parseCantidad(cantTexto);
 
-  if (!prod || !cant) {
-    alert("Seleccioná producto y cantidad");
+  if (!prod || !cantTexto || cantNumero <= 0) {
+    alert("Seleccioná producto y una cantidad válida");
     return;
   }
 
   carrito.push({
     producto: prod,
-    cantidad: cant
+    cantidad: cantTexto
   });
 
   cantidad.value = "";
@@ -1070,13 +1123,9 @@ function vaciarCarrito(){
 function calcularTotalCarrito(){
   return carrito.reduce((acc, item) => {
     const precio = Number(productosConPrecio[item.producto] || 0);
-    const cantidad = Number(item.cantidad || 0);
+    const cantidad = parseCantidad(item.cantidad);
     return acc + (precio * cantidad);
   }, 0);
-}
-
-function formatMoney(value){
-  return Number(value || 0).toLocaleString("es-AR");
 }
 
 function renderCarrito(){
@@ -1090,7 +1139,7 @@ function renderCarrito(){
 
   carrito.forEach((item, i)=>{
     const precio = Number(productosConPrecio[item.producto] || 0);
-    const cantidad = Number(item.cantidad || 0);
+    const cantidad = parseCantidad(item.cantidad);
     const subtotal = precio * cantidad;
 
     carritoLista.innerHTML += `
@@ -1132,19 +1181,23 @@ function enviar(){
   if (carrito.length > 0) {
     itemsAEnviar = [...carrito];
   } else if (comboSeleccionado && comboSeleccionado.length > 0) {
-    itemsAEnviar = [...comboSeleccionado];
+    itemsAEnviar = comboSeleccionado.map(i => ({
+      producto: i.producto,
+      cantidad: normalizarCantidadTexto(i.cantidad)
+    }));
   } else {
     const prod = producto.value;
-    const cant = cantidad.value.trim();
+    const cantTexto = normalizarCantidadTexto(cantidad.value);
+    const cantNumero = parseCantidad(cantTexto);
 
-    if (!prod || !cant) {
-      alert("Seleccioná producto y cantidad, o agregalos al carrito");
+    if (!prod || !cantTexto || cantNumero <= 0) {
+      alert("Seleccioná producto y una cantidad válida, o agregalos al carrito");
       return;
     }
 
     itemsAEnviar = [{
       producto: prod,
-      cantidad: cant
+      cantidad: cantTexto
     }];
   }
 
@@ -1152,7 +1205,7 @@ function enviar(){
 
   const totalEstimado = itemsAEnviar.reduce((acc, item) => {
     const precio = Number(productosConPrecio[item.producto] || 0);
-    const cantidad = Number(item.cantidad || 0);
+    const cantidad = parseCantidad(item.cantidad);
     return acc + (precio * cantidad);
   }, 0);
 
@@ -1213,7 +1266,7 @@ function cargarHistorialAgrupado() {
 
         const totalPedido = (p.items || []).reduce((acc, item) => {
           const precio = Number(productosConPrecio[item.producto] || 0);
-          const cantidad = Number(item.cantidad || 0);
+          const cantidad = parseCantidad(item.cantidad);
           return acc + (precio * cantidad);
         }, 0);
 
@@ -1291,4 +1344,3 @@ cargarProductos();
 
 </body>
 </html>
-
