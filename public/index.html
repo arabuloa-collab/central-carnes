@@ -1,4 +1,4 @@
-
+<<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -20,7 +20,6 @@ body {
   min-height: 100vh;
 }
 
-/* HEADER */
 header {
   background: linear-gradient(90deg, #b91c1c, #ef4444);
   padding: 18px 15px;
@@ -41,7 +40,6 @@ header b {
   letter-spacing: 0.5px;
 }
 
-/* PROMOS */
 .promos {
   width: 100%;
   max-width: 980px;
@@ -88,7 +86,6 @@ header b {
   opacity: 0.95;
 }
 
-/* CONTAINER */
 .container {
   width: calc(100% - 28px);
   max-width: 980px;
@@ -101,7 +98,6 @@ header b {
   border: 1px solid rgba(255,255,255,0.06);
 }
 
-/* FORM CARD */
 .form-top {
   margin-bottom: 22px;
 }
@@ -175,7 +171,6 @@ input:focus, select:focus {
   background: #111827;
 }
 
-/* CARTA */
 .carta-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -202,13 +197,29 @@ input:focus, select:focus {
   margin-bottom: 8px;
 }
 
-.carta-btn {
-  background: linear-gradient(135deg, #475569, #64748b);
+.carta-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.carta-cantidad {
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
   color: white;
+  padding: 10px 12px;
   width: 100%;
 }
 
-/* combo box */
+.carta-btn {
+  background: linear-gradient(135deg, #475569, #64748b);
+  color: white;
+  width: auto;
+  min-width: 120px;
+}
+
 #comboBox {
   display: none;
   background: #020617;
@@ -221,7 +232,6 @@ input:focus, select:focus {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
 }
 
-/* CARRITO */
 #carritoBox {
   background: #020617;
   padding: 14px;
@@ -274,7 +284,7 @@ input:focus, select:focus {
   font-size: 14px;
 }
 
-.carrito-actions {
+.carrito-actions-main {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
@@ -310,7 +320,6 @@ input:focus, select:focus {
   font-size: 13px;
 }
 
-/* BUTTONS */
 .actions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -356,7 +365,6 @@ button:hover {
   color: white;
 }
 
-/* HISTORIAL */
 .historial-head {
   display: flex;
   align-items: center;
@@ -408,7 +416,6 @@ button:hover {
   margin: 10px 0;
 }
 
-/* EXITO */
 #exito {
   display: none;
   position: fixed;
@@ -441,7 +448,6 @@ button:hover {
   margin-bottom: 16px;
 }
 
-/* QR */
 #qrModal {
   display: none;
   position: fixed;
@@ -463,7 +469,6 @@ button:hover {
   box-shadow: 0 18px 35px rgba(0,0,0,0.45);
 }
 
-/* HELP BOX */
 .info-box {
   margin-top: 18px;
   background: rgba(15,23,42,0.72);
@@ -487,7 +492,6 @@ button:hover {
   font-weight: bold;
 }
 
-/* RESPONSIVE */
 @media (max-width: 768px) {
   .container {
     padding: 18px;
@@ -496,8 +500,12 @@ button:hover {
 
   .form-grid,
   .actions,
-  .carrito-actions,
+  .carrito-actions-main,
   .carta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .carta-actions {
     grid-template-columns: 1fr;
   }
 
@@ -544,7 +552,6 @@ button:hover {
   </div>
 </div>
 
-<!-- REGISTRO / LOGIN CLIENTE -->
 <div id="authContainer" class="container">
   <div class="form-top">
     <div class="form-badge">ACCESO CLIENTE</div>
@@ -610,18 +617,21 @@ button:hover {
   </div>
 </div>
 
-<!-- CARTA DE CORTES -->
 <div id="cartaContainer" class="container" style="display:none;">
   <div class="form-top">
     <div class="form-badge">LISTA DE PRECIOS</div>
     <h2>Carta de cortes</h2>
-    <p class="form-desc">Podés tocar un corte para cargarlo directo en el formulario.</p>
+    <p class="form-desc">Elegís el corte, ponés los kilos y lo agregás directo al carrito.</p>
+  </div>
+
+  <div class="field full" style="margin-bottom: 10px;">
+    <label for="buscadorCarta">Buscar corte</label>
+    <input id="buscadorCarta" placeholder="Ej: vacío, nalga, asado..." oninput="aplicarFiltroCarta()">
   </div>
 
   <div id="cartaGrid" class="carta-grid"></div>
 </div>
 
-<!-- FORMULARIO PEDIDO -->
 <div id="formulario" class="container" style="display:none;">
 
   <div class="form-top">
@@ -672,7 +682,7 @@ button:hover {
 
         <div id="carritoTotal" class="carrito-total">Total estimado: $0</div>
 
-        <div class="carrito-actions">
+        <div class="carrito-actions-main">
           <button class="btn-add" onclick="agregarAlCarrito()">Agregar al carrito</button>
           <button class="btn-clear" onclick="vaciarCarrito()">Vaciar carrito</button>
         </div>
@@ -724,13 +734,11 @@ let comboSeleccionado = null;
 let carrito = [];
 let productosConPrecio = {};
 let historialInterval = null;
+let productosCarta = [];
+let productosCartaFiltrados = [];
 
 const URL = window.location.origin;
 const TELEFONO = "5491125061324";
-
-/* =========================
-   Helpers
-========================= */
 
 function onlyDigits(value) {
   return String(value || "").replace(/\D/g, "");
@@ -749,10 +757,6 @@ function normalizarCantidadTexto(value) {
 function formatMoney(value){
   return Number(value || 0).toLocaleString("es-AR");
 }
-
-/* =========================
-   Cliente sesión
-========================= */
 
 function getClienteSesion() {
   try {
@@ -993,10 +997,6 @@ function guardarMisDatos() {
   .catch(err => alert(err.message));
 }
 
-/* =========================
-   Pedido / carrito
-========================= */
-
 window.onload = ()=>{
   validarSesionClienteAlCargar();
   renderCarrito();
@@ -1006,26 +1006,67 @@ function renderCarta(productos) {
   const cartaGrid = document.getElementById("cartaGrid");
   cartaGrid.innerHTML = "";
 
+  if (!productos.length) {
+    cartaGrid.innerHTML = `<div class="carta-item"><strong>No se encontraron cortes</strong></div>`;
+    return;
+  }
+
   productos.forEach((p, index) => {
     cartaGrid.innerHTML += `
       <div class="carta-item">
         <strong>${p.nombre}</strong>
         <span>$${formatMoney(p.precio)}</span>
-        <button class="carta-btn" type="button" onclick="seleccionarProductoCarta(${index})">Cargar</button>
+        <div class="carta-actions">
+          <input id="cartaCantidad_${index}" class="carta-cantidad" type="text" placeholder="Kg ej: 1.5">
+          <button class="carta-btn" type="button" onclick="agregarDesdeCarta(${index})">Agregar</button>
+        </div>
       </div>
     `;
   });
-
-  window.productosCarta = productos;
 }
 
-function seleccionarProductoCarta(index) {
-  const productoElegido = (window.productosCarta || [])[index];
+function aplicarFiltroCarta() {
+  const texto = (document.getElementById("buscadorCarta").value || "").toLowerCase().trim();
+
+  if (!texto) {
+    productosCartaFiltrados = [...productosCarta];
+    renderCarta(productosCartaFiltrados);
+    return;
+  }
+
+  productosCartaFiltrados = productosCarta.filter(p =>
+    String(p.nombre || "").toLowerCase().includes(texto)
+  );
+
+  renderCarta(productosCartaFiltrados);
+}
+
+function agregarDesdeCarta(index) {
+  const cliente = getClienteSesion();
+  if (!cliente) {
+    alert("Primero tenés que iniciar sesión");
+    return;
+  }
+
+  const productoElegido = productosCartaFiltrados[index];
   if (!productoElegido) return;
 
-  producto.value = productoElegido.nombre;
-  cantidad.value = "1";
-  cantidad.focus();
+  const input = document.getElementById(`cartaCantidad_${index}`);
+  const cantidadTexto = normalizarCantidadTexto(input.value);
+  const cantidadNumero = parseCantidad(cantidadTexto);
+
+  if (!cantidadTexto || cantidadNumero <= 0) {
+    alert("Ingresá una cantidad válida");
+    return;
+  }
+
+  carrito.push({
+    producto: productoElegido.nombre,
+    cantidad: cantidadTexto
+  });
+
+  input.value = "";
+  renderCarrito();
   document.getElementById("formulario").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -1045,7 +1086,9 @@ function cargarProductos(){
       productosConPrecio[p.nombre] = Number(p.precio || 0);
     });
 
-    renderCarta(data);
+    productosCarta = [...data];
+    productosCartaFiltrados = [...data];
+    renderCarta(productosCartaFiltrados);
     renderCarrito();
   });
 }
