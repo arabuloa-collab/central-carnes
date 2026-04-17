@@ -639,6 +639,11 @@ button:hover {
     <p class="form-desc">Elegís el corte, ponés los kilos y lo agregás directo al carrito.</p>
   </div>
 
+  <div class="field full" style="margin-bottom: 10px;">
+    <label for="buscadorCarta">Buscar corte</label>
+    <input id="buscadorCarta" placeholder="Ej: vacío, nalga, asado...">
+  </div>
+
   <div id="cartaGrid" class="carta-grid"></div>
 </div>
 
@@ -746,6 +751,7 @@ let carrito = [];
 let productosConPrecio = {};
 let historialInterval = null;
 let productosCarta = [];
+let productosCartaFiltrados = [];
 
 const URL = window.location.origin;
 const TELEFONO = "5491125061324";
@@ -1025,9 +1031,13 @@ window.onload = ()=>{
 };
 
 function renderCarta(productos) {
-  productosCarta = productos;
   const cartaGrid = document.getElementById("cartaGrid");
   cartaGrid.innerHTML = "";
+
+  if (!productos.length) {
+    cartaGrid.innerHTML = `<div class="carta-item"><strong>No se encontraron cortes</strong></div>`;
+    return;
+  }
 
   productos.forEach((p, index) => {
     cartaGrid.innerHTML += `
@@ -1043,6 +1053,22 @@ function renderCarta(productos) {
   });
 }
 
+function aplicarFiltroCarta() {
+  const texto = (document.getElementById("buscadorCarta").value || "").toLowerCase().trim();
+
+  if (!texto) {
+    productosCartaFiltrados = [...productosCarta];
+    renderCarta(productosCartaFiltrados);
+    return;
+  }
+
+  productosCartaFiltrados = productosCarta.filter(p =>
+    String(p.nombre || "").toLowerCase().includes(texto)
+  );
+
+  renderCarta(productosCartaFiltrados);
+}
+
 function agregarDesdeCarta(index) {
   const cliente = getClienteSesion();
   if (!cliente) {
@@ -1050,7 +1076,7 @@ function agregarDesdeCarta(index) {
     return;
   }
 
-  const productoElegido = productosCarta[index];
+  const productoElegido = productosCartaFiltrados[index];
   if (!productoElegido) return;
 
   const input = document.getElementById(`cartaCantidad_${index}`);
@@ -1088,7 +1114,9 @@ function cargarProductos(){
       productosConPrecio[p.nombre] = Number(p.precio || 0);
     });
 
-    renderCarta(data);
+    productosCarta = [...data];
+    productosCartaFiltrados = [...data];
+    renderCarta(productosCartaFiltrados);
     renderCarrito();
   });
 }
@@ -1383,6 +1411,11 @@ function volver(){
 }
 
 cargarProductos();
+document.addEventListener("input", (e) => {
+  if (e.target && e.target.id === "buscadorCarta") {
+    aplicarFiltroCarta();
+  }
+});
 </script>
 
 </body>
