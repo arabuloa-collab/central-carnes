@@ -1,32 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const fs = require("fs");
-const path = require("path");
+const { pool } = require("../db");
 
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "..");
-const FILE_PATH = path.join(DATA_DIR, "pedidos.json");
-const CLIENTES_FILE_PATH = path.join(DATA_DIR, "clientes.json");
-
-let pedidosDB = [];
-
-function ensureStorage() {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(FILE_PATH)) {
-      fs.writeFileSync(FILE_PATH, "[]", "utf8");
-    }
-    if (!fs.existsSync(CLIENTES_FILE_PATH)) {
-      fs.writeFileSync(CLIENTES_FILE_PATH, "[]", "utf8");
-    }
-  } catch (e) {
-    console.error("Error preparando almacenamiento de pedidos:", e);
-  }
+function onlyDigits(value) {
+  return String(value || "").replace(/\D/g, "");
 }
 
-function nowISO() {
-  return new Date().toISOString();
+function normalizeCantidad(value) {
+  return String(value || "").trim().replace(",", ".");
+}
+
+function cantidadValida(value) {
+  const n = parseFloat(normalizeCantidad(value));
+  return Number.isFinite(n) && n > 0;
 }
 
 function formatFechaArgentina(dateInput = new Date()) {
@@ -40,52 +26,6 @@ function formatFechaArgentina(dateInput = new Date()) {
     minute: "2-digit",
     second: "2-digit"
   });
-}
-
-function safeReadJSON(filePath) {
-  try {
-    ensureStorage();
-    const raw = fs.readFileSync(filePath, "utf8");
-    if (!raw.trim()) return [];
-    return JSON.parse(raw);
-  } catch (e) {
-    console.error("Error leyendo JSON:", filePath, e);
-    return [];
-  }
-}
-
-function saveDB() {
-  ensureStorage();
-  fs.writeFileSync(FILE_PATH, JSON.stringify(pedidosDB, null, 2), "utf8");
-}
-
-function nextPedidoNumero() {
-  const max = pedidosDB.reduce((acc, p) => {
-    const n = Number(p.pedidoNumero || 0);
-    return n > acc ? n : acc;
-  }, 1000);
-  return max + 1;
-}
-
-function onlyDigits(value) {
-  return String(value || "").replace(/\D/g, "");
-}
-
-function normalizeCliente(cliente = {}) {
-  return {
-    nombre: String(cliente.nombre || "").trim(),
-    telefono: onlyDigits(cliente.telefono),
-    direccion: String(cliente.direccion || "").trim()
-  };
-}
-
-function normalizeCantidad(value) {
-  return String(value || "").trim().replace(",", ".");
-}
-
-function cantidadValida(value) {
-  const n = parseFloat(normalizeCantidad(value));
-  return Number.isFinite(n) && n > 0;
 }
 
 function normalizeItems(body) {
@@ -105,165 +45,299 @@ function normalizeItems(body) {
   return [{ producto, cantidad }];
 }
 
-function sameCliente(a = {}, b = {}) {
-  return (
-    String(a.nombre || "").trim() === String(b.nombre || "").trim() &&
-    onlyDigits(a.telefono) === onlyDigits(b.telefono) &&
-    String(a.direccion || "").trim() === String(b.direccion || "").trim()
-  );
+async function nextPedidoNumero() {
+  const result = await pool.query(`SELECT COALESCE(MAX(pedido_numero), 1000) AS max_num FROM pedidos`);
+  return Number(result.rows[0].max_num) + 1;
 }
 
-function canAppendToLastOrder(lastOrder, cliente) {
-  if (!lastOrder) return false;
-  if (lastOrder.estado !== "pendiente") return false;
-  if (!sameCliente(lastOrder.cliente, cliente)) return false;
+router.get("/", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        p.pedido_numero,
+        p.cliente_nombre,
+        p.cliente_dni,
+        p.cliente_telefono,
+        p.cliente_direccion,
+        p.fecha,
+        p.estado,
+        p.actualizado,
+        pi.producto,
+        pi.cantidad
+      FROM pedidos p
+      JOIN pedido_items pi ON pi.pedido_id = p.id
+      ORDER BY p.pedido_numero DESC, pi.id ASC
+    `);
 
-  const lastCreated = new Date(lastOrder.createdAt || 0).getTime();
-  return Date.now() - lastCreated <= 2 * 60 * 1000;
-}
+    const flat = result.rows.map(r => ({
+      pedidoNumero: r.pedido_numero,
+      clienteDni: r.cliente_dni,
+      cliente: {
+        nombre: r.cliente_nombre,
+        telefono: r.cliente_telefono,
+        direccion: r.cliente_direccion
+      },
+      producto: r.producto,
+      cantidad: r.cantidad,
+      fecha: r.fecha,
+      estado: r.estado,
+      actualizado: r.actualizado
+    }));
 
-function groupedPedidosForAdmin() {
-  return pedidosDB.map(order => ({
-    id: order.id,
-    pedidoNumero: order.pedidoNumero,
-    cliente: order.cliente,
-    clienteDni: order.clienteDni || "",
-    items: order.items || [],
-    fecha: order.fecha,
-    estado: order.estado,
-    actualizado: order.actualizado || order.fecha
-  }));
-}
+    res.json(flat);
+  } catch (err) {
+    console.error("Error get pedidos flat:", err);
+    res.status(500).json({ ok: false, error: "Error al cargar pedidos" });
+  }
+});
 
-function flattenPedidos() {
-  const flat = [];
-  pedidosDB.forEach(order => {
-    (order.items || []).forEach((item, itemIndex) => {
-      flat.push({
-        pedidoNumero: order.pedidoNumero,
-        cliente: order.cliente,
-        clienteDni: order.clienteDni || "",
+router.get("/grouped", async (req, res) => {
+  try {
+    const pedidosResult = await pool.query(`
+      SELECT *
+      FROM pedidos
+      ORDER BY pedido_numero DESC
+    `);
+
+    const itemsResult = await pool.query(`
+      SELECT pedido_id, producto, cantidad
+      FROM pedido_items
+      ORDER BY id ASC
+    `);
+
+    const itemsPorPedido = {};
+    itemsResult.rows.forEach(item => {
+      if (!itemsPorPedido[item.pedido_id]) itemsPorPedido[item.pedido_id] = [];
+      itemsPorPedido[item.pedido_id].push({
         producto: item.producto,
-        cantidad: item.cantidad,
-        fecha: order.fecha,
-        estado: order.estado,
-        actualizado: order.actualizado || order.fecha,
-        __orderId: order.id,
-        __itemIndex: itemIndex
+        cantidad: item.cantidad
       });
     });
-  });
-  return flat;
-}
 
-function migrateData(raw) {
-  if (!Array.isArray(raw)) return [];
-
-  const grouped = raw.every(p => Array.isArray(p.items));
-  if (grouped) {
-    return raw.map(p => ({
-      id: p.id || Date.now() + Math.random(),
-      pedidoNumero: p.pedidoNumero || 1001,
-      cliente: normalizeCliente(p.cliente),
-      clienteDni: onlyDigits(p.clienteDni || ""),
-      items: (p.items || []).map(i => ({
-        producto: String(i.producto || "").trim(),
-        cantidad: normalizeCantidad(i.cantidad)
-      })).filter(i => i.producto && cantidadValida(i.cantidad)),
-      fecha: p.fecha || formatFechaArgentina(),
-      createdAt: p.createdAt || nowISO(),
-      estado: p.estado || "pendiente",
-      actualizado: p.actualizado || p.fecha || formatFechaArgentina()
+    const grouped = pedidosResult.rows.map(p => ({
+      id: p.id,
+      pedidoNumero: p.pedido_numero,
+      clienteDni: p.cliente_dni,
+      cliente: {
+        nombre: p.cliente_nombre,
+        telefono: p.cliente_telefono,
+        direccion: p.cliente_direccion
+      },
+      items: itemsPorPedido[p.id] || [],
+      fecha: p.fecha,
+      estado: p.estado,
+      actualizado: p.actualizado
     }));
+
+    res.json(grouped);
+  } catch (err) {
+    console.error("Error grouped pedidos:", err);
+    res.status(500).json({ ok: false, error: "Error al cargar pedidos agrupados" });
   }
-
-  let numero = 1001;
-  return raw.map(p => ({
-    id: Date.now() + Math.random(),
-    pedidoNumero: numero++,
-    cliente: normalizeCliente(p.cliente),
-    clienteDni: onlyDigits(p.clienteDni || ""),
-    items: [{
-      producto: String(p.producto || "").trim(),
-      cantidad: normalizeCantidad(p.cantidad)
-    }].filter(i => i.producto && cantidadValida(i.cantidad)),
-    fecha: p.fecha || formatFechaArgentina(),
-    createdAt: p.createdAt || nowISO(),
-    estado: p.estado || "pendiente",
-    actualizado: p.actualizado || p.fecha || formatFechaArgentina()
-  }));
-}
-
-function buscarClientePorDni(dni) {
-  const clientes = safeReadJSON(CLIENTES_FILE_PATH);
-  return clientes.find(c => onlyDigits(c.dni) === onlyDigits(dni));
-}
-
-ensureStorage();
-pedidosDB = migrateData(safeReadJSON(FILE_PATH));
-saveDB();
-
-router.get("/", (req, res) => {
-  res.json(flattenPedidos());
 });
 
-router.get("/grouped", (req, res) => {
-  res.json(groupedPedidosForAdmin());
+router.get("/export.csv", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        p.pedido_numero,
+        p.cliente_nombre,
+        p.cliente_dni,
+        p.cliente_telefono,
+        p.cliente_direccion,
+        p.fecha,
+        p.actualizado,
+        p.estado,
+        pi.producto,
+        pi.cantidad
+      FROM pedidos p
+      JOIN pedido_items pi ON pi.pedido_id = p.id
+      ORDER BY p.pedido_numero DESC, pi.id ASC
+    `);
+
+    const headers = [
+      "PedidoNumero",
+      "Cliente",
+      "DNI",
+      "Telefono",
+      "Direccion",
+      "Fecha",
+      "Actualizado",
+      "Estado",
+      "Producto",
+      "Cantidad"
+    ];
+
+    const csvEscape = (value) => {
+      const str = String(value ?? "");
+      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const lines = [headers.join(",")];
+
+    result.rows.forEach(r => {
+      lines.push([
+        csvEscape(r.pedido_numero),
+        csvEscape(r.cliente_nombre),
+        csvEscape(r.cliente_dni),
+        csvEscape(r.cliente_telefono),
+        csvEscape(r.cliente_direccion),
+        csvEscape(r.fecha),
+        csvEscape(r.actualizado),
+        csvEscape(r.estado),
+        csvEscape(r.producto),
+        csvEscape(r.cantidad)
+      ].join(","));
+    });
+
+    const csv = "\uFEFF" + lines.join("\n");
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="pedidos.csv"');
+    res.send(csv);
+  } catch (err) {
+    console.error("Error export csv:", err);
+    res.status(500).json({ ok: false, error: "Error exportando CSV" });
+  }
 });
 
-router.post("/", (req, res) => {
-  const body = req.body || {};
-  const items = normalizeItems(body);
+router.post("/", async (req, res) => {
+  const client = await pool.connect();
 
-  if (!items.length) {
-    return res.status(400).json({ ok: false, error: "Sin productos válidos" });
-  }
+  try {
+    const items = normalizeItems(req.body || {});
+    if (!items.length) {
+      return res.status(400).json({ ok: false, error: "Sin productos válidos" });
+    }
 
-  const clienteDni = onlyDigits(body.clienteDni || "");
-  let clienteFinal = normalizeCliente(body.cliente || {});
+    const clienteDni = onlyDigits(req.body?.clienteDni);
+    if (!clienteDni) {
+      return res.status(400).json({ ok: false, error: "Falta DNI del cliente" });
+    }
 
-  if (clienteDni) {
-    const clienteRegistrado = buscarClientePorDni(clienteDni);
-    if (!clienteRegistrado) {
+    const clienteResult = await client.query(
+      `SELECT nombre, dni, telefono, direccion
+       FROM clientes
+       WHERE dni = $1
+       LIMIT 1`,
+      [clienteDni]
+    );
+
+    if (clienteResult.rows.length === 0) {
       return res.status(400).json({ ok: false, error: "Cliente no registrado" });
     }
 
-    clienteFinal = {
-      nombre: String(clienteRegistrado.nombre || "").trim(),
-      telefono: onlyDigits(clienteRegistrado.telefono),
-      direccion: String(clienteRegistrado.direccion || "").trim()
-    };
+    const cliente = clienteResult.rows[0];
+    const pedidoNumero = await nextPedidoNumero();
+    const fecha = formatFechaArgentina();
+    const actualizado = fecha;
+
+    await client.query("BEGIN");
+
+    const pedidoInsert = await client.query(
+      `INSERT INTO pedidos
+        (pedido_numero, cliente_nombre, cliente_dni, cliente_telefono, cliente_direccion, fecha, estado, actualizado)
+       VALUES
+        ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id`,
+      [
+        pedidoNumero,
+        cliente.nombre,
+        cliente.dni,
+        cliente.telefono,
+        cliente.direccion,
+        fecha,
+        "pendiente",
+        actualizado
+      ]
+    );
+
+    const pedidoId = pedidoInsert.rows[0].id;
+
+    for (const item of items) {
+      await client.query(
+        `INSERT INTO pedido_items (pedido_id, producto, cantidad)
+         VALUES ($1, $2, $3)`,
+        [pedidoId, item.producto, item.cantidad]
+      );
+    }
+
+    await client.query("COMMIT");
+
+    res.json({
+      ok: true,
+      agrupado: false,
+      pedidoNumero
+    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error crear pedido:", err);
+    res.status(500).json({ ok: false, error: "Error al guardar pedido" });
+  } finally {
+    client.release();
   }
+});
 
-  if (!clienteFinal.nombre || !clienteFinal.telefono || !clienteFinal.direccion) {
-    return res.status(400).json({ ok: false, error: "Cliente incompleto" });
+router.put("/grouped/:pedidoNumero", async (req, res) => {
+  try {
+    const role = String(req.headers["x-role"] || "").trim();
+    if (!["admin", "vendedor"].includes(role)) {
+      return res.status(403).json({ ok: false, error: "Sin permisos" });
+    }
+
+    const pedidoNumero = Number(req.params.pedidoNumero);
+    const estado = String(req.body.estado || "").trim().toLowerCase();
+    const estadosValidos = ["pendiente", "en preparación", "entregado", "cancelado"];
+
+    if (!estadosValidos.includes(estado)) {
+      return res.status(400).json({ ok: false, error: "Estado inválido" });
+    }
+
+    const actualizado = formatFechaArgentina();
+
+    const result = await pool.query(
+      `UPDATE pedidos
+       SET estado = $1, actualizado = $2
+       WHERE pedido_numero = $3`,
+      [estado, actualizado, pedidoNumero]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "No existe" });
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Error update estado pedido:", err);
+    res.status(500).json({ ok: false, error: "Error al cambiar estado" });
   }
+});
 
-  const lastOrder = pedidosDB[pedidosDB.length - 1];
+router.delete("/grouped/:pedidoNumero", async (req, res) => {
+  try {
+    const role = String(req.headers["x-role"] || "").trim();
+    if (role !== "admin") {
+      return res.status(403).json({ ok: false, error: "Sin permisos" });
+    }
 
-  if (canAppendToLastOrder(lastOrder, clienteFinal)) {
-    lastOrder.items.push(...items);
-    lastOrder.actualizado = formatFechaArgentina();
-    saveDB();
-    return res.json({ ok: true, agrupado: true, pedidoNumero: lastOrder.pedidoNumero });
+    const pedidoNumero = Number(req.params.pedidoNumero);
+
+    const result = await pool.query(
+      `DELETE FROM pedidos WHERE pedido_numero = $1`,
+      [pedidoNumero]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "No existe" });
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Error delete pedido:", err);
+    res.status(500).json({ ok: false, error: "Error al eliminar pedido" });
   }
-
-  const nuevoPedido = {
-    id: Date.now() + Math.random(),
-    pedidoNumero: nextPedidoNumero(),
-    cliente: clienteFinal,
-    clienteDni,
-    items,
-    fecha: formatFechaArgentina(),
-    createdAt: nowISO(),
-    estado: "pendiente",
-    actualizado: formatFechaArgentina()
-  };
-
-  pedidosDB.push(nuevoPedido);
-  saveDB();
-
-  res.json({ ok: true, agrupado: false, pedidoNumero: nuevoPedido.pedidoNumero });
 });
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const path = require("path");
+const { initDB } = require("./db");
 
 // archivos públicos
 app.use(express.static(path.join(__dirname, "public")));
@@ -90,9 +91,16 @@ app.use("/api/pedidos", require("./routes/pedidos"));
 app.use("/api/login", require("./routes/login"));
 app.use("/api/clientes", require("./routes/clientes"));
 
-// PUERTO
+// inicio
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log("Servidor funcionando");
-});
+initDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log("Servidor funcionando en puerto " + PORT);
+    });
+  })
+  .catch((err) => {
+    console.error("Error iniciando base de datos:", err);
+    process.exit(1);
+  });
