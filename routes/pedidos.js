@@ -64,20 +64,29 @@ function normalizeCliente(cliente = {}) {
   };
 }
 
+function normalizeCantidad(value) {
+  return String(value || "").trim().replace(",", ".");
+}
+
+function cantidadValida(value) {
+  const n = parseFloat(normalizeCantidad(value));
+  return Number.isFinite(n) && n > 0;
+}
+
 function normalizeItems(body) {
   if (Array.isArray(body.items) && body.items.length > 0) {
     return body.items
       .map(i => ({
         producto: String(i.producto || "").trim(),
-        cantidad: String(i.cantidad || "").trim()
+        cantidad: normalizeCantidad(i.cantidad)
       }))
-      .filter(i => i.producto && i.cantidad);
+      .filter(i => i.producto && cantidadValida(i.cantidad));
   }
 
   const producto = String(body.producto || "").trim();
-  const cantidad = String(body.cantidad || "").trim();
+  const cantidad = normalizeCantidad(body.cantidad);
 
-  if (!producto || !cantidad) return [];
+  if (!producto || !cantidadValida(cantidad)) return [];
 
   return [{ producto, cantidad }];
 }
@@ -111,6 +120,7 @@ function flattenPedidos() {
       flat.push({
         pedidoNumero: order.pedidoNumero,
         cliente: order.cliente,
+        clienteDni: order.clienteDni || "",
         producto: item.producto,
         cantidad: item.cantidad,
         fecha: order.fecha,
@@ -153,8 +163,8 @@ function migrateData(raw) {
       clienteDni: onlyDigits(p.clienteDni || ""),
       items: (p.items || []).map(i => ({
         producto: String(i.producto || "").trim(),
-        cantidad: String(i.cantidad || "").trim()
-      })),
+        cantidad: normalizeCantidad(i.cantidad)
+      })).filter(i => i.producto && cantidadValida(i.cantidad)),
       fecha: p.fecha || formatFechaArgentina(),
       createdAt: p.createdAt || nowISO(),
       estado: p.estado || "pendiente",
@@ -171,8 +181,8 @@ function migrateData(raw) {
     clienteDni: onlyDigits(p.clienteDni || ""),
     items: [{
       producto: String(p.producto || "").trim(),
-      cantidad: String(p.cantidad || "").trim()
-    }],
+      cantidad: normalizeCantidad(p.cantidad)
+    }].filter(i => i.producto && cantidadValida(i.cantidad)),
     fecha: p.fecha || formatFechaArgentina(),
     createdAt: p.createdAt || nowISO(),
     estado: p.estado || "pendiente",
@@ -217,17 +227,14 @@ saveDB();
    Routes
 ========================= */
 
-// GET compatibilidad con front cliente actual
 router.get("/", (req, res) => {
   res.json(flattenPedidos());
 });
 
-// GET agrupado para admin / historial cliente
 router.get("/grouped", (req, res) => {
   res.json(groupedPedidosForAdmin());
 });
 
-// EXPORT CSV compatible con Excel
 router.get("/export.csv", (req, res) => {
   const headers = [
     "PedidoNumero",
@@ -270,13 +277,12 @@ router.get("/export.csv", (req, res) => {
   res.send(csv);
 });
 
-// POST crear pedido / agrupar carrito
 router.post("/", (req, res) => {
   const body = req.body || {};
   const items = normalizeItems(body);
 
   if (items.length === 0) {
-    return res.status(400).json({ ok: false, error: "Sin productos" });
+    return res.status(400).json({ ok: false, error: "Sin productos válidos" });
   }
 
   const clienteDni = onlyDigits(body.clienteDni || "");
@@ -336,7 +342,6 @@ router.post("/", (req, res) => {
   });
 });
 
-// DELETE pedido completo por numero (solo admin)
 router.delete("/grouped/:pedidoNumero", (req, res) => {
   const role = String(req.headers["x-role"] || "").trim();
   if (role !== "admin") {
@@ -355,7 +360,6 @@ router.delete("/grouped/:pedidoNumero", (req, res) => {
   res.json({ ok: true });
 });
 
-// PUT cambiar estado por numero (admin y vendedor)
 router.put("/grouped/:pedidoNumero", (req, res) => {
   const role = String(req.headers["x-role"] || "").trim();
   if (!["admin", "vendedor"].includes(role)) {
@@ -383,7 +387,6 @@ router.put("/grouped/:pedidoNumero", (req, res) => {
   res.json({ ok: true });
 });
 
-// DELETE compatibilidad vieja (solo admin)
 router.delete("/:index", (req, res) => {
   const role = String(req.headers["x-role"] || "").trim();
   if (role !== "admin") {
@@ -409,7 +412,6 @@ router.delete("/:index", (req, res) => {
   res.json({ ok: true });
 });
 
-// PUT compatibilidad vieja
 router.put("/:index", (req, res) => {
   const role = String(req.headers["x-role"] || "").trim();
   if (!["admin", "vendedor"].includes(role)) {
@@ -437,4 +439,6 @@ router.put("/:index", (req, res) => {
   res.json({ ok: true });
 });
 
-module.exports = router;module.exports = router;
+module.exports = router;
+
+

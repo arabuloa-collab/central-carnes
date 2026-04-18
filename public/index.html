@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -171,7 +171,6 @@ input:focus, select:focus {
   background: #111827;
 }
 
-/* CARTA */
 .carta-filtros {
   display: grid;
   grid-template-columns: 1fr 260px;
@@ -251,7 +250,6 @@ input:focus, select:focus {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
 }
 
-/* CARRITO */
 #carritoBox {
   background: #020617;
   padding: 14px;
@@ -369,7 +367,6 @@ input:focus, select:focus {
   font-size: 13px;
 }
 
-/* BUTTONS */
 .actions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -825,17 +822,9 @@ function formatMoney(value){
 function getCategoriaProducto(nombre) {
   const n = String(nombre || "").toLowerCase();
 
-  const chacinados = [
-    "chorizos", "morcilla", "salchicha", "salchichas"
-  ];
-
-  const congelados = [
-    "nuggets", "bastones de mozzarella", "medallon", "hamburguesa", "milanesa pollo"
-  ];
-
-  const otros = [
-    "hueso", "grasa pella", "blend"
-  ];
+  const chacinados = ["chorizos", "morcilla", "salchicha", "salchichas"];
+  const congelados = ["nuggets", "bastones de mozzarella", "medallon", "hamburguesa", "milanesa pollo"];
+  const otros = ["hueso", "grasa pella", "blend"];
 
   if (chacinados.some(p => n.includes(p))) return "chacinados";
   if (congelados.some(p => n.includes(p))) return "congelados";
@@ -1309,7 +1298,7 @@ function renderCarrito(){
   carritoTotal.innerText = `Total estimado: $${formatMoney(calcularTotalCarrito())}`;
 }
 
-function enviar(){
+async function enviar(){
   const cliente = getClienteSesion();
   if (!cliente) {
     alert("Primero tenés que iniciar sesión");
@@ -1324,10 +1313,6 @@ function enviar(){
     alert("Datos de cliente incompletos");
     return;
   }
-
-  const ahora = new Date();
-  const fecha = ahora.toLocaleDateString();
-  const hora = ahora.toLocaleTimeString();
 
   let itemsAEnviar = [];
 
@@ -1354,7 +1339,9 @@ function enviar(){
     }];
   }
 
-  let mensaje = `🛒 *PEDIDO*%0A👤 ${n}%0A🪪 DNI ${cliente.dni}%0A📞 ${t}%0A📍 ${d}%0A`;
+  const ahora = new Date();
+  const fecha = ahora.toLocaleDateString();
+  const hora = ahora.toLocaleTimeString();
 
   const totalEstimado = itemsAEnviar.reduce((acc, item) => {
     const precio = Number(productosConPrecio[item.producto] || 0);
@@ -1362,33 +1349,46 @@ function enviar(){
     return acc + (precio * cantidad);
   }, 0);
 
-  fetch("/api/pedidos",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      clienteDni: cliente.dni,
-      items: itemsAEnviar
-    })
-  });
+  try {
+    const resp = await fetch("/api/pedidos", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        clienteDni: cliente.dni,
+        items: itemsAEnviar
+      })
+    });
 
-  itemsAEnviar.forEach(item=>{
-    mensaje += `🥩 ${item.producto} - ${item.cantidad}kg%0A`;
-  });
+    const data = await resp.json().catch(() => ({}));
 
-  mensaje += `💲 Total estimado: $${formatMoney(totalEstimado)}%0A`;
-  mensaje += `📅 ${fecha}%0A⏰ ${hora}`;
+    if (!resp.ok || !data.ok) {
+      throw new Error(data.error || "No se pudo guardar el pedido");
+    }
 
-  window.open(`https://wa.me/${TELEFONO}?text=${mensaje}`, "_blank");
+    let mensaje = `🛒 *PEDIDO*%0A👤 ${n}%0A🪪 DNI ${cliente.dni}%0A📞 ${t}%0A📍 ${d}%0A`;
 
-  carrito = [];
-  comboSeleccionado = null;
-  comboBox.style.display = "none";
-  comboBox.innerHTML = "";
-  renderCarrito();
-  cantidad.value = "";
+    itemsAEnviar.forEach(item=>{
+      mensaje += `🥩 ${item.producto} - ${item.cantidad}kg%0A`;
+    });
 
-  document.getElementById("formulario").style.display = "none";
-  document.getElementById("exito").style.display = "flex";
+    mensaje += `💲 Total estimado: $${formatMoney(totalEstimado)}%0A`;
+    mensaje += `📅 ${fecha}%0A⏰ ${hora}%0A`;
+    mensaje += `#️⃣ Pedido: ${data.pedidoNumero || "-"}`;
+
+    window.open(`https://wa.me/${TELEFONO}?text=${mensaje}`, "_blank");
+
+    carrito = [];
+    comboSeleccionado = null;
+    comboBox.style.display = "none";
+    comboBox.innerHTML = "";
+    renderCarrito();
+    cantidad.value = "";
+
+    document.getElementById("formulario").style.display = "none";
+    document.getElementById("exito").style.display = "flex";
+  } catch (err) {
+    alert(err.message || "No se pudo enviar el pedido");
+  }
 }
 
 function cargarHistorialAgrupado() {
@@ -1449,6 +1449,9 @@ function cargarHistorialAgrupado() {
           <div class="estado ${clase}">${estado}</div>
         </div>`;
       });
+  })
+  .catch(() => {
+    lista.innerHTML = "<p>No se pudieron cargar tus pedidos</p>";
   });
 }
 
