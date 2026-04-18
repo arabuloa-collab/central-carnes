@@ -3,14 +3,27 @@ const router = express.Router();
 const fs = require("fs");
 const path = require("path");
 
-const FILE_PATH = path.join(__dirname, "..", "pedidos.json");
-const CLIENTES_FILE_PATH = path.join(__dirname, "..", "clientes.json");
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "..");
+const FILE_PATH = path.join(DATA_DIR, "pedidos.json");
+const CLIENTES_FILE_PATH = path.join(DATA_DIR, "clientes.json");
 
 let pedidosDB = [];
 
-/* =========================
-   Helpers
-========================= */
+function ensureStorage() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(FILE_PATH)) {
+      fs.writeFileSync(FILE_PATH, "[]", "utf8");
+    }
+    if (!fs.existsSync(CLIENTES_FILE_PATH)) {
+      fs.writeFileSync(CLIENTES_FILE_PATH, "[]", "utf8");
+    }
+  } catch (e) {
+    console.error("Error preparando almacenamiento de pedidos:", e);
+  }
+}
 
 function nowISO() {
   return new Date().toISOString();
@@ -31,17 +44,19 @@ function formatFechaArgentina(dateInput = new Date()) {
 
 function safeReadJSON(filePath) {
   try {
-    if (!fs.existsSync(filePath)) return [];
+    ensureStorage();
     const raw = fs.readFileSync(filePath, "utf8");
     if (!raw.trim()) return [];
     return JSON.parse(raw);
-  } catch {
+  } catch (e) {
+    console.error("Error leyendo JSON:", filePath, e);
     return [];
   }
 }
 
 function saveDB() {
-  fs.writeFileSync(FILE_PATH, JSON.stringify(pedidosDB, null, 2));
+  ensureStorage();
+  fs.writeFileSync(FILE_PATH, JSON.stringify(pedidosDB, null, 2), "utf8");
 }
 
 function nextPedidoNumero() {
@@ -87,7 +102,6 @@ function normalizeItems(body) {
   const cantidad = normalizeCantidad(body.cantidad);
 
   if (!producto || !cantidadValida(cantidad)) return [];
-
   return [{ producto, cantidad }];
 }
 
@@ -105,18 +119,26 @@ function canAppendToLastOrder(lastOrder, cliente) {
   if (!sameCliente(lastOrder.cliente, cliente)) return false;
 
   const lastCreated = new Date(lastOrder.createdAt || 0).getTime();
-  const now = Date.now();
+  return Date.now() - lastCreated <= 2 * 60 * 1000;
+}
 
-  return now - lastCreated <= 2 * 60 * 1000;
+function groupedPedidosForAdmin() {
+  return pedidosDB.map(order => ({
+    id: order.id,
+    pedidoNumero: order.pedidoNumero,
+    cliente: order.cliente,
+    clienteDni: order.clienteDni || "",
+    items: order.items || [],
+    fecha: order.fecha,
+    estado: order.estado,
+    actualizado: order.actualizado || order.fecha
+  }));
 }
 
 function flattenPedidos() {
   const flat = [];
-
   pedidosDB.forEach(order => {
-    const items = Array.isArray(order.items) ? order.items : [];
-
-    items.forEach((item, itemIndex) => {
+    (order.items || []).forEach((item, itemIndex) => {
       flat.push({
         pedidoNumero: order.pedidoNumero,
         cliente: order.cliente,
@@ -131,24 +153,7 @@ function flattenPedidos() {
       });
     });
   });
-
   return flat;
-}
-
-function getFlatReferenceByIndex(index) {
-  const flatRefs = [];
-
-  pedidosDB.forEach((order, orderIndex) => {
-    const items = Array.isArray(order.items) ? order.items : [];
-    items.forEach((item, itemIndex) => {
-      flatRefs.push({
-        orderIndex,
-        itemIndex
-      });
-    });
-  });
-
-  return flatRefs[index] || null;
 }
 
 function migrateData(raw) {
@@ -158,7 +163,7 @@ function migrateData(raw) {
   if (grouped) {
     return raw.map(p => ({
       id: p.id || Date.now() + Math.random(),
-      pedidoNumero: p.pedidoNumero || nextPedidoNumero(),
+      pedidoNumero: p.pedidoNumero || 1001,
       cliente: normalizeCliente(p.cliente),
       clienteDni: onlyDigits(p.clienteDni || ""),
       items: (p.items || []).map(i => ({
@@ -173,7 +178,6 @@ function migrateData(raw) {
   }
 
   let numero = 1001;
-
   return raw.map(p => ({
     id: Date.now() + Math.random(),
     pedidoNumero: numero++,
@@ -190,42 +194,14 @@ function migrateData(raw) {
   }));
 }
 
-function groupedPedidosForAdmin() {
-  return pedidosDB.map(order => ({
-    id: order.id,
-    pedidoNumero: order.pedidoNumero,
-    cliente: order.cliente,
-    clienteDni: order.clienteDni || "",
-    items: order.items || [],
-    fecha: order.fecha,
-    estado: order.estado,
-    actualizado: order.actualizado || order.fecha
-  }));
-}
-
-function csvEscape(value) {
-  const str = String(value ?? "");
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
-
 function buscarClientePorDni(dni) {
   const clientes = safeReadJSON(CLIENTES_FILE_PATH);
   return clientes.find(c => onlyDigits(c.dni) === onlyDigits(dni));
 }
 
-/* =========================
-   Init
-========================= */
-
+ensureStorage();
 pedidosDB = migrateData(safeReadJSON(FILE_PATH));
 saveDB();
-
-/* =========================
-   Routes
-========================= */
 
 router.get("/", (req, res) => {
   res.json(flattenPedidos());
@@ -235,53 +211,11 @@ router.get("/grouped", (req, res) => {
   res.json(groupedPedidosForAdmin());
 });
 
-router.get("/export.csv", (req, res) => {
-  const headers = [
-    "PedidoNumero",
-    "Cliente",
-    "DNI",
-    "Telefono",
-    "Direccion",
-    "Fecha",
-    "Actualizado",
-    "Estado",
-    "Producto",
-    "Cantidad"
-  ];
-
-  const lines = [headers.join(",")];
-
-  pedidosDB.forEach(order => {
-    const items = Array.isArray(order.items) ? order.items : [];
-
-    items.forEach(item => {
-      lines.push([
-        csvEscape(order.pedidoNumero),
-        csvEscape(order.cliente?.nombre || ""),
-        csvEscape(order.clienteDni || ""),
-        csvEscape(order.cliente?.telefono || ""),
-        csvEscape(order.cliente?.direccion || ""),
-        csvEscape(order.fecha || ""),
-        csvEscape(order.actualizado || ""),
-        csvEscape(order.estado || ""),
-        csvEscape(item.producto || ""),
-        csvEscape(item.cantidad || "")
-      ].join(","));
-    });
-  });
-
-  const csv = "\uFEFF" + lines.join("\n");
-
-  res.setHeader("Content-Type", "text/csv; charset=utf-8");
-  res.setHeader("Content-Disposition", 'attachment; filename="pedidos.csv"');
-  res.send(csv);
-});
-
 router.post("/", (req, res) => {
   const body = req.body || {};
   const items = normalizeItems(body);
 
-  if (items.length === 0) {
+  if (!items.length) {
     return res.status(400).json({ ok: false, error: "Sin productos válidos" });
   }
 
@@ -290,7 +224,6 @@ router.post("/", (req, res) => {
 
   if (clienteDni) {
     const clienteRegistrado = buscarClientePorDni(clienteDni);
-
     if (!clienteRegistrado) {
       return res.status(400).json({ ok: false, error: "Cliente no registrado" });
     }
@@ -312,12 +245,7 @@ router.post("/", (req, res) => {
     lastOrder.items.push(...items);
     lastOrder.actualizado = formatFechaArgentina();
     saveDB();
-
-    return res.json({
-      ok: true,
-      agrupado: true,
-      pedidoNumero: lastOrder.pedidoNumero
-    });
+    return res.json({ ok: true, agrupado: true, pedidoNumero: lastOrder.pedidoNumero });
   }
 
   const nuevoPedido = {
@@ -335,110 +263,7 @@ router.post("/", (req, res) => {
   pedidosDB.push(nuevoPedido);
   saveDB();
 
-  res.json({
-    ok: true,
-    agrupado: false,
-    pedidoNumero: nuevoPedido.pedidoNumero
-  });
-});
-
-router.delete("/grouped/:pedidoNumero", (req, res) => {
-  const role = String(req.headers["x-role"] || "").trim();
-  if (role !== "admin") {
-    return res.status(403).json({ ok: false, error: "Sin permisos" });
-  }
-
-  const pedidoNumero = Number(req.params.pedidoNumero);
-  const index = pedidosDB.findIndex(p => Number(p.pedidoNumero) === pedidoNumero);
-
-  if (index === -1) {
-    return res.status(404).json({ ok: false, error: "No existe" });
-  }
-
-  pedidosDB.splice(index, 1);
-  saveDB();
-  res.json({ ok: true });
-});
-
-router.put("/grouped/:pedidoNumero", (req, res) => {
-  const role = String(req.headers["x-role"] || "").trim();
-  if (!["admin", "vendedor"].includes(role)) {
-    return res.status(403).json({ ok: false, error: "Sin permisos" });
-  }
-
-  const pedidoNumero = Number(req.params.pedidoNumero);
-  const pedido = pedidosDB.find(p => Number(p.pedidoNumero) === pedidoNumero);
-
-  if (!pedido) {
-    return res.status(404).json({ ok: false, error: "No existe" });
-  }
-
-  const estado = String(req.body.estado || "").trim().toLowerCase();
-  const estadosValidos = ["pendiente", "en preparación", "entregado", "cancelado"];
-
-  if (!estadosValidos.includes(estado)) {
-    return res.status(400).json({ ok: false, error: "Estado inválido" });
-  }
-
-  pedido.estado = estado;
-  pedido.actualizado = formatFechaArgentina();
-  saveDB();
-
-  res.json({ ok: true });
-});
-
-router.delete("/:index", (req, res) => {
-  const role = String(req.headers["x-role"] || "").trim();
-  if (role !== "admin") {
-    return res.status(403).json({ ok: false, error: "Sin permisos" });
-  }
-
-  const index = parseInt(req.params.index, 10);
-  const ref = getFlatReferenceByIndex(index);
-
-  if (!ref) {
-    return res.status(404).json({ ok: false, error: "No existe" });
-  }
-
-  pedidosDB[ref.orderIndex].items.splice(ref.itemIndex, 1);
-
-  if (pedidosDB[ref.orderIndex].items.length === 0) {
-    pedidosDB.splice(ref.orderIndex, 1);
-  } else {
-    pedidosDB[ref.orderIndex].actualizado = formatFechaArgentina();
-  }
-
-  saveDB();
-  res.json({ ok: true });
-});
-
-router.put("/:index", (req, res) => {
-  const role = String(req.headers["x-role"] || "").trim();
-  if (!["admin", "vendedor"].includes(role)) {
-    return res.status(403).json({ ok: false, error: "Sin permisos" });
-  }
-
-  const index = parseInt(req.params.index, 10);
-  const ref = getFlatReferenceByIndex(index);
-
-  if (!ref) {
-    return res.status(404).json({ ok: false, error: "No existe" });
-  }
-
-  const estado = String(req.body.estado || "").trim().toLowerCase();
-  const estadosValidos = ["pendiente", "en preparación", "entregado", "cancelado"];
-
-  if (!estadosValidos.includes(estado)) {
-    return res.status(400).json({ ok: false, error: "Estado inválido" });
-  }
-
-  pedidosDB[ref.orderIndex].estado = estado;
-  pedidosDB[ref.orderIndex].actualizado = formatFechaArgentina();
-  saveDB();
-
-  res.json({ ok: true });
+  res.json({ ok: true, agrupado: false, pedidoNumero: nuevoPedido.pedidoNumero });
 });
 
 module.exports = router;
-
-

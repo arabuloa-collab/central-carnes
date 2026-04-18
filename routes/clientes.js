@@ -3,21 +3,37 @@ const router = express.Router();
 const fs = require("fs");
 const path = require("path");
 
-const FILE_PATH = path.join(__dirname, "..", "clientes.json");
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "..");
+const FILE_PATH = path.join(DATA_DIR, "clientes.json");
+
+function ensureStorage() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(FILE_PATH)) {
+      fs.writeFileSync(FILE_PATH, "[]", "utf8");
+    }
+  } catch (e) {
+    console.error("Error preparando almacenamiento de clientes:", e);
+  }
+}
 
 function safeReadJSON() {
   try {
-    if (!fs.existsSync(FILE_PATH)) return [];
+    ensureStorage();
     const raw = fs.readFileSync(FILE_PATH, "utf8");
     if (!raw.trim()) return [];
     return JSON.parse(raw);
-  } catch {
+  } catch (e) {
+    console.error("Error leyendo clientes.json:", e);
     return [];
   }
 }
 
 function saveJSON(data) {
-  fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2));
+  ensureStorage();
+  fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
 }
 
 function onlyDigits(value) {
@@ -56,7 +72,6 @@ function sanitizeCliente(cliente) {
   };
 }
 
-// REGISTRO
 router.post("/register", (req, res) => {
   const clientes = safeReadJSON();
   const nuevo = sanitizeCliente(req.body || {});
@@ -115,7 +130,6 @@ router.post("/register", (req, res) => {
   });
 });
 
-// LOGIN
 router.post("/login", (req, res) => {
   const clientes = safeReadJSON();
   const dni = onlyDigits(req.body?.dni);
@@ -138,7 +152,6 @@ router.post("/login", (req, res) => {
   });
 });
 
-// PERFIL
 router.get("/:dni", (req, res) => {
   const clientes = safeReadJSON();
   const dni = onlyDigits(req.params.dni);
@@ -160,7 +173,6 @@ router.get("/:dni", (req, res) => {
   });
 });
 
-// ACTUALIZAR DATOS CLIENTE
 router.put("/:dni", (req, res) => {
   const clientes = safeReadJSON();
   const dni = onlyDigits(req.params.dni);
@@ -172,7 +184,6 @@ router.put("/:dni", (req, res) => {
   }
 
   const actual = clientes[index];
-
   const telefono = onlyDigits(req.body?.telefono);
   const direccion = String(req.body?.direccion || "").trim();
 
@@ -206,4 +217,4 @@ router.put("/:dni", (req, res) => {
   });
 });
 
-module.exports = router;
+module.exports = router;S
