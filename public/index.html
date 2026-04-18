@@ -3,127 +3,355 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pedidos - Central Carnes</title>
+<title>Central Carnes - Pedidos Online</title>
 
 <style>
 * {
   box-sizing: border-box;
 }
 
+:root {
+  --bg: #0b1220;
+  --bg-soft: #111827;
+  --card: rgba(17, 24, 39, 0.92);
+  --card-2: rgba(30, 41, 59, 0.92);
+  --line: rgba(255,255,255,0.08);
+  --text: #f8fafc;
+  --muted: #cbd5e1;
+  --muted-2: #94a3b8;
+  --brand: #dc2626;
+  --brand-2: #ef4444;
+  --success: #22c55e;
+  --warning: #facc15;
+  --blue: #2563eb;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
+  margin: 0;
+  color: var(--text);
   font-family: Arial, sans-serif;
   background:
-    radial-gradient(circle at top, rgba(239,68,68,0.15), transparent 25%),
-    linear-gradient(180deg, #0f172a 0%, #111827 100%);
-  color: white;
-  margin: 0;
+    radial-gradient(circle at top, rgba(239,68,68,0.12), transparent 22%),
+    linear-gradient(180deg, #08101d 0%, #0f172a 100%);
   min-height: 100vh;
 }
 
-header {
-  background: linear-gradient(90deg, #b91c1c, #ef4444);
-  padding: 18px 15px;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-header img {
-  height: 54px;
+.topbar {
+  background: #7f1d1d;
+  color: #fee2e2;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.topbar-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+  background: rgba(11,18,32,0.84);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.header-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand img {
+  height: 52px;
+  width: auto;
+  display: block;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-text b {
+  font-size: 22px;
+  letter-spacing: 0.3px;
+}
+
+.brand-text span {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.header-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  color: var(--muted);
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.hero {
+  max-width: 1180px;
+  margin: 24px auto 0;
+  padding: 0 16px;
+}
+
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  padding: 34px 28px;
+  background:
+    linear-gradient(120deg, rgba(127,29,29,0.94), rgba(220,38,38,0.92) 45%, rgba(15,23,42,0.95) 100%);
+  box-shadow: 0 24px 50px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 28px;
+  align-items: center;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #fee2e2;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.6px;
+  margin-bottom: 12px;
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: 42px;
+  line-height: 1.08;
+}
+
+.hero p {
+  margin: 0;
+  color: #fee2e2;
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 700px;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.hero-stat {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.hero-stat strong {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.hero-stat span {
+  font-size: 13px;
+  color: #fee2e2;
+}
+
+.hero-side {
+  display: grid;
+  gap: 14px;
+}
+
+.hero-side-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 18px;
+}
+
+.hero-side-card small {
+  color: #fecaca;
+  display: block;
   margin-bottom: 6px;
 }
 
-header b {
-  font-size: 22px;
-  letter-spacing: 0.5px;
+.hero-side-card b {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 6px;
 }
 
-.promos {
-  width: 100%;
-  max-width: 980px;
-  margin: 22px auto 10px;
-  padding: 0 14px;
+.hero-side-card span {
+  color: #fee2e2;
+  font-size: 14px;
 }
 
-.promos-title {
-  margin: 0 0 14px;
-  font-size: 22px;
-  font-weight: bold;
-  color: #fff;
+section {
+  max-width: 1180px;
+  margin: 22px auto 0;
+  padding: 0 16px;
+}
+
+.section-title {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.section-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.section-head {
+  margin-bottom: 16px;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.quick-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.18);
+}
+
+.quick-card b {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+.quick-card span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .promos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
 
 .promo-card {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  padding: 18px 16px;
-  border-radius: 18px;
-  text-align: center;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 12px 22px rgba(220, 38, 38, 0.28);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  background:
+    linear-gradient(135deg, rgba(127,29,29,0.95), rgba(220,38,38,0.95));
+  border-radius: 22px;
+  padding: 22px;
   border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 32px rgba(127,29,29,0.2);
+  cursor: pointer;
+  transition: transform .18s ease, filter .18s ease;
 }
 
 .promo-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 18px 28px rgba(220, 38, 38, 0.36);
   filter: brightness(1.03);
 }
 
 .promo-card small {
   display: block;
-  margin-top: 6px;
-  font-size: 13px;
-  font-weight: normal;
-  opacity: 0.95;
+  color: #fecaca;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  font-weight: bold;
+}
+
+.promo-card h3 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.promo-card p {
+  margin: 0;
+  color: #fee2e2;
+  line-height: 1.5;
 }
 
 .container {
-  width: calc(100% - 28px);
-  max-width: 980px;
-  margin: 18px auto 30px;
-  background: rgba(30, 41, 59, 0.88);
-  backdrop-filter: blur(10px);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 24px;
   padding: 24px;
-  border-radius: 22px;
-  box-shadow: 0 16px 38px rgba(0,0,0,0.30);
-  border: 1px solid rgba(255,255,255,0.06);
-}
-
-.form-top {
-  margin-bottom: 22px;
+  box-shadow: 0 16px 34px rgba(0,0,0,0.22);
 }
 
 .form-badge {
   display: inline-block;
-  padding: 7px 12px;
+  padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(239,68,68,0.18);
+  background: rgba(239,68,68,0.12);
   color: #fecaca;
   font-size: 12px;
   font-weight: bold;
-  margin-bottom: 12px;
-  border: 1px solid rgba(239,68,68,0.22);
+  margin-bottom: 10px;
+  border: 1px solid rgba(239,68,68,0.18);
 }
 
-h2 {
+.form-top {
+  margin-bottom: 20px;
+}
+
+.form-top h2 {
   margin: 0 0 8px;
-  font-size: 28px;
-  line-height: 1.2;
+  font-size: 30px;
 }
 
 .form-desc {
   margin: 0;
-  color: #cbd5e1;
-  font-size: 14px;
+  color: var(--muted);
+  font-size: 15px;
 }
 
 .form-grid {
@@ -143,9 +371,9 @@ h2 {
 
 label {
   margin-bottom: 8px;
-  font-size: 14px;
-  font-weight: bold;
   color: #e2e8f0;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 input, select {
@@ -153,11 +381,10 @@ input, select {
   padding: 14px 14px;
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.08);
-  margin-bottom: 0;
-  background: #0f172a;
+  background: #0b1220;
   color: white;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all .18s ease;
   font-size: 15px;
 }
 
@@ -166,9 +393,103 @@ input::placeholder {
 }
 
 input:focus, select:focus {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239,68,68,0.14);
-  background: #111827;
+  border-color: var(--brand-2);
+  box-shadow: 0 0 0 4px rgba(239,68,68,0.12);
+}
+
+.info-box {
+  margin-top: 16px;
+  background: rgba(15,23,42,0.72);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 16px;
+  padding: 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 15px;
+  transition: transform .18s ease, filter .18s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+}
+
+.btn-main {
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  color: #052e16;
+}
+
+.btn-sec {
+  background: linear-gradient(135deg, #334155, #475569);
+  color: white;
+}
+
+.btn-wsp {
+  background: linear-gradient(135deg, #25D366, #4ade80);
+  color: #052e16;
+}
+
+.btn-qr {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #f59e0b, #facc15);
+  color: #111827;
+}
+
+.btn-clear {
+  background: linear-gradient(135deg, #475569, #64748b);
+  color: white;
+}
+
+.btn-remove-item {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white;
+  width: auto;
+  min-width: 88px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.btn-save-item {
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  color: white;
+  width: auto;
+  min-width: 90px;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.auth-mini {
+  margin-top: 10px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.auth-link {
+  color: #93c5fd;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 .carta-filtros {
@@ -180,39 +501,41 @@ input:focus, select:focus {
 
 .carta-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
   margin-top: 14px;
 }
 
 .carta-item {
-  background: rgba(15,23,42,0.8);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 12px;
-  padding: 12px;
+  background: rgba(15,23,42,0.84);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 16px;
 }
 
 .carta-categoria {
   display: inline-block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   padding: 6px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: bold;
-  background: rgba(148,163,184,0.15);
-  color: #cbd5e1;
+  background: rgba(148,163,184,0.14);
+  color: var(--muted);
+  letter-spacing: .6px;
 }
 
 .carta-item strong {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-size: 16px;
 }
 
 .carta-item span {
-  color: #cbd5e1;
-  font-size: 14px;
+  color: var(--muted);
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
 }
 
 .carta-actions {
@@ -223,19 +546,18 @@ input:focus, select:focus {
 }
 
 .carta-cantidad {
-  background: #0f172a;
+  padding: 11px 12px;
+  border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
+  background: #0b1220;
   color: white;
-  padding: 10px 12px;
-  width: 100%;
 }
 
 .carta-btn {
   background: linear-gradient(135deg, #475569, #64748b);
   color: white;
   width: auto;
-  min-width: 120px;
+  min-width: 118px;
 }
 
 #comboBox {
@@ -243,22 +565,16 @@ input:focus, select:focus {
   background: #020617;
   padding: 14px;
   border-radius: 14px;
-  margin-top: 4px;
-  margin-bottom: 2px;
   color: #f8fafc;
   border: 1px dashed rgba(255,255,255,0.14);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
 }
 
 #carritoBox {
   background: #020617;
-  padding: 14px;
-  border-radius: 14px;
-  margin-top: 4px;
-  margin-bottom: 2px;
+  padding: 16px;
+  border-radius: 18px;
   color: #f8fafc;
   border: 1px dashed rgba(255,255,255,0.14);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
 }
 
 .carrito-header {
@@ -271,19 +587,19 @@ input:focus, select:focus {
 
 .carrito-title {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 15px;
   color: #e2e8f0;
 }
 
 .carrito-empty {
-  color: #94a3b8;
+  color: var(--muted-2);
   font-size: 14px;
 }
 
 .carrito-item {
   background: rgba(15,23,42,0.8);
   border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px;
   margin-bottom: 8px;
 }
@@ -298,11 +614,11 @@ input:focus, select:focus {
 
 .carrito-item strong {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .carrito-item span {
-  color: #cbd5e1;
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -314,21 +630,12 @@ input:focus, select:focus {
 }
 
 .carrito-cantidad-input {
-  background: #0f172a;
+  background: #0b1220;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 10px;
   color: white;
   padding: 10px 12px;
   width: 100%;
-}
-
-.btn-save-item {
-  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-  color: white;
-  width: auto;
-  min-width: 90px;
-  border-radius: 10px;
-  padding: 10px 12px;
 }
 
 .carrito-actions-main {
@@ -347,71 +654,6 @@ input:focus, select:focus {
   color: #e2e8f0;
 }
 
-.btn-add {
-  background: linear-gradient(135deg, #f59e0b, #facc15);
-  color: #111827;
-}
-
-.btn-clear {
-  background: linear-gradient(135deg, #475569, #64748b);
-  color: white;
-}
-
-.btn-remove-item {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  color: white;
-  padding: 10px 12px;
-  width: auto;
-  min-width: 84px;
-  border-radius: 10px;
-  font-size: 13px;
-}
-
-.actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 22px;
-}
-
-button {
-  padding: 15px 14px;
-  width: 100%;
-  border: none;
-  border-radius: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 0;
-  transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
-  font-size: 15px;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.03);
-}
-
-.btn-main {
-  background: linear-gradient(135deg, #22c55e, #4ade80);
-  color: #052e16;
-  box-shadow: 0 10px 24px rgba(34,197,94,0.22);
-}
-
-.btn-sec {
-  background: linear-gradient(135deg, #334155, #475569);
-  color: white;
-}
-
-.btn-wsp {
-  background: linear-gradient(135deg, #25D366, #4ade80);
-  color: #052e16;
-}
-
-.btn-qr {
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-  color: white;
-}
-
 .historial-head {
   display: flex;
   align-items: center;
@@ -422,7 +664,7 @@ button:hover {
 }
 
 .historial-sub {
-  color: #cbd5e1;
+  color: var(--muted);
   font-size: 14px;
   margin: 0;
 }
@@ -447,12 +689,12 @@ button:hover {
 }
 
 .pendiente {
-  background: #facc15;
+  background: var(--warning);
   color: black;
 }
 
 .entregado {
-  background: #22c55e;
+  background: var(--success);
   color: black;
 }
 
@@ -487,7 +729,7 @@ button:hover {
 
 .check {
   font-size: 74px;
-  color: #22c55e;
+  color: var(--success);
   margin-bottom: 10px;
 }
 
@@ -516,62 +758,63 @@ button:hover {
   box-shadow: 0 18px 35px rgba(0,0,0,0.45);
 }
 
-.info-box {
-  margin-top: 18px;
-  background: rgba(15,23,42,0.72);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 16px;
-  padding: 14px;
-  color: #cbd5e1;
-  font-size: 14px;
-}
-
-.auth-mini {
-  margin-top: 10px;
-  color: #cbd5e1;
-  font-size: 14px;
+.footer-note {
+  max-width: 1180px;
+  margin: 24px auto 40px;
+  padding: 0 16px;
+  color: var(--muted-2);
   text-align: center;
+  font-size: 13px;
 }
 
-.auth-link {
-  color: #93c5fd;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding: 18px;
-    border-radius: 18px;
-  }
-
+@media (max-width: 980px) {
+  .hero-grid,
+  .quick-grid,
+  .promos-grid,
+  .carta-grid,
+  .carta-filtros,
   .form-grid,
   .actions,
-  .carrito-actions-main,
-  .carta-grid,
-  .carta-filtros {
+  .carrito-actions-main {
     grid-template-columns: 1fr;
   }
 
-  .carta-actions,
-  .carrito-edit {
+  .hero h1 {
+    font-size: 34px;
+  }
+
+  .hero-stats {
     grid-template-columns: 1fr;
   }
 
-  h2 {
-    font-size: 24px;
-  }
-
-  .promos {
-    margin-top: 18px;
-  }
-
-  .promo-card {
-    border-radius: 16px;
+  .carrito-edit,
+  .carta-actions {
+    grid-template-columns: 1fr;
   }
 
   .carrito-item-top {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-card,
+  .container {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .header-inner {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .brand img {
+    height: 46px;
+  }
+
+  .hero h1 {
+    font-size: 28px;
   }
 }
 </style>
@@ -579,32 +822,134 @@ button:hover {
 
 <body>
 
-<header>
-  <img src="logo.png" style="height:50px;" alt="Logo Central Carnes"><br>
-  <b>Central Carnes</b>
-</header>
-
-<div class="promos">
-  <h3 class="promos-title">🔥 Promociones destacadas</h3>
-
-  <div class="promos-grid">
-    <div class="promo-card" onclick="aplicarPromo('ASADO completo','2')">
-      🔥 2kg Asado
-      <small>Toque rápido para cargar la promo</small>
-    </div>
-
-    <div class="promo-card" onclick="combo1()">
-      🥩 Combo Parrillero
-      <small>2 Asado + 1 Vacío Premium</small>
-    </div>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>📍 Atención mayorista y minorista · Pedidos online</div>
+    <div>📞 WhatsApp directo · 📦 Retiro / entrega según zona</div>
   </div>
 </div>
 
-<div id="authContainer" class="container">
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <img src="logo.png" alt="Logo Central Carnes">
+      <div class="brand-text">
+        <b>Central Carnes</b>
+        <span>Calidad, variedad y pedidos online</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="header-chip">🔥 Ofertas destacadas</div>
+      <div class="header-chip">🥩 Cortes por categoría</div>
+      <div class="header-chip">🛒 Carrito y pedidos</div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-card">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-badge">VENTA MINORISTA Y MAYORISTA</div>
+        <h1>Pedí tus cortes, armá tu carrito y enviá tu pedido en minutos.</h1>
+        <p>
+          Una experiencia más profesional, más clara y más cómoda para tus clientes,
+          manteniendo todo lo que ya funciona: registro, historial, carta, carrito,
+          edición de cantidades, WhatsApp y seguimiento.
+        </p>
+
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <strong>+68</strong>
+            <span>Productos cargados</span>
+          </div>
+          <div class="hero-stat">
+            <strong>24/7</strong>
+            <span>Catálogo online</span>
+          </div>
+          <div class="hero-stat">
+            <strong>1 clic</strong>
+            <span>Desde la carta al carrito</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-side">
+        <div class="hero-side-card">
+          <small>PEDIDOS</small>
+          <b>Catálogo + carrito + envío</b>
+          <span>Elegí cortes, indicá kilos y enviá el pedido con formato claro por WhatsApp.</span>
+        </div>
+
+        <div class="hero-side-card">
+          <small>CLIENTES</small>
+          <b>Ingreso y autocompletado</b>
+          <span>El cliente entra, mantiene sus datos y puede ver su historial de pedidos.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head">
+    <h2 class="section-title">¿Por qué elegir Central Carnes?</h2>
+    <p class="section-subtitle">Presentación más profesional, sin perder ninguna función del sistema.</p>
+  </div>
+
+  <div class="quick-grid">
+    <div class="quick-card">
+      <b>🥩 Amplia variedad</b>
+      <span>Cortes vacunos, chacinados, congelados y otros productos en un mismo catálogo.</span>
+    </div>
+    <div class="quick-card">
+      <b>🛒 Compra simple</b>
+      <span>Desde la carta agregás kilos directo al carrito y podés corregir cantidades antes de enviar.</span>
+    </div>
+    <div class="quick-card">
+      <b>👤 Cliente registrado</b>
+      <span>Ingreso con DNI y contraseña, autocompletado de datos y edición de teléfono/dirección.</span>
+    </div>
+    <div class="quick-card">
+      <b>📦 Seguimiento</b>
+      <span>Historial de pedidos del cliente y visualización en Admin Pro para control interno.</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head">
+    <h2 class="section-title">Promociones destacadas</h2>
+    <p class="section-subtitle">Accesos rápidos para acelerar la compra.</p>
+  </div>
+
+  <div class="promos-grid">
+    <div class="promo-card" onclick="aplicarPromo('ASADO completo','2')">
+      <small>PROMO RÁPIDA</small>
+      <h3>2kg de Asado</h3>
+      <p>Un toque y queda cargado en el formulario para sumar o enviar.</p>
+    </div>
+
+    <div class="promo-card" onclick="combo1()">
+      <small>COMBO</small>
+      <h3>Parrillero</h3>
+      <p>2kg de asado + 1kg de vacío premium, listo para sumar al carrito.</p>
+    </div>
+
+    <div class="promo-card" onclick="document.getElementById('cartaContainer').scrollIntoView({behavior:'smooth'})">
+      <small>CATÁLOGO</small>
+      <h3>Explorar cortes</h3>
+      <p>Buscá por nombre, filtrá por categoría y agregá productos con sus kilos.</p>
+    </div>
+  </div>
+</section>
+
+<div id="authContainer" class="container" style="margin-top:22px;">
   <div class="form-top">
     <div class="form-badge">ACCESO CLIENTE</div>
     <h2 id="authTitle">Crear cuenta</h2>
-    <p class="form-desc">Para hacer pedidos primero tenés que registrarte o iniciar sesión con tu DNI.</p>
+    <p class="form-desc">Registrate o iniciá sesión para hacer pedidos, guardar tus datos y ver tu historial.</p>
   </div>
 
   <div id="registerBox">
@@ -661,15 +1006,15 @@ button:hover {
   </div>
 
   <div class="info-box">
-    Validamos formato de DNI, teléfono y dirección. Para verificar datos “reales” al 100% haría falta integrar servicios externos.
+    Validamos formato de DNI, teléfono y dirección. Una vez dentro, tus datos se autocompletan para agilizar cada pedido.
   </div>
 </div>
 
-<div id="cartaContainer" class="container" style="display:none;">
+<div id="cartaContainer" class="container" style="display:none; margin-top:22px;">
   <div class="form-top">
-    <div class="form-badge">LISTA DE PRECIOS</div>
-    <h2>Carta de cortes</h2>
-    <p class="form-desc">Buscá, elegí categoría, poné los kilos y agregá directo al carrito.</p>
+    <div class="form-badge">CATÁLOGO ONLINE</div>
+    <h2>Carta de cortes y productos</h2>
+    <p class="form-desc">Buscá, filtrá por categoría, elegí kilos y agregá directo al carrito.</p>
   </div>
 
   <div class="carta-filtros">
@@ -693,12 +1038,11 @@ button:hover {
   <div id="cartaGrid" class="carta-grid"></div>
 </div>
 
-<div id="formulario" class="container" style="display:none;">
-
+<div id="formulario" class="container" style="display:none; margin-top:22px;">
   <div class="form-top">
     <div class="form-badge">PEDIDOS ONLINE</div>
-    <h2>Hacer Pedido</h2>
-    <p class="form-desc">Cargá tus datos y armá el pedido sin perder nada de lo que ya venías usando.</p>
+    <h2>Armá tu pedido</h2>
+    <p class="form-desc">Podés elegir desde el formulario o cargar productos directamente desde la carta.</p>
   </div>
 
   <div class="form-grid">
@@ -763,10 +1107,9 @@ button:hover {
     <div><b>Cliente:</b> <span id="clienteActualNombre">-</span> · DNI <span id="clienteActualDni">-</span></div>
     <div class="auth-mini"><span class="auth-link" onclick="cerrarSesionCliente()">Cerrar sesión</span></div>
   </div>
-
 </div>
 
-<div id="historial" class="container" style="display:none;">
+<div id="historial" class="container" style="display:none; margin-top:22px;">
   <div class="historial-head">
     <div>
       <h2 style="margin:0;">📦 Mis pedidos</h2>
@@ -788,6 +1131,10 @@ button:hover {
 
 <div id="qrModal" onclick="this.style.display='none'">
   <img id="qrImg" alt="QR del negocio">
+</div>
+
+<div class="footer-note">
+  Central Carnes · Catálogo online con registro, carrito, historial y envío por WhatsApp.
 </div>
 
 <script>
@@ -1523,3 +1870,4 @@ cargarProductos();
 
 </body>
 </html>
+Después subilo así
