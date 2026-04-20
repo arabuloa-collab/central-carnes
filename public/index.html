@@ -45,6 +45,208 @@ a {
   text-decoration: none;
 }
 
+/* =========================
+   PORTADA DE ENTRADA
+========================= */
+.intro-hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 26px 16px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(220,38,38,0.22), transparent 18%),
+    radial-gradient(circle at 85% 25%, rgba(239,68,68,0.18), transparent 16%),
+    linear-gradient(135deg, rgba(11,18,32,1) 0%, rgba(20,30,48,1) 55%, rgba(127,29,29,0.95) 100%);
+}
+
+.intro-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.intro-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1180px;
+  border-radius: 34px;
+  padding: 42px 34px;
+  background:
+    linear-gradient(135deg, rgba(11,18,32,0.84), rgba(30,41,59,0.84));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+  backdrop-filter: blur(10px);
+}
+
+.intro-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 30px;
+  align-items: center;
+}
+
+.intro-badge {
+  display: inline-block;
+  background: rgba(239,68,68,0.14);
+  border: 1px solid rgba(239,68,68,0.22);
+  color: #fecaca;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: .8px;
+  margin-bottom: 14px;
+}
+
+.intro-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.intro-brand img {
+  height: 74px;
+  width: auto;
+  display: block;
+}
+
+.intro-brand-text b {
+  display: block;
+  font-size: 34px;
+  line-height: 1.05;
+}
+
+.intro-brand-text span {
+  color: #fecaca;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.intro-title {
+  margin: 0 0 14px;
+  font-size: 48px;
+  line-height: 1.05;
+}
+
+.intro-text {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 17px;
+  line-height: 1.7;
+  max-width: 760px;
+}
+
+.intro-points {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.intro-point {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.intro-point b {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.intro-point span {
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.intro-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+
+.intro-btn-main,
+.intro-btn-sec {
+  border: none;
+  border-radius: 16px;
+  padding: 16px 22px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform .18s ease, filter .18s ease;
+}
+
+.intro-btn-main:hover,
+.intro-btn-sec:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+}
+
+.intro-btn-main {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white;
+  box-shadow: 0 16px 28px rgba(220,38,38,0.22);
+}
+
+.intro-btn-sec {
+  background: rgba(255,255,255,0.06);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.intro-side {
+  display: grid;
+  gap: 14px;
+}
+
+.intro-side-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 22px;
+  padding: 20px;
+}
+
+.intro-side-card small {
+  display: block;
+  color: #fecaca;
+  margin-bottom: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  font-weight: bold;
+}
+
+.intro-side-card b {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 22px;
+}
+
+.intro-side-card span {
+  color: #e2e8f0;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* =========================
+   RESTO DE LA WEB
+========================= */
 .topbar {
   background: #7f1d1d;
   color: #fee2e2;
@@ -325,6 +527,8 @@ section {
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 16px 34px rgba(0,0,0,0.22);
+  max-width: 1180px;
+  margin: 22px auto 0;
 }
 
 .form-badge {
@@ -768,6 +972,7 @@ button:hover {
 }
 
 @media (max-width: 980px) {
+  .intro-grid,
   .hero-grid,
   .quick-grid,
   .promos-grid,
@@ -779,10 +984,11 @@ button:hover {
     grid-template-columns: 1fr;
   }
 
-  .hero h1 {
-    font-size: 34px;
+  .intro-title {
+    font-size: 36px;
   }
 
+  .intro-points,
   .hero-stats {
     grid-template-columns: 1fr;
   }
@@ -795,9 +1001,14 @@ button:hover {
   .carrito-item-top {
     flex-direction: column;
   }
+
+  .hero h1 {
+    font-size: 34px;
+  }
 }
 
 @media (max-width: 640px) {
+  .intro-card,
   .hero-card,
   .container {
     padding: 18px;
@@ -809,12 +1020,22 @@ button:hover {
     align-items: start;
   }
 
-  .brand img {
+  .brand img,
+  .intro-brand img {
     height: 46px;
   }
 
+  .intro-brand-text b {
+    font-size: 28px;
+  }
+
+  .intro-title,
   .hero h1 {
     font-size: 28px;
+  }
+
+  .intro-actions {
+    flex-direction: column;
   }
 }
 </style>
@@ -822,323 +1043,395 @@ button:hover {
 
 <body>
 
-<div class="topbar">
-  <div class="topbar-inner">
-    <div>Direccion:Munrro, calle San lorenzo 4917
-       Atención mayorista  · Pedidos online</div>
-    <div>📞 WhatsApp directo 1125061324 · 📦 Retiro / entrega según zona</div>
-  </div>
-</div>
-
-<header>
-  <div class="header-inner">
-    <div class="brand">
-      <img src="logo.png" alt="Logo Central Carnes">
-      <div class="brand-text">
-        <b>Central Carnes</b>
-        <span>Calidad, variedad y pedidos online</span>
-      </div>
-    </div>
-
-    <div class="header-actions">
-      <div class="header-chip">🔥 Ofertas destacadas</div>
-      <div class="header-chip">🥩 Cortes por categoría</div>
-      <div class="header-chip">🛒 Carrito y pedidos</div>
-    </div>
-  </div>
-</header>
-
-<section class="hero">
-  <div class="hero-card">
-    <div class="hero-grid">
+<!-- PORTADA DE PRESENTACIÓN -->
+<section class="intro-hero">
+  <div class="intro-card">
+    <div class="intro-grid">
       <div>
-        <div class="hero-badge">VENTA MAYORISTA PARA TU LOCAL
-          O CARNICERIA 
+        <div class="intro-badge">BIENVENIDO A CENTRAL CARNES</div>
+
+        <div class="intro-brand">
+          <img src="logo.png" alt="Logo Central Carnes">
+          <div class="intro-brand-text">
+            <b>Central Carnes</b>
+            <span>Calidad · Servicio · Pedidos online</span>
+          </div>
         </div>
-        <h1>Pedí tus cortes, armá tu carrito y enviá tu pedido en minutos.</h1>
-        <p>
-          Una experiencia más profesional, más clara y más cómoda para usted,
-          teniendo todas las funciones que necesita: registro, historial, carta, carrito,
-          edición de cantidades, WhatsApp y seguimiento.
+
+        <h1 class="intro-title">Productos frescos de calidad y una experiencia de compra más profesional.</h1>
+
+        <p class="intro-text">
+          Somos una propuesta pensada para ofrecer variedad, calidad y servicio en cada pedido.
+          Desde esta nueva entrada, tus clientes pueden conocer mejor la empresa y luego continuar
+          directamente a la parte operativa del sistema para registrarse, elegir productos y hacer sus pedidos.
         </p>
 
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <strong>+68</strong>
-            <span>Productos cargados</span>
+        <div class="intro-points">
+          <div class="intro-point">
+            <b>🥩 Calidad y variedad</b>
+            <span>Cortes vacunos, productos seleccionados y una carta organizada para una compra más simple.</span>
           </div>
-          <div class="hero-stat">
-            <strong>24/7</strong>
-            <span>Catálogo online</span>
+
+          <div class="intro-point">
+            <b>📦 Atención y servicio</b>
+            <span>Una experiencia más clara, profesional y cómoda para clientes habituales y nuevos.</span>
           </div>
-          <div class="hero-stat">
-            <strong>1 clic</strong>
-            <span>Desde la carta al carrito</span>
+
+          <div class="intro-point">
+            <b>🛒 Pedido online</b>
+            <span>Buscador, categorías, carrito, edición de kilos e historial de pedidos en el mismo lugar.</span>
           </div>
+
+          <div class="intro-point">
+            <b>📲 Continuidad real</b>
+            <span>Después de la presentación, el cliente entra directo a la web funcional que ya construimos.</span>
+          </div>
+        </div>
+
+        <div class="intro-actions">
+          <button class="intro-btn-main" onclick="irAlSistema()">Continuar</button>
+          <button class="intro-btn-sec" onclick="document.getElementById('promosSection').scrollIntoView({behavior:'smooth'})">Ver más</button>
         </div>
       </div>
 
-      <div class="hero-side">
-        <div class="hero-side-card">
-          <small>PEDIDOS</small>
-          <b>Catálogo + carrito + envío</b>
-          <span>Elegí cortes, indicá kilos y manda tu pedido por WhatsApp.</span>
+      <div class="intro-side">
+        <div class="intro-side-card">
+          <small>NUEVA ENTRADA VISUAL</small>
+          <b>Primera impresión más fuerte</b>
+          <span>La web ahora recibe al cliente con una presentación más comercial y más cercana a una marca profesional.</span>
         </div>
 
-        <div class="hero-side-card">
-          <small>CLIENTES</small>
-          <b>Ingreso y autocompletado</b>
-          <span>Vendemos todos los tipos de cortes emvasados, con la logistica optima para que llegue a tu local.</span>
+        <div class="intro-side-card">
+          <small>SIN PERDER FUNCIONES</small>
+          <b>Todo lo que ya funciona sigue igual</b>
+          <span>Login, registro, autocompletado, carta, carrito, historial, QR, compartir y panel admin siguen activos.</span>
+        </div>
+
+        <div class="intro-side-card">
+          <small>OBJETIVO</small>
+          <b>Vender mejor desde la primera vista</b>
+          <span>Una portada más clara y más estética ayuda a transmitir confianza antes de que el cliente haga el pedido.</span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section>
-  <div class="section-head">
-    <h2 class="section-title">¿Por qué elegir Central Carnes?</h2>
-    <p class="section-subtitle">COMPRA EN CENTRAL DE CERNES CON LA MEJOR CALIDAD, EXPERIENCIA, MEJOR PRECIO CON EL SABOR QUE HACE VOLVER A TODOS ..</p>
-  </div>
-
-  <div class="quick-grid">
-    <div class="quick-card">
-      <b>🥩 Amplia variedad</b>
-      <span>Cortes vacunos, chacinados, congelados y otros productos en un mismo catálogo.</span>
-    </div>
-    <div class="quick-card">
-      <b>🛒 Compra simple</b>
-      <span>Desde la carta agregás kilos directo al carrito y podés corregir cantidades antes de enviar.</span>
-    </div>
-    <div class="quick-card">
-      <b>👤 Cliente registrado</b>
-      <span>Ingreso con DNI y contraseña, autocompletado de datos y edición de teléfono/dirección.</span>
-    </div>
-    <div class="quick-card">
-      <b>📦 Seguimiento</b>
-      <span>Historial de pedidos posdes ver el estado del pedido
-        en tiempo real, manter el control del pedido.</span>
+<div id="mainContent">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div>📍 Atención mayorista y minorista · Pedidos online</div>
+      <div>📞 WhatsApp directo · 📦 Retiro / entrega según zona</div>
     </div>
   </div>
-</section>
 
-<section>
-  <div class="section-head">
-    <h2 class="section-title">Promociones destacadas</h2>
-    <p class="section-subtitle">Accesos rápidos para acelerar la compra.</p>
-  </div>
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <img src="logo.png" alt="Logo Central Carnes">
+        <div class="brand-text">
+          <b>Central Carnes</b>
+          <span>Calidad, variedad y pedidos online</span>
+        </div>
+      </div>
 
-  <div class="promos-grid">
-    <div class="promo-card" onclick="aplicarPromo('ASADO completo','2')">
-      <small>PROMO RÁPIDA</small>
-      <h3>2kg de Asado</h3>
-      <p>Un toque y queda cargado en el formulario para sumar o enviar.</p>
+      <div class="header-actions">
+        <div class="header-chip">🔥 Ofertas destacadas</div>
+        <div class="header-chip">🥩 Cortes por categoría</div>
+        <div class="header-chip">🛒 Carrito y pedidos</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-card">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-badge">VENTA MINORISTA Y MAYORISTA</div>
+          <h1>Pedí tus cortes, armá tu carrito y enviá tu pedido en minutos.</h1>
+          <p>
+            Una experiencia más profesional, más clara y más cómoda para tus clientes,
+            manteniendo todo lo que ya funciona: registro, historial, carta, carrito,
+            edición de cantidades, WhatsApp y seguimiento.
+          </p>
+
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <strong>+68</strong>
+              <span>Productos cargados</span>
+            </div>
+            <div class="hero-stat">
+              <strong>24/7</strong>
+              <span>Catálogo online</span>
+            </div>
+            <div class="hero-stat">
+              <strong>1 clic</strong>
+              <span>Desde la carta al carrito</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="hero-side-card">
+            <small>PEDIDOS</small>
+            <b>Catálogo + carrito + envío</b>
+            <span>Elegí cortes, indicá kilos y enviá el pedido con formato claro por WhatsApp.</span>
+          </div>
+
+          <div class="hero-side-card">
+            <small>CLIENTES</small>
+            <b>Ingreso y autocompletado</b>
+            <span>El cliente entra, mantiene sus datos y puede ver su historial de pedidos.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="promosSection">
+    <div class="section-head">
+      <h2 class="section-title">¿Por qué elegir Central Carnes?</h2>
+      <p class="section-subtitle">Presentación más profesional, sin perder ninguna función del sistema.</p>
     </div>
 
-    <div class="promo-card" onclick="combo1()">
-      <small>COMBO</small>
-      <h3>Parrillero</h3>
-      <p>2kg de asado + 1kg de vacío premium, listo para sumar al carrito.</p>
+    <div class="quick-grid">
+      <div class="quick-card">
+        <b>🥩 Amplia variedad</b>
+        <span>Cortes vacunos, chacinados, congelados y otros productos en un mismo catálogo.</span>
+      </div>
+      <div class="quick-card">
+        <b>🛒 Compra simple</b>
+        <span>Desde la carta agregás kilos directo al carrito y podés corregir cantidades antes de enviar.</span>
+      </div>
+      <div class="quick-card">
+        <b>👤 Cliente registrado</b>
+        <span>Ingreso con DNI y contraseña, autocompletado de datos y edición de teléfono/dirección.</span>
+      </div>
+      <div class="quick-card">
+        <b>📦 Seguimiento</b>
+        <span>Historial de pedidos del cliente y visualización en Admin Pro para control interno.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="section-title">Promociones destacadas</h2>
+      <p class="section-subtitle">Accesos rápidos para acelerar la compra.</p>
     </div>
 
-    <div class="promo-card" onclick="document.getElementById('cartaContainer').scrollIntoView({behavior:'smooth'})">
-      <small>CATÁLOGO</small>
-      <h3>Explorar cortes</h3>
-      <p>Buscá por nombre, filtrá por categoría y agregá productos con sus kilos.</p>
+    <div class="promos-grid">
+      <div class="promo-card" onclick="aplicarPromo('ASADO completo','2'); irAlSistema()">
+        <small>PROMO RÁPIDA</small>
+        <h3>2kg de Asado</h3>
+        <p>Un toque y queda cargado en el formulario para sumar o enviar.</p>
+      </div>
+
+      <div class="promo-card" onclick="combo1(); irAlSistema()">
+        <small>COMBO</small>
+        <h3>Parrillero</h3>
+        <p>2kg de asado + 1kg de vacío premium, listo para sumar al carrito.</p>
+      </div>
+
+      <div class="promo-card" onclick="document.getElementById('cartaContainer').scrollIntoView({behavior:'smooth'})">
+        <small>CATÁLOGO</small>
+        <h3>Explorar cortes</h3>
+        <p>Buscá por nombre, filtrá por categoría y agregá productos con sus kilos.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="authContainer" class="container" style="margin-top:22px;">
+    <div class="form-top">
+      <div class="form-badge">ACCESO CLIENTE</div>
+      <h2 id="authTitle">Crear cuenta</h2>
+      <p class="form-desc">Registrate o iniciá sesión para hacer pedidos, guardar tus datos y ver tu historial.</p>
+    </div>
+
+    <div id="registerBox">
+      <div class="form-grid">
+        <div class="field">
+          <label for="regNombre">Nombre</label>
+          <input id="regNombre" placeholder="Ingresá tu nombre">
+        </div>
+
+        <div class="field">
+          <label for="regDni">DNI</label>
+          <input id="regDni" placeholder="Solo números">
+        </div>
+
+        <div class="field">
+          <label for="regTelefono">Teléfono</label>
+          <input id="regTelefono" placeholder="Ej: 1123456789">
+        </div>
+
+        <div class="field">
+          <label for="regPassword">Contraseña</label>
+          <input id="regPassword" type="password" placeholder="Mínimo 4 caracteres">
+        </div>
+
+        <div class="field full">
+          <label for="regDireccion">Dirección</label>
+          <input id="regDireccion" placeholder="Ingresá tu dirección">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-main" onclick="registrarCliente()">Crear cuenta</button>
+        <button class="btn-sec" onclick="mostrarLogin()">Ya tengo cuenta</button>
+      </div>
+    </div>
+
+    <div id="loginBox" style="display:none;">
+      <div class="form-grid">
+        <div class="field">
+          <label for="logDni">DNI</label>
+          <input id="logDni" placeholder="Ingresá tu DNI">
+        </div>
+
+        <div class="field">
+          <label for="logPassword">Contraseña</label>
+          <input id="logPassword" type="password" placeholder="Ingresá tu contraseña">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-main" onclick="loginCliente()">Ingresar</button>
+        <button class="btn-sec" onclick="mostrarRegistro()">Crear cuenta</button>
+      </div>
+    </div>
+
+    <div class="info-box">
+      Validamos formato de DNI, teléfono y dirección. Una vez dentro, tus datos se autocompletan para agilizar cada pedido.
     </div>
   </div>
-</section>
 
-<div id="authContainer" class="container" style="margin-top:22px;">
-  <div class="form-top">
-    <div class="form-badge">ACCESO CLIENTE</div>
-    <h2 id="authTitle">Crear cuenta</h2>
-    <p class="form-desc">Registrate o iniciá sesión para hacer pedidos, guardar tus datos y ver tu historial.</p>
+  <div id="cartaContainer" class="container" style="display:none; margin-top:22px;">
+    <div class="form-top">
+      <div class="form-badge">CATÁLOGO ONLINE</div>
+      <h2>Carta de cortes y productos</h2>
+      <p class="form-desc">Buscá, filtrá por categoría, elegí kilos y agregá directo al carrito.</p>
+    </div>
+
+    <div class="carta-filtros">
+      <div class="field">
+        <label for="buscadorCarta">Buscar corte</label>
+        <input id="buscadorCarta" placeholder="Ej: vacío, nalga, asado..." oninput="aplicarFiltroCarta()">
+      </div>
+
+      <div class="field">
+        <label for="categoriaCarta">Categoría</label>
+        <select id="categoriaCarta" onchange="aplicarFiltroCarta()">
+          <option value="todos">Todas</option>
+          <option value="vacuna">Vacuna</option>
+          <option value="chacinados">Chacinados</option>
+          <option value="congelados">Congelados</option>
+          <option value="otros">Otros</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="cartaGrid" class="carta-grid"></div>
   </div>
 
-  <div id="registerBox">
+  <div id="formulario" class="container" style="display:none; margin-top:22px;">
+    <div class="form-top">
+      <div class="form-badge">PEDIDOS ONLINE</div>
+      <h2>Armá tu pedido</h2>
+      <p class="form-desc">Podés elegir desde el formulario o cargar productos directamente desde la carta.</p>
+    </div>
+
     <div class="form-grid">
       <div class="field">
-        <label for="regNombre">Nombre</label>
-        <input id="regNombre" placeholder="Ingresá tu nombre">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" placeholder="Ingresá tu nombre">
       </div>
 
       <div class="field">
-        <label for="regDni">DNI</label>
-        <input id="regDni" placeholder="Solo números">
-      </div>
-
-      <div class="field">
-        <label for="regTelefono">Teléfono</label>
-        <input id="regTelefono" placeholder="Ej: 1123456789">
-      </div>
-
-      <div class="field">
-        <label for="regPassword">Contraseña</label>
-        <input id="regPassword" type="password" placeholder="Mínimo 4 caracteres">
+        <label for="telefono">Teléfono</label>
+        <input id="telefono" placeholder="Ej: 11 2345 6789">
       </div>
 
       <div class="field full">
-        <label for="regDireccion">Dirección</label>
-        <input id="regDireccion" placeholder="Ingresá tu dirección">
+        <label for="direccion">Dirección</label>
+        <input id="direccion" placeholder="Ingresá tu dirección">
+      </div>
+
+      <div class="field">
+        <label for="producto">Producto</label>
+        <select id="producto"></select>
+      </div>
+
+      <div class="field">
+        <label for="cantidad">Cantidad (kg)</label>
+        <input id="cantidad" placeholder="Ej: 2 o 12.5">
+      </div>
+
+      <div class="field full">
+        <label>Combo seleccionado</label>
+        <div id="comboBox"></div>
+      </div>
+
+      <div class="field full">
+        <label>Carrito</label>
+        <div id="carritoBox">
+          <div class="carrito-header">
+            <div class="carrito-title">🛒 Productos agregados</div>
+          </div>
+
+          <div id="carritoLista" class="carrito-empty">No hay productos agregados</div>
+
+          <div id="carritoTotal" class="carrito-total">Total estimado: $0</div>
+
+          <div class="carrito-actions-main">
+            <button class="btn-add" onclick="agregarAlCarrito()">Agregar al carrito</button>
+            <button class="btn-clear" onclick="vaciarCarrito()">Vaciar carrito</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="actions">
-      <button class="btn-main" onclick="registrarCliente()">Crear cuenta</button>
-      <button class="btn-sec" onclick="mostrarLogin()">Ya tengo cuenta</button>
+      <button class="btn-main" onclick="enviar()">Enviar Pedido</button>
+      <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
+      <button class="btn-sec" onclick="guardarMisDatos()">Guardar mis datos</button>
+      <button class="btn-wsp" onclick="compartir()">Compartir negocio</button>
+      <button class="btn-qr" onclick="verQR()">Ver QR</button>
+    </div>
+
+    <div class="info-box">
+      <div><b>Cliente:</b> <span id="clienteActualNombre">-</span> · DNI <span id="clienteActualDni">-</span></div>
+      <div class="auth-mini"><span class="auth-link" onclick="cerrarSesionCliente()">Cerrar sesión</span></div>
     </div>
   </div>
 
-  <div id="loginBox" style="display:none;">
-    <div class="form-grid">
-      <div class="field">
-        <label for="logDni">DNI</label>
-        <input id="logDni" placeholder="Ingresá tu DNI">
-      </div>
-
-      <div class="field">
-        <label for="logPassword">Contraseña</label>
-        <input id="logPassword" type="password" placeholder="Ingresá tu contraseña">
-      </div>
-    </div>
-
-    <div class="actions">
-      <button class="btn-main" onclick="loginCliente()">Ingresar</button>
-      <button class="btn-sec" onclick="mostrarRegistro()">Crear cuenta</button>
-    </div>
-  </div>
-
-  <div class="info-box">
-    Validamos formato de DNI, teléfono y dirección. Una vez dentro, tus datos se autocompletan para agilizar cada pedido.
-  </div>
-</div>
-
-<div id="cartaContainer" class="container" style="display:none; margin-top:22px;">
-  <div class="form-top">
-    <div class="form-badge">CATÁLOGO ONLINE</div>
-    <h2>Carta de cortes y productos</h2>
-    <p class="form-desc">Buscá, filtrá por categoría, elegí kilos y agregá directo al carrito.</p>
-  </div>
-
-  <div class="carta-filtros">
-    <div class="field">
-      <label for="buscadorCarta">Buscar corte</label>
-      <input id="buscadorCarta" placeholder="Ej: vacío, nalga, asado..." oninput="aplicarFiltroCarta()">
-    </div>
-
-    <div class="field">
-      <label for="categoriaCarta">Categoría</label>
-      <select id="categoriaCarta" onchange="aplicarFiltroCarta()">
-        <option value="todos">Todas</option>
-        <option value="vacuna">Vacuna</option>
-        <option value="chacinados">Chacinados</option>
-        <option value="congelados">Congelados</option>
-        <option value="otros">Otros</option>
-      </select>
-    </div>
-  </div>
-
-  <div id="cartaGrid" class="carta-grid"></div>
-</div>
-
-<div id="formulario" class="container" style="display:none; margin-top:22px;">
-  <div class="form-top">
-    <div class="form-badge">PEDIDOS ONLINE</div>
-    <h2>Armá tu pedido</h2>
-    <p class="form-desc">Podés elegir desde el formulario o cargar productos directamente desde la carta.</p>
-  </div>
-
-  <div class="form-grid">
-    <div class="field">
-      <label for="nombre">Nombre</label>
-      <input id="nombre" placeholder="Ingresá tu nombre">
-    </div>
-
-    <div class="field">
-      <label for="telefono">Teléfono</label>
-      <input id="telefono" placeholder="Ej: 11 2345 6789">
-    </div>
-
-    <div class="field full">
-      <label for="direccion">Dirección</label>
-      <input id="direccion" placeholder="Ingresá tu dirección">
-    </div>
-
-    <div class="field">
-      <label for="producto">Producto</label>
-      <select id="producto"></select>
-    </div>
-
-    <div class="field">
-      <label for="cantidad">Cantidad (kg)</label>
-      <input id="cantidad" placeholder="Ej: 2 o 12.5">
-    </div>
-
-    <div class="field full">
-      <label>Combo seleccionado</label>
-      <div id="comboBox"></div>
-    </div>
-
-    <div class="field full">
-      <label>Carrito</label>
-      <div id="carritoBox">
-        <div class="carrito-header">
-          <div class="carrito-title">🛒 Productos agregados</div>
-        </div>
-
-        <div id="carritoLista" class="carrito-empty">No hay productos agregados</div>
-
-        <div id="carritoTotal" class="carrito-total">Total estimado: $0</div>
-
-        <div class="carrito-actions-main">
-          <button class="btn-add" onclick="agregarAlCarrito()">Agregar al carrito</button>
-          <button class="btn-clear" onclick="vaciarCarrito()">Vaciar carrito</button>
-        </div>
+  <div id="historial" class="container" style="display:none; margin-top:22px;">
+    <div class="historial-head">
+      <div>
+        <h2 style="margin:0;">📦 Mis pedidos</h2>
+        <p class="historial-sub">Acá vas a ver el detalle completo de tus pedidos guardados.</p>
       </div>
     </div>
+
+    <div id="lista"></div>
+    <button class="btn-sec" onclick="volver()">Volver</button>
   </div>
 
-  <div class="actions">
-    <button class="btn-main" onclick="enviar()">Enviar Pedido</button>
-    <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
-    <button class="btn-sec" onclick="guardarMisDatos()">Guardar mis datos</button>
-    <button class="btn-wsp" onclick="compartir()">Compartir negocio</button>
-    <button class="btn-qr" onclick="verQR()">Ver QR</button>
-  </div>
-
-  <div class="info-box">
-    <div><b>Cliente:</b> <span id="clienteActualNombre">-</span> · DNI <span id="clienteActualDni">-</span></div>
-    <div class="auth-mini"><span class="auth-link" onclick="cerrarSesionCliente()">Cerrar sesión</span></div>
-  </div>
-</div>
-
-<div id="historial" class="container" style="display:none; margin-top:22px;">
-  <div class="historial-head">
-    <div>
-      <h2 style="margin:0;">📦 Mis pedidos</h2>
-      <p class="historial-sub">Acá vas a ver el detalle completo de tus pedidos guardados.</p>
+  <div id="exito">
+    <div class="card-exito">
+      <div class="check">✅</div>
+      <h2>Pedido enviado</h2>
+      <button class="btn-main" onclick="volver()">Volver</button>
     </div>
   </div>
 
-  <div id="lista"></div>
-  <button class="btn-sec" onclick="volver()">Volver</button>
-</div>
-
-<div id="exito">
-  <div class="card-exito">
-    <div class="check">✅</div>
-    <h2>Pedido enviado</h2>
-    <button class="btn-main" onclick="volver()">Volver</button>
+  <div id="qrModal" onclick="this.style.display='none'">
+    <img id="qrImg" alt="QR del negocio">
   </div>
-</div>
 
-<div id="qrModal" onclick="this.style.display='none'">
-  <img id="qrImg" alt="QR del negocio">
-</div>
-
-<div class="footer-note">
-  Central Carnes · Catálogo online con registro, carrito, historial y envío por WhatsApp.
+  <div class="footer-note">
+    Central Carnes · Catálogo online con registro, carrito, historial y envío por WhatsApp.
+  </div>
 </div>
 
 <script>
@@ -1151,6 +1444,10 @@ let productosCartaFiltrados = [];
 
 const URL = window.location.origin;
 const TELEFONO = "5491125061324";
+
+function irAlSistema() {
+  document.getElementById("mainContent").scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 function onlyDigits(value) {
   return String(value || "").replace(/\D/g, "");
@@ -1278,6 +1575,7 @@ function registrarCliente() {
   .then(data => {
     setClienteSesion(data.cliente);
     aplicarClienteSesion();
+    irAlSistema();
   })
   .catch(err => alert(err.message));
 }
@@ -1311,6 +1609,7 @@ function loginCliente() {
   .then(data => {
     setClienteSesion(data.cliente);
     aplicarClienteSesion();
+    irAlSistema();
   })
   .catch(err => alert(err.message));
 }
@@ -1326,6 +1625,7 @@ function cerrarSesionCliente() {
   document.getElementById("historial").style.display = "none";
   document.getElementById("exito").style.display = "none";
   mostrarLogin();
+  irAlSistema();
 }
 
 function aplicarClienteSesion() {
