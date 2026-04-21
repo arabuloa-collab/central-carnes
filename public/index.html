@@ -12,9 +12,7 @@
 
 :root {
   --bg: #0b1220;
-  --bg-soft: #111827;
   --card: rgba(17, 24, 39, 0.92);
-  --card-2: rgba(30, 41, 59, 0.92);
   --line: rgba(255,255,255,0.08);
   --text: #f8fafc;
   --muted: #cbd5e1;
@@ -23,7 +21,6 @@
   --brand-2: #ef4444;
   --success: #22c55e;
   --warning: #facc15;
-  --blue: #2563eb;
 }
 
 html {
@@ -46,7 +43,7 @@ a {
 }
 
 /* =========================
-   PORTADA DE ENTRADA
+   PORTADA PREMIUM
 ========================= */
 .intro-hero {
   min-height: 100vh;
@@ -57,9 +54,11 @@ a {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 15% 20%, rgba(220,38,38,0.22), transparent 18%),
-    radial-gradient(circle at 85% 25%, rgba(239,68,68,0.18), transparent 16%),
-    linear-gradient(135deg, rgba(11,18,32,1) 0%, rgba(20,30,48,1) 55%, rgba(127,29,29,0.95) 100%);
+    radial-gradient(circle at 15% 20%, rgba(220,38,38,0.24), transparent 18%),
+    radial-gradient(circle at 82% 18%, rgba(239,68,68,0.16), transparent 16%),
+    radial-gradient(circle at 50% 85%, rgba(255,255,255,0.05), transparent 18%),
+    linear-gradient(135deg, #08101d 0%, #111827 50%, #7f1d1d 100%);
+  transition: opacity .5s ease, transform .5s ease;
 }
 
 .intro-hero::before {
@@ -70,7 +69,26 @@ a {
     linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 28px 28px;
-  opacity: 0.25;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.intro-hero::after {
+  content: "";
+  position: absolute;
+  right: -140px;
+  top: -80px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(239,68,68,0.26), transparent 70%);
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+.intro-hide {
+  opacity: 0;
+  transform: scale(1.02);
   pointer-events: none;
 }
 
@@ -78,13 +96,13 @@ a {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1180px;
+  max-width: 1220px;
   border-radius: 34px;
   padding: 42px 34px;
   background:
-    linear-gradient(135deg, rgba(11,18,32,0.84), rgba(30,41,59,0.84));
+    linear-gradient(135deg, rgba(8,16,29,0.86), rgba(30,41,59,0.82));
   border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.38);
   backdrop-filter: blur(10px);
 }
 
@@ -116,15 +134,16 @@ a {
 }
 
 .intro-brand img {
-  height: 74px;
+  height: 78px;
   width: auto;
   display: block;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.24));
 }
 
 .intro-brand-text b {
   display: block;
-  font-size: 34px;
-  line-height: 1.05;
+  font-size: 36px;
+  line-height: 1.03;
 }
 
 .intro-brand-text span {
@@ -136,15 +155,16 @@ a {
 
 .intro-title {
   margin: 0 0 14px;
-  font-size: 48px;
-  line-height: 1.05;
+  font-size: 52px;
+  line-height: 1.03;
+  max-width: 760px;
 }
 
 .intro-text {
   margin: 0;
   color: #e2e8f0;
   font-size: 17px;
-  line-height: 1.7;
+  line-height: 1.75;
   max-width: 760px;
 }
 
@@ -171,25 +191,25 @@ a {
 .intro-point span {
   color: #cbd5e1;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .intro-actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  margin-top: 26px;
+  margin-top: 28px;
 }
 
 .intro-btn-main,
 .intro-btn-sec {
   border: none;
   border-radius: 16px;
-  padding: 16px 22px;
+  padding: 16px 24px;
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
-  transition: transform .18s ease, filter .18s ease;
+  transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
 }
 
 .intro-btn-main:hover,
@@ -221,12 +241,13 @@ a {
   border-radius: 22px;
   padding: 20px;
   cursor: pointer;
-  transition: transform .18s ease, filter .18s ease;
+  transition: transform .18s ease, filter .18s ease, border-color .18s ease;
 }
 
 .intro-side-card:hover {
   transform: translateY(-2px);
   filter: brightness(1.03);
+  border-color: rgba(239,68,68,0.26);
 }
 
 .intro-side-card small {
@@ -996,7 +1017,7 @@ button:hover {
   }
 
   .intro-title {
-    font-size: 36px;
+    font-size: 38px;
   }
 
   .intro-points,
@@ -1069,12 +1090,12 @@ button:hover {
           </div>
         </div>
 
-        <h1 class="intro-title">Productos frescos de calidad y una experiencia de compra más profesional.</h1>
+        <h1 class="intro-title">La mejor forma de presentar tu negocio antes de comprar.</h1>
 
         <p class="intro-text">
-          Somos una propuesta pensada para ofrecer variedad, calidad y servicio en cada pedido.
-          Esta portada presenta la empresa y, al continuar, se accede al sistema completo de pedidos
-          que ya venimos construyendo.
+          Una portada más fuerte, más limpia y más profesional para mostrar la identidad de Central Carnes.
+          Al continuar, el cliente entra directo al sistema completo que ya construimos:
+          registro, carta, categorías, carrito, historial y envío del pedido.
         </p>
 
         <div class="intro-points">
@@ -1457,11 +1478,16 @@ const URL = window.location.origin;
 const TELEFONO = "5491125061324";
 
 function mostrarSistema(destino = "top") {
-  document.getElementById("mainContent").style.display = "block";
+  const intro = document.getElementById("introHero");
+  const main = document.getElementById("mainContent");
+
+  main.style.display = "block";
+  intro.classList.add("intro-hide");
 
   setTimeout(() => {
+    intro.style.display = "none";
     scrollA(destino);
-  }, 50);
+  }, 500);
 }
 
 function scrollA(id) {
@@ -1647,7 +1673,6 @@ function cerrarSesionCliente() {
   document.getElementById("historial").style.display = "none";
   document.getElementById("exito").style.display = "none";
   mostrarLogin();
-  mostrarSistema("top");
 }
 
 function aplicarClienteSesion() {
@@ -1687,6 +1712,8 @@ function validarSesionClienteAlCargar() {
     return;
   }
 
+  document.getElementById("mainContent").style.display = "block";
+  document.getElementById("introHero").style.display = "none";
   aplicarClienteSesion();
 
   fetch("/api/clientes/" + onlyDigits(cliente.dni))
