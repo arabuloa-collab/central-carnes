@@ -1,2223 +1,404 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Central Carnes - Pedidos Online</title>
-
-<style>
-* {
-  box-sizing: border-box;
-}
-
-:root {
-  --bg: #0b1220;
-  --card: rgba(17, 24, 39, 0.92);
-  --line: rgba(255,255,255,0.08);
-  --text: #f8fafc;
-  --muted: #cbd5e1;
-  --muted-2: #94a3b8;
-  --brand: #dc2626;
-  --brand-2: #ef4444;
-  --success: #22c55e;
-  --warning: #facc15;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  color: var(--text);
-  font-family: Arial, sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(239,68,68,0.12), transparent 22%),
-    linear-gradient(180deg, #08101d 0%, #0f172a 100%);
-  min-height: 100vh;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* =========================
-   PORTADA PREMIUM
-========================= */
-.intro-hero {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 26px 16px;
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 15% 20%, rgba(220,38,38,0.24), transparent 18%),
-    radial-gradient(circle at 82% 18%, rgba(239,68,68,0.16), transparent 16%),
-    radial-gradient(circle at 50% 85%, rgba(255,255,255,0.05), transparent 18%),
-    linear-gradient(135deg, #08101d 0%, #111827 50%, #7f1d1d 100%);
-  transition: opacity .5s ease, transform .5s ease;
-}
-
-.intro-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 28px 28px;
-  opacity: 0.22;
-  pointer-events: none;
-}
-
-.intro-hero::after {
-  content: "";
-  position: absolute;
-  right: -140px;
-  top: -80px;
-  width: 420px;
-  height: 420px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(239,68,68,0.26), transparent 70%);
-  filter: blur(18px);
-  pointer-events: none;
-}
-
-.intro-hide {
-  opacity: 0;
-  transform: scale(1.02);
-  pointer-events: none;
-}
-
-.intro-card {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 1220px;
-  border-radius: 34px;
-  padding: 42px 34px;
-  background:
-    linear-gradient(135deg, rgba(8,16,29,0.86), rgba(30,41,59,0.82));
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.38);
-  backdrop-filter: blur(10px);
-}
-
-.intro-grid {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 30px;
-  align-items: center;
-}
-
-.intro-badge {
-  display: inline-block;
-  background: rgba(239,68,68,0.14);
-  border: 1px solid rgba(239,68,68,0.22);
-  color: #fecaca;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: bold;
-  letter-spacing: .8px;
-  margin-bottom: 14px;
-}
-
-.intro-brand {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.intro-brand img {
-  height: 78px;
-  width: auto;
-  display: block;
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.24));
-}
-
-.intro-brand-text b {
-  display: block;
-  font-size: 36px;
-  line-height: 1.03;
-}
-
-.intro-brand-text span {
-  color: #fecaca;
-  font-size: 13px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.intro-title {
-  margin: 0 0 14px;
-  font-size: 52px;
-  line-height: 1.03;
-  max-width: 760px;
-}
-
-.intro-text {
-  margin: 0;
-  color: #e2e8f0;
-  font-size: 17px;
-  line-height: 1.75;
-  max-width: 760px;
-}
-
-.intro-points {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.intro-point {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 18px;
-  padding: 16px;
-}
-
-.intro-point b {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 15px;
-}
-
-.intro-point span {
-  color: #cbd5e1;
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.intro-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 28px;
-}
-
-.intro-btn-main,
-.intro-btn-sec {
-  border: none;
-  border-radius: 16px;
-  padding: 16px 24px;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
-}
-
-.intro-btn-main:hover,
-.intro-btn-sec:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.03);
-}
-
-.intro-btn-main {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  color: white;
-  box-shadow: 0 16px 28px rgba(220,38,38,0.22);
-}
-
-.intro-btn-sec {
-  background: rgba(255,255,255,0.06);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.intro-side {
-  display: grid;
-  gap: 14px;
-}
-
-.intro-side-card {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 22px;
-  padding: 20px;
-  cursor: pointer;
-  transition: transform .18s ease, filter .18s ease, border-color .18s ease;
-}
-
-.intro-side-card:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.03);
-  border-color: rgba(239,68,68,0.26);
-}
-
-.intro-side-card small {
-  display: block;
-  color: #fecaca;
-  margin-bottom: 8px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  font-weight: bold;
-}
-
-.intro-side-card b {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 22px;
-}
-
-.intro-side-card span {
-  color: #e2e8f0;
-  line-height: 1.6;
-  font-size: 14px;
-}
-
-/* =========================
-   RESTO DE LA WEB
-========================= */
-#mainContent {
-  display: none;
-}
-
-.topbar {
-  background: #7f1d1d;
-  color: #fee2e2;
-  font-size: 13px;
-  padding: 10px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.topbar-inner {
-  max-width: 1180px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  backdrop-filter: blur(10px);
-  background: rgba(11,18,32,0.84);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.header-inner {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand img {
-  height: 52px;
-  width: auto;
-  display: block;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.brand-text b {
-  font-size: 22px;
-  letter-spacing: 0.3px;
-}
-
-.brand-text span {
-  font-size: 12px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.header-chip {
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.05);
-  color: var(--muted);
-  font-size: 13px;
-  border: 1px solid rgba(255,255,255,0.06);
-}
-
-.hero {
-  max-width: 1180px;
-  margin: 24px auto 0;
-  padding: 0 16px;
-}
-
-.hero-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 28px;
-  padding: 34px 28px;
-  background:
-    linear-gradient(120deg, rgba(127,29,29,0.94), rgba(220,38,38,0.92) 45%, rgba(15,23,42,0.95) 100%);
-  box-shadow: 0 24px 50px rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 28px;
-  align-items: center;
-}
-
-.hero-badge {
-  display: inline-block;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.14);
-  color: #fee2e2;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: bold;
-  letter-spacing: 0.6px;
-  margin-bottom: 12px;
-}
-
-.hero h1 {
-  margin: 0 0 10px;
-  font-size: 42px;
-  line-height: 1.08;
-}
-
-.hero p {
-  margin: 0;
-  color: #fee2e2;
-  font-size: 16px;
-  line-height: 1.6;
-  max-width: 700px;
-}
-
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 22px;
-}
-
-.hero-stat {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 18px;
-  padding: 16px;
-}
-
-.hero-stat strong {
-  display: block;
-  font-size: 20px;
-  margin-bottom: 4px;
-}
-
-.hero-stat span {
-  font-size: 13px;
-  color: #fee2e2;
-}
-
-.hero-side {
-  display: grid;
-  gap: 14px;
-}
-
-.hero-side-card {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 20px;
-  padding: 18px;
-}
-
-.hero-side-card small {
-  color: #fecaca;
-  display: block;
-  margin-bottom: 6px;
-}
-
-.hero-side-card b {
-  display: block;
-  font-size: 20px;
-  margin-bottom: 6px;
-}
-
-.hero-side-card span {
-  color: #fee2e2;
-  font-size: 14px;
-}
-
-section {
-  max-width: 1180px;
-  margin: 22px auto 0;
-  padding: 0 16px;
-}
-
-.section-title {
-  margin: 0 0 6px;
-  font-size: 28px;
-}
-
-.section-subtitle {
-  margin: 0;
-  color: var(--muted);
-  font-size: 15px;
-}
-
-.section-head {
-  margin-bottom: 16px;
-}
-
-.quick-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-.quick-card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  padding: 18px;
-  box-shadow: 0 12px 26px rgba(0,0,0,0.18);
-}
-
-.quick-card b {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 16px;
-}
-
-.quick-card span {
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.promos-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.promo-card {
-  background:
-    linear-gradient(135deg, rgba(127,29,29,0.95), rgba(220,38,38,0.95));
-  border-radius: 22px;
-  padding: 22px;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 18px 32px rgba(127,29,29,0.2);
-  cursor: pointer;
-  transition: transform .18s ease, filter .18s ease;
-}
-
-.promo-card:hover {
-  transform: translateY(-3px);
-  filter: brightness(1.03);
-}
-
-.promo-card small {
-  display: block;
-  color: #fecaca;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: .7px;
-  font-weight: bold;
-}
-
-.promo-card h3 {
-  margin: 0 0 8px;
-  font-size: 24px;
-}
-
-.promo-card p {
-  margin: 0;
-  color: #fee2e2;
-  line-height: 1.5;
-}
-
-.container {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 16px 34px rgba(0,0,0,0.22);
-  max-width: 1180px;
-  margin: 22px auto 0;
-}
-
-.form-badge {
-  display: inline-block;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(239,68,68,0.12);
-  color: #fecaca;
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  border: 1px solid rgba(239,68,68,0.18);
-}
-
-.form-top {
-  margin-bottom: 20px;
-}
-
-.form-top h2 {
-  margin: 0 0 8px;
-  font-size: 30px;
-}
-
-.form-desc {
-  margin: 0;
-  color: var(--muted);
-  font-size: 15px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-}
-
-.field.full {
-  grid-column: 1 / -1;
-}
-
-label {
-  margin-bottom: 8px;
-  color: #e2e8f0;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-input, select {
-  width: 100%;
-  padding: 14px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: #0b1220;
-  color: white;
-  outline: none;
-  transition: all .18s ease;
-  font-size: 15px;
-}
-
-input::placeholder {
-  color: #94a3b8;
-}
-
-input:focus, select:focus {
-  border-color: var(--brand-2);
-  box-shadow: 0 0 0 4px rgba(239,68,68,0.12);
-}
-
-.info-box {
-  margin-top: 16px;
-  background: rgba(15,23,42,0.72);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 16px;
-  padding: 14px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 20px;
-}
-
-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 15px;
-  transition: transform .18s ease, filter .18s ease;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.03);
-}
-
-.btn-main {
-  background: linear-gradient(135deg, #22c55e, #4ade80);
-  color: #052e16;
-}
-
-.btn-sec {
-  background: linear-gradient(135deg, #334155, #475569);
-  color: white;
-}
-
-.btn-wsp {
-  background: linear-gradient(135deg, #25D366, #4ade80);
-  color: #052e16;
-}
-
-.btn-qr {
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-  color: white;
-}
-
-.btn-add {
-  background: linear-gradient(135deg, #f59e0b, #facc15);
-  color: #111827;
-}
-
-.btn-clear {
-  background: linear-gradient(135deg, #475569, #64748b);
-  color: white;
-}
-
-.btn-remove-item {
-  background: linear-gradient(135deg, #dc2626, #ef4444);
-  color: white;
-  width: auto;
-  min-width: 88px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-}
-
-.btn-save-item {
-  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-  color: white;
-  width: auto;
-  min-width: 90px;
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-.auth-mini {
-  margin-top: 10px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.auth-link {
-  color: #93c5fd;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.carta-filtros {
-  display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.carta-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 14px;
-}
-
-.carta-item {
-  background: rgba(15,23,42,0.84);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 18px;
-  padding: 16px;
-}
-
-.carta-categoria {
-  display: inline-block;
-  margin-bottom: 10px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: bold;
-  background: rgba(148,163,184,0.14);
-  color: var(--muted);
-  letter-spacing: .6px;
-}
-
-.carta-item strong {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 16px;
-}
-
-.carta-item span {
-  color: var(--muted);
-  display: block;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.carta-actions {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  align-items: center;
-}
-
-.carta-cantidad {
-  padding: 11px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: #0b1220;
-  color: white;
-}
-
-.carta-btn {
-  background: linear-gradient(135deg, #475569, #64748b);
-  color: white;
-  width: auto;
-  min-width: 118px;
-}
-
-#comboBox {
-  display: none;
-  background: #020617;
-  padding: 14px;
-  border-radius: 14px;
-  color: #f8fafc;
-  border: 1px dashed rgba(255,255,255,0.14);
-}
-
-#carritoBox {
-  background: #020617;
-  padding: 16px;
-  border-radius: 18px;
-  color: #f8fafc;
-  border: 1px dashed rgba(255,255,255,0.14);
-}
-
-.carrito-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.carrito-title {
-  font-weight: bold;
-  font-size: 15px;
-  color: #e2e8f0;
-}
-
-.carrito-empty {
-  color: var(--muted-2);
-  font-size: 14px;
-}
-
-.carrito-item {
-  background: rgba(15,23,42,0.8);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 8px;
-}
-
-.carrito-item-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: start;
-  margin-bottom: 10px;
-}
-
-.carrito-item strong {
-  display: block;
-  margin-bottom: 4px;
-}
-
-.carrito-item span {
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.carrito-edit {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 8px;
-  align-items: center;
-}
-
-.carrito-cantidad-input {
-  background: #0b1220;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  color: white;
-  padding: 10px 12px;
-  width: 100%;
-}
-
-.carrito-actions-main {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.carrito-total {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  font-size: 15px;
-  font-weight: bold;
-  color: #e2e8f0;
-}
-
-.historial-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-
-.historial-sub {
-  color: var(--muted);
-  font-size: 14px;
-  margin: 0;
-}
-
-.card {
-  background: linear-gradient(180deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95));
-  margin: 12px 0;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.05);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.18);
-}
-
-.estado {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-weight: bold;
-  font-size: 13px;
-  text-transform: capitalize;
-}
-
-.pendiente {
-  background: var(--warning);
-  color: black;
-}
-
-.entregado {
-  background: var(--success);
-  color: black;
-}
-
-.items-box {
-  background: rgba(15,23,42,0.6);
-  border-radius: 10px;
-  padding: 10px;
-  margin: 10px 0;
-}
-
-#exito {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.94);
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-  padding: 20px;
-}
-
-.card-exito {
-  background: linear-gradient(180deg, #1e293b, #0f172a);
-  padding: 34px 24px;
-  border-radius: 22px;
-  text-align: center;
-  width: 100%;
-  max-width: 420px;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
-}
-
-.check {
-  font-size: 74px;
-  color: var(--success);
-  margin-bottom: 10px;
-}
-
-.card-exito h2 {
-  margin-bottom: 16px;
-}
-
-#qrModal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.72);
-  justify-content: center;
-  align-items: center;
-  z-index: 101;
-  padding: 20px;
-}
-
-#qrModal img {
-  background: white;
-  padding: 14px;
-  border-radius: 18px;
-  max-width: 90vw;
-  width: 240px;
-  height: auto;
-  box-shadow: 0 18px 35px rgba(0,0,0,0.45);
-}
-
-.footer-note {
-  max-width: 1180px;
-  margin: 24px auto 40px;
-  padding: 0 16px;
-  color: var(--muted-2);
-  text-align: center;
-  font-size: 13px;
-}
-
-@media (max-width: 980px) {
-  .intro-grid,
-  .hero-grid,
-  .quick-grid,
-  .promos-grid,
-  .carta-grid,
-  .carta-filtros,
-  .form-grid,
-  .actions,
-  .carrito-actions-main {
-    grid-template-columns: 1fr;
-  }
-
-  .intro-title {
-    font-size: 38px;
-  }
-
-  .intro-points,
-  .hero-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .carrito-edit,
-  .carta-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .carrito-item-top {
-    flex-direction: column;
-  }
-
-  .hero h1 {
-    font-size: 34px;
-  }
-}
-
-@media (max-width: 640px) {
-  .intro-card,
-  .hero-card,
-  .container {
-    padding: 18px;
-    border-radius: 20px;
-  }
-
-  .header-inner {
-    flex-direction: column;
-    align-items: start;
-  }
-
-  .brand img,
-  .intro-brand img {
-    height: 46px;
-  }
-
-  .intro-brand-text b {
-    font-size: 28px;
-  }
-
-  .intro-title,
-  .hero h1 {
-    font-size: 28px;
-  }
-
-  .intro-actions {
-    flex-direction: column;
-  }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central Carnes - Pedidos Online</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
 
-<!-- PORTADA DE PRESENTACIÓN -->
-<section class="intro-hero" id="introHero">
-  <div class="intro-card">
-    <div class="intro-grid">
-      <div>
-        <div class="intro-badge">BIENVENIDO A CENTRAL CARNES</div>
-
-        <div class="intro-brand">
-          <img src="logo.png" alt="Logo Central Carnes">
-          <div class="intro-brand-text">
-            <b>Central Carnes</b>
-            <span>Calidad · Servicio · Pedidos online</span>
-          </div>
-        </div>
-
-        <h1 class="intro-title">La mejor forma de presentar tu negocio antes de comprar.</h1>
-
-        <p class="intro-text">
-          Una portada más fuerte, más limpia y más profesional para mostrar la identidad de Central Carnes.
-          Al continuar, el cliente entra directo al sistema completo que ya construimos:
-          registro, carta, categorías, carrito, historial y envío del pedido.
-        </p>
-
-        <div class="intro-points">
-          <div class="intro-point">
-            <b>🥩 Calidad y variedad</b>
-            <span>Cortes vacunos, productos seleccionados y una carta organizada para una compra más simple.</span>
-          </div>
-
-          <div class="intro-point">
-            <b>📦 Atención y servicio</b>
-            <span>Una experiencia más clara, profesional y cómoda para clientes habituales y nuevos.</span>
-          </div>
-
-          <div class="intro-point">
-            <b>🛒 Pedido online</b>
-            <span>Buscador, categorías, carrito, edición de kilos e historial de pedidos en el mismo lugar.</span>
-          </div>
-
-          <div class="intro-point">
-            <b>📲 Continuidad real</b>
-            <span>Después de la presentación, el cliente entra directo a la web funcional que ya construimos.</span>
-          </div>
-        </div>
-
-        <div class="intro-actions">
-          <button class="intro-btn-main" onclick="mostrarSistema('top')">Continuar</button>
-          <button class="intro-btn-sec" onclick="mostrarSistema('promosSection')">Ver ofertas destacadas</button>
-        </div>
-      </div>
-
-      <div class="intro-side">
-        <div class="intro-side-card" onclick="mostrarSistema('promosSection')">
-          <small>OFERTAS DESTACADAS</small>
-          <b>Promociones y accesos rápidos</b>
-          <span>Entrá directo al apartado de ofertas para ver promos destacadas y combos cargados.</span>
-        </div>
-
-        <div class="intro-side-card" onclick="mostrarSistema('cartaContainer')">
-          <small>CORTES Y CATEGORÍAS</small>
-          <b>Catálogo completo</b>
-          <span>Pasá directamente a la sección de cortes, categorías y buscador para elegir productos.</span>
-        </div>
-
-        <div class="intro-side-card" onclick="mostrarSistema('formulario')">
-          <small>CARRITO Y PEDIDO</small>
-          <b>Ir directo a comprar</b>
-          <span>Entrá al formulario, carrito y armado del pedido para continuar la compra rápidamente.</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div id="mainContent">
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div>📍 Atención mayorista y minorista · Pedidos online</div>
-      <div>📞 WhatsApp directo · 📦 Retiro / entrega según zona</div>
-    </div>
-  </div>
-
-  <header>
-    <div class="header-inner">
-      <div class="brand">
-        <img src="logo.png" alt="Logo Central Carnes">
-        <div class="brand-text">
-          <b>Central Carnes</b>
-          <span>Calidad, variedad y pedidos online</span>
-        </div>
-      </div>
-
-      <div class="header-actions">
-        <div class="header-chip" onclick="scrollA('promosSection')" style="cursor:pointer;">🔥 Ofertas destacadas</div>
-        <div class="header-chip" onclick="scrollA('cartaContainer')" style="cursor:pointer;">🥩 Cortes y categorías</div>
-        <div class="header-chip" onclick="scrollA('formulario')" style="cursor:pointer;">🛒 Carrito y pedido</div>
-      </div>
-    </div>
-  </header>
-
-  <section class="hero" id="top">
-    <div class="hero-card">
-      <div class="hero-grid">
+  <!-- PORTADA DE PRESENTACIÓN -->
+  <section class="intro-hero" id="introHero">
+    <div class="intro-card">
+      <div class="intro-grid">
         <div>
-          <div class="hero-badge">VENTA MINORISTA Y MAYORISTA</div>
-          <h1>Pedí tus cortes, armá tu carrito y enviá tu pedido en minutos.</h1>
-          <p>
-            Una experiencia más profesional, más clara y más cómoda para tus clientes,
-            manteniendo todo lo que ya funciona: registro, historial, carta, carrito,
-            edición de cantidades, WhatsApp y seguimiento.
+          <div class="intro-badge">BIENVENIDO A CENTRAL CARNES</div>
+
+          <div class="intro-brand">
+            <img src="logo.png" alt="Logo Central Carnes">
+            <div class="intro-brand-text">
+              <b>Central Carnes</b>
+              <span>Calidad · Servicio · Pedidos online</span>
+            </div>
+          </div>
+
+          <h1 class="intro-title">La mejor forma de presentar tu negocio antes de comprar.</h1>
+
+          <p class="intro-text">
+            Una portada más fuerte, más limpia y más profesional para mostrar la identidad de Central Carnes.
+            Al continuar, el cliente entra directo al sistema completo que ya construimos:
+            registro, carta, categorías, carrito, historial y envío del pedido.
           </p>
 
-          <div class="hero-stats">
-            <div class="hero-stat">
-              <strong>+68</strong>
-              <span>Productos cargados</span>
+          <div class="intro-points">
+            <div class="intro-point">
+              <b>🥩 Calidad y variedad</b>
+              <span>Cortes vacunos, productos seleccionados y una carta organizada para una compra más simple.</span>
             </div>
-            <div class="hero-stat">
-              <strong>24/7</strong>
-              <span>Catálogo online</span>
+
+            <div class="intro-point">
+              <b>📦 Atención y servicio</b>
+              <span>Una experiencia más clara, profesional y cómoda para clientes habituales y nuevos.</span>
             </div>
-            <div class="hero-stat">
-              <strong>1 clic</strong>
-              <span>Desde la carta al carrito</span>
+
+            <div class="intro-point">
+              <b>🛒 Pedido online</b>
+              <span>Buscador, categorías, carrito, edición de kilos e historial de pedidos en el mismo lugar.</span>
             </div>
+
+            <div class="intro-point">
+              <b>📲 Continuidad real</b>
+              <span>Después de la presentación, el cliente entra directo a la web funcional que ya construimos.</span>
+            </div>
+          </div>
+
+          <div class="intro-actions">
+            <button class="intro-btn-main" onclick="mostrarSistema('top')">Continuar</button>
+            <button class="intro-btn-sec" onclick="mostrarSistema('promosSection')">Ver ofertas destacadas</button>
           </div>
         </div>
 
-        <div class="hero-side">
-          <div class="hero-side-card">
-            <small>PEDIDOS</small>
-            <b>Catálogo + carrito + envío</b>
-            <span>Elegí cortes, indicá kilos y enviá el pedido con formato claro por WhatsApp.</span>
+        <div class="intro-side">
+          <div class="intro-side-card" onclick="mostrarSistema('promosSection')">
+            <small>OFERTAS DESTACADAS</small>
+            <b>Promociones y accesos rápidos</b>
+            <span>Entrá directo al apartado de ofertas para ver promos destacadas y combos cargados.</span>
           </div>
 
-          <div class="hero-side-card">
-            <small>CLIENTES</small>
-            <b>Ingreso y autocompletado</b>
-            <span>El cliente entra, mantiene sus datos y puede ver su historial de pedidos.</span>
+          <div class="intro-side-card" onclick="mostrarSistema('cartaContainer')">
+            <small>CORTES Y CATEGORÍAS</small>
+            <b>Catálogo completo</b>
+            <span>Pasá directamente a la sección de cortes, categorías y buscador para elegir productos.</span>
+          </div>
+
+          <div class="intro-side-card" onclick="mostrarSistema('formulario')">
+            <small>CARRITO Y PEDIDO</small>
+            <b>Ir directo a comprar</b>
+            <span>Entrá al formulario, carrito y armado del pedido para continuar la compra rápidamente.</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="promosSection">
-    <div class="section-head">
-      <h2 class="section-title">¿Por qué elegir Central Carnes?</h2>
-      <p class="section-subtitle">Presentación más profesional, sin perder ninguna función del sistema.</p>
-    </div>
-
-    <div class="quick-grid">
-      <div class="quick-card">
-        <b>🥩 Amplia variedad</b>
-        <span>Cortes vacunos, chacinados, congelados y otros productos en un mismo catálogo.</span>
-      </div>
-      <div class="quick-card">
-        <b>🛒 Compra simple</b>
-        <span>Desde la carta agregás kilos directo al carrito y podés corregir cantidades antes de enviar.</span>
-      </div>
-      <div class="quick-card">
-        <b>👤 Cliente registrado</b>
-        <span>Ingreso con DNI y contraseña, autocompletado de datos y edición de teléfono/dirección.</span>
-      </div>
-      <div class="quick-card">
-        <b>📦 Seguimiento</b>
-        <span>Historial de pedidos del cliente y visualización en Admin Pro para control interno.</span>
+  <div id="mainContent">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div>📍 Atención mayorista y minorista · Pedidos online</div>
+        <div>📞 WhatsApp directo · 📦 Retiro / entrega según zona</div>
       </div>
     </div>
-  </section>
 
-  <section>
-    <div class="section-head">
-      <h2 class="section-title">Promociones destacadas</h2>
-      <p class="section-subtitle">Accesos rápidos para acelerar la compra.</p>
-    </div>
+    <header>
+      <div class="header-inner">
+        <div class="brand">
+          <img src="logo.png" alt="Logo Central Carnes">
+          <div class="brand-text">
+            <b>Central Carnes</b>
+            <span>Calidad, variedad y pedidos online</span>
+          </div>
+        </div>
 
-    <div class="promos-grid">
-      <div class="promo-card" onclick="aplicarPromo('ASADO completo','2'); scrollA('formulario')">
-        <small>PROMO RÁPIDA</small>
-        <h3>2kg de Asado</h3>
-        <p>Un toque y queda cargado en el formulario para sumar o enviar.</p>
+        <div class="header-actions">
+          <div class="header-chip" onclick="scrollA('promosSection')">🔥 Ofertas destacadas</div>
+          <div class="header-chip" onclick="scrollA('cartaContainer')">🥩 Cortes y categorías</div>
+          <div class="header-chip" onclick="scrollA('formulario')">🛒 Carrito y pedido</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero" id="top">
+      <div class="hero-card">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-badge">VENTA MINORISTA Y MAYORISTA</div>
+            <h1>Pedí tus cortes, armá tu carrito y enviá tu pedido en minutos.</h1>
+            <p>
+              Una experiencia más profesional, más clara y más cómoda para tus clientes,
+              manteniendo todo lo que ya funciona: registro, historial, carta, carrito,
+              edición de cantidades, WhatsApp y seguimiento.
+            </p>
+
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <strong>+68</strong>
+                <span>Productos cargados</span>
+              </div>
+              <div class="hero-stat">
+                <strong>24/7</strong>
+                <span>Catálogo online</span>
+              </div>
+              <div class="hero-stat">
+                <strong>1 clic</strong>
+                <span>Desde la carta al carrito</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-side">
+            <div class="hero-side-card">
+              <small>PEDIDOS</small>
+              <b>Catálogo + carrito + envío</b>
+              <span>Elegí cortes, indicá kilos y enviá el pedido con formato claro por WhatsApp.</span>
+            </div>
+
+            <div class="hero-side-card">
+              <small>CLIENTES</small>
+              <b>Ingreso y autocompletado</b>
+              <span>El cliente entra, mantiene sus datos y puede ver su historial de pedidos.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="promosSection">
+      <div class="section-head">
+        <h2 class="section-title">¿Por qué elegir Central Carnes?</h2>
+        <p class="section-subtitle">Presentación más profesional, sin perder ninguna función del sistema.</p>
       </div>
 
-      <div class="promo-card" onclick="combo1(); scrollA('formulario')">
-        <small>COMBO</small>
-        <h3>Parrillero</h3>
-        <p>2kg de asado + 1kg de vacío premium, listo para sumar al carrito.</p>
+      <div class="quick-grid">
+        <div class="quick-card">
+          <b>🥩 Amplia variedad</b>
+          <span>Cortes vacunos, chacinados, congelados y otros productos en un mismo catálogo.</span>
+        </div>
+        <div class="quick-card">
+          <b>🛒 Compra simple</b>
+          <span>Desde la carta agregás kilos directo al carrito y podés corregir cantidades antes de enviar.</span>
+        </div>
+        <div class="quick-card">
+          <b>👤 Cliente registrado</b>
+          <span>Ingreso con DNI y contraseña, autocompletado de datos y edición de teléfono/dirección.</span>
+        </div>
+        <div class="quick-card">
+          <b>📦 Seguimiento</b>
+          <span>Historial de pedidos del cliente y visualización en Admin Pro para control interno.</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2 class="section-title">Promociones destacadas</h2>
+        <p class="section-subtitle">Accesos rápidos para acelerar la compra.</p>
       </div>
 
-      <div class="promo-card" onclick="scrollA('cartaContainer')">
-        <small>CATÁLOGO</small>
-        <h3>Explorar cortes</h3>
-        <p>Buscá por nombre, filtrá por categoría y agregá productos con sus kilos.</p>
+      <div class="promos-grid">
+        <div class="promo-card" onclick="aplicarPromo('ASADO completo','2'); scrollA('formulario')">
+          <small>PROMO RÁPIDA</small>
+          <h3>2kg de Asado</h3>
+          <p>Un toque y queda cargado en el formulario para sumar o enviar.</p>
+        </div>
+
+        <div class="promo-card" onclick="combo1(); scrollA('formulario')">
+          <small>COMBO</small>
+          <h3>Parrillero</h3>
+          <p>2kg de asado + 1kg de vacío premium, listo para sumar al carrito.</p>
+        </div>
+
+        <div class="promo-card" onclick="scrollA('cartaContainer')">
+          <small>CATÁLOGO</small>
+          <h3>Explorar cortes</h3>
+          <p>Buscá por nombre, filtrá por categoría y agregá productos con sus kilos.</p>
+        </div>
+      </div>
+    </section>
+
+    <div id="authContainer" class="container">
+      <div class="form-top">
+        <div class="form-badge">ACCESO CLIENTE</div>
+        <h2 id="authTitle">Crear cuenta</h2>
+        <p class="form-desc">Registrate o iniciá sesión para hacer pedidos, guardar tus datos y ver tu historial.</p>
+      </div>
+
+      <div id="registerBox">
+        <div class="form-grid">
+          <div class="field">
+            <label for="regNombre">Nombre</label>
+            <input id="regNombre" placeholder="Ingresá tu nombre">
+          </div>
+
+          <div class="field">
+            <label for="regDni">DNI</label>
+            <input id="regDni" placeholder="Solo números">
+          </div>
+
+          <div class="field">
+            <label for="regTelefono">Teléfono</label>
+            <input id="regTelefono" placeholder="Ej: 1123456789">
+          </div>
+
+          <div class="field">
+            <label for="regPassword">Contraseña</label>
+            <input id="regPassword" type="password" placeholder="Mínimo 4 caracteres">
+          </div>
+
+          <div class="field full">
+            <label for="regDireccion">Dirección</label>
+            <input id="regDireccion" placeholder="Ingresá tu dirección">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-main" onclick="registrarCliente()">Crear cuenta</button>
+          <button class="btn-sec" onclick="mostrarLogin()">Ya tengo cuenta</button>
+        </div>
+      </div>
+
+      <div id="loginBox" class="hidden">
+        <div class="form-grid">
+          <div class="field">
+            <label for="logDni">DNI</label>
+            <input id="logDni" placeholder="Ingresá tu DNI">
+          </div>
+
+          <div class="field">
+            <label for="logPassword">Contraseña</label>
+            <input id="logPassword" type="password" placeholder="Ingresá tu contraseña">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-main" onclick="loginCliente()">Ingresar</button>
+          <button class="btn-sec" onclick="mostrarRegistro()">Crear cuenta</button>
+        </div>
+      </div>
+
+      <div class="info-box">
+        Validamos formato de DNI, teléfono y dirección. Una vez dentro, tus datos se autocompletan para agilizar cada pedido.
       </div>
     </div>
-  </section>
 
-  <div id="authContainer" class="container" style="margin-top:22px;">
-    <div class="form-top">
-      <div class="form-badge">ACCESO CLIENTE</div>
-      <h2 id="authTitle">Crear cuenta</h2>
-      <p class="form-desc">Registrate o iniciá sesión para hacer pedidos, guardar tus datos y ver tu historial.</p>
+    <div id="cartaContainer" class="container hidden">
+      <div class="form-top">
+        <div class="form-badge">CATÁLOGO ONLINE</div>
+        <h2>Carta de cortes y productos</h2>
+        <p class="form-desc">Buscá, filtrá por categoría, elegí kilos y agregá directo al carrito.</p>
+      </div>
+
+      <div class="carta-filtros">
+        <div class="field">
+          <label for="buscadorCarta">Buscar corte</label>
+          <input id="buscadorCarta" placeholder="Ej: vacío, nalga, asado..." oninput="aplicarFiltroCarta()">
+        </div>
+
+        <div class="field">
+          <label for="categoriaCarta">Categoría</label>
+          <select id="categoriaCarta" onchange="aplicarFiltroCarta()">
+            <option value="todos">Todas</option>
+            <option value="vacuna">Vacuna</option>
+            <option value="chacinados">Chacinados</option>
+            <option value="congelados">Congelados</option>
+            <option value="otros">Otros</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="cartaGrid" class="carta-grid"></div>
     </div>
 
-    <div id="registerBox">
+    <div id="formulario" class="container hidden">
+      <div class="form-top">
+        <div class="form-badge">PEDIDOS ONLINE</div>
+        <h2>Armá tu pedido</h2>
+        <p class="form-desc">Podés elegir desde el formulario o cargar productos directamente desde la carta.</p>
+      </div>
+
       <div class="form-grid">
         <div class="field">
-          <label for="regNombre">Nombre</label>
-          <input id="regNombre" placeholder="Ingresá tu nombre">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" placeholder="Ingresá tu nombre">
         </div>
 
         <div class="field">
-          <label for="regDni">DNI</label>
-          <input id="regDni" placeholder="Solo números">
-        </div>
-
-        <div class="field">
-          <label for="regTelefono">Teléfono</label>
-          <input id="regTelefono" placeholder="Ej: 1123456789">
-        </div>
-
-        <div class="field">
-          <label for="regPassword">Contraseña</label>
-          <input id="regPassword" type="password" placeholder="Mínimo 4 caracteres">
+          <label for="telefono">Teléfono</label>
+          <input id="telefono" placeholder="Ej: 11 2345 6789">
         </div>
 
         <div class="field full">
-          <label for="regDireccion">Dirección</label>
-          <input id="regDireccion" placeholder="Ingresá tu dirección">
+          <label for="direccion">Dirección</label>
+          <input id="direccion" placeholder="Ingresá tu dirección">
+        </div>
+
+        <div class="field">
+          <label for="producto">Producto</label>
+          <select id="producto"></select>
+        </div>
+
+        <div class="field">
+          <label for="cantidad">Cantidad (kg)</label>
+          <input id="cantidad" placeholder="Ej: 2 o 12.5">
+        </div>
+
+        <div class="field full">
+          <label>Combo seleccionado</label>
+          <div id="comboBox"></div>
+        </div>
+
+        <div class="field full">
+          <label>Carrito</label>
+          <div id="carritoBox">
+            <div class="carrito-header">
+              <div class="carrito-title">🛒 Productos agregados</div>
+            </div>
+
+            <div id="carritoLista" class="carrito-empty">No hay productos agregados</div>
+
+            <div id="carritoTotal" class="carrito-total">Total estimado: $0</div>
+
+            <div class="carrito-actions-main">
+              <button class="btn-add" onclick="agregarAlCarrito()">Agregar al carrito</button>
+              <button class="btn-clear" onclick="vaciarCarrito()">Vaciar carrito</button>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="actions">
-        <button class="btn-main" onclick="registrarCliente()">Crear cuenta</button>
-        <button class="btn-sec" onclick="mostrarLogin()">Ya tengo cuenta</button>
+        <button class="btn-main" onclick="enviar()">Enviar Pedido</button>
+        <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
+        <button class="btn-sec" onclick="guardarMisDatos()">Guardar mis datos</button>
+        <button class="btn-wsp" onclick="compartir()">Compartir negocio</button>
+        <button class="btn-qr" onclick="verQR()">Ver QR</button>
+      </div>
+
+      <div class="info-box">
+        <div><b>Cliente:</b> <span id="clienteActualNombre">-</span> · DNI <span id="clienteActualDni">-</span></div>
+        <div class="auth-mini"><span class="auth-link" onclick="cerrarSesionCliente()">Cerrar sesión</span></div>
       </div>
     </div>
 
-    <div id="loginBox" style="display:none;">
-      <div class="form-grid">
-        <div class="field">
-          <label for="logDni">DNI</label>
-          <input id="logDni" placeholder="Ingresá tu DNI">
-        </div>
-
-        <div class="field">
-          <label for="logPassword">Contraseña</label>
-          <input id="logPassword" type="password" placeholder="Ingresá tu contraseña">
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn-main" onclick="loginCliente()">Ingresar</button>
-        <button class="btn-sec" onclick="mostrarRegistro()">Crear cuenta</button>
-      </div>
-    </div>
-
-    <div class="info-box">
-      Validamos formato de DNI, teléfono y dirección. Una vez dentro, tus datos se autocompletan para agilizar cada pedido.
-    </div>
-  </div>
-
-  <div id="cartaContainer" class="container" style="display:none; margin-top:22px;">
-    <div class="form-top">
-      <div class="form-badge">CATÁLOGO ONLINE</div>
-      <h2>Carta de cortes y productos</h2>
-      <p class="form-desc">Buscá, filtrá por categoría, elegí kilos y agregá directo al carrito.</p>
-    </div>
-
-    <div class="carta-filtros">
-      <div class="field">
-        <label for="buscadorCarta">Buscar corte</label>
-        <input id="buscadorCarta" placeholder="Ej: vacío, nalga, asado..." oninput="aplicarFiltroCarta()">
-      </div>
-
-      <div class="field">
-        <label for="categoriaCarta">Categoría</label>
-        <select id="categoriaCarta" onchange="aplicarFiltroCarta()">
-          <option value="todos">Todas</option>
-          <option value="vacuna">Vacuna</option>
-          <option value="chacinados">Chacinados</option>
-          <option value="congelados">Congelados</option>
-          <option value="otros">Otros</option>
-        </select>
-      </div>
-    </div>
-
-    <div id="cartaGrid" class="carta-grid"></div>
-  </div>
-
-  <div id="formulario" class="container" style="display:none; margin-top:22px;">
-    <div class="form-top">
-      <div class="form-badge">PEDIDOS ONLINE</div>
-      <h2>Armá tu pedido</h2>
-      <p class="form-desc">Podés elegir desde el formulario o cargar productos directamente desde la carta.</p>
-    </div>
-
-    <div class="form-grid">
-      <div class="field">
-        <label for="nombre">Nombre</label>
-        <input id="nombre" placeholder="Ingresá tu nombre">
-      </div>
-
-      <div class="field">
-        <label for="telefono">Teléfono</label>
-        <input id="telefono" placeholder="Ej: 11 2345 6789">
-      </div>
-
-      <div class="field full">
-        <label for="direccion">Dirección</label>
-        <input id="direccion" placeholder="Ingresá tu dirección">
-      </div>
-
-      <div class="field">
-        <label for="producto">Producto</label>
-        <select id="producto"></select>
-      </div>
-
-      <div class="field">
-        <label for="cantidad">Cantidad (kg)</label>
-        <input id="cantidad" placeholder="Ej: 2 o 12.5">
-      </div>
-
-      <div class="field full">
-        <label>Combo seleccionado</label>
-        <div id="comboBox"></div>
-      </div>
-
-      <div class="field full">
-        <label>Carrito</label>
-        <div id="carritoBox">
-          <div class="carrito-header">
-            <div class="carrito-title">🛒 Productos agregados</div>
-          </div>
-
-          <div id="carritoLista" class="carrito-empty">No hay productos agregados</div>
-
-          <div id="carritoTotal" class="carrito-total">Total estimado: $0</div>
-
-          <div class="carrito-actions-main">
-            <button class="btn-add" onclick="agregarAlCarrito()">Agregar al carrito</button>
-            <button class="btn-clear" onclick="vaciarCarrito()">Vaciar carrito</button>
-          </div>
+    <div id="historial" class="container hidden">
+      <div class="historial-head">
+        <div>
+          <h2 class="historial-title">📦 Mis pedidos</h2>
+          <p class="historial-sub">Acá vas a ver el detalle completo de tus pedidos guardados.</p>
         </div>
       </div>
+
+      <div id="lista"></div>
+      <button class="btn-sec" onclick="volver()">Volver</button>
     </div>
 
-    <div class="actions">
-      <button class="btn-main" onclick="enviar()">Enviar Pedido</button>
-      <button class="btn-sec" onclick="verHistorial()">Ver mis pedidos</button>
-      <button class="btn-sec" onclick="guardarMisDatos()">Guardar mis datos</button>
-      <button class="btn-wsp" onclick="compartir()">Compartir negocio</button>
-      <button class="btn-qr" onclick="verQR()">Ver QR</button>
-    </div>
-
-    <div class="info-box">
-      <div><b>Cliente:</b> <span id="clienteActualNombre">-</span> · DNI <span id="clienteActualDni">-</span></div>
-      <div class="auth-mini"><span class="auth-link" onclick="cerrarSesionCliente()">Cerrar sesión</span></div>
-    </div>
-  </div>
-
-  <div id="historial" class="container" style="display:none; margin-top:22px;">
-    <div class="historial-head">
-      <div>
-        <h2 style="margin:0;">📦 Mis pedidos</h2>
-        <p class="historial-sub">Acá vas a ver el detalle completo de tus pedidos guardados.</p>
+    <div id="exito">
+      <div class="card-exito">
+        <div class="check">✅</div>
+        <h2>Pedido enviado</h2>
+        <button class="btn-main" onclick="volver()">Volver</button>
       </div>
     </div>
 
-    <div id="lista"></div>
-    <button class="btn-sec" onclick="volver()">Volver</button>
-  </div>
+    <div id="qrModal" onclick="this.style.display='none'">
+      <img id="qrImg" alt="QR del negocio">
+    </div>
 
-  <div id="exito">
-    <div class="card-exito">
-      <div class="check">✅</div>
-      <h2>Pedido enviado</h2>
-      <button class="btn-main" onclick="volver()">Volver</button>
+    <div class="footer-note">
+      Central Carnes · Catálogo online con registro, carrito, historial y envío por WhatsApp.
     </div>
   </div>
 
-  <div id="qrModal" onclick="this.style.display='none'">
-    <img id="qrImg" alt="QR del negocio">
-  </div>
-
-  <div class="footer-note">
-    Central Carnes · Catálogo online con registro, carrito, historial y envío por WhatsApp.
-  </div>
-</div>
-
-<script>
-let comboSeleccionado = null;
-let carrito = [];
-let productosConPrecio = {};
-let historialInterval = null;
-let productosCarta = [];
-let productosCartaFiltrados = [];
-
-const URL = window.location.origin;
-const TELEFONO = "5491125061324";
-
-function mostrarSistema(destino = "top") {
-  const intro = document.getElementById("introHero");
-  const main = document.getElementById("mainContent");
-
-  main.style.display = "block";
-  intro.classList.add("intro-hide");
-
-  setTimeout(() => {
-    intro.style.display = "none";
-    scrollA(destino);
-  }, 500);
-}
-
-function scrollA(id) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-}
-
-function onlyDigits(value) {
-  return String(value || "").replace(/\D/g, "");
-}
-
-function parseCantidad(value) {
-  const normalizado = String(value || "").trim().replace(",", ".");
-  const n = parseFloat(normalizado);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function normalizarCantidadTexto(value) {
-  return String(value || "").trim().replace(",", ".");
-}
-
-function formatMoney(value){
-  return Number(value || 0).toLocaleString("es-AR");
-}
-
-function getCategoriaProducto(nombre) {
-  const n = String(nombre || "").toLowerCase();
-
-  const chacinados = ["chorizos", "morcilla", "salchicha", "salchichas"];
-  const congelados = ["nuggets", "bastones de mozzarella", "medallon", "hamburguesa", "milanesa pollo"];
-  const otros = ["hueso", "grasa pella", "blend"];
-
-  if (chacinados.some(p => n.includes(p))) return "chacinados";
-  if (congelados.some(p => n.includes(p))) return "congelados";
-  if (otros.some(p => n.includes(p))) return "otros";
-  return "vacuna";
-}
-
-function getClienteSesion() {
-  try {
-    return JSON.parse(localStorage.getItem("clienteSesion")) || null;
-  } catch {
-    return null;
-  }
-}
-
-function setClienteSesion(cliente) {
-  localStorage.setItem("clienteSesion", JSON.stringify(cliente));
-  if (cliente?.dni) {
-    localStorage.setItem("clienteUltimoDni", cliente.dni);
-  }
-}
-
-function clearClienteSesion() {
-  localStorage.removeItem("clienteSesion");
-}
-
-function mostrarRegistro() {
-  document.getElementById("registerBox").style.display = "block";
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("authTitle").innerText = "Crear cuenta";
-}
-
-function mostrarLogin() {
-  document.getElementById("registerBox").style.display = "none";
-  document.getElementById("loginBox").style.display = "block";
-  document.getElementById("authTitle").innerText = "Iniciar sesión";
-
-  const ultimoDni = localStorage.getItem("clienteUltimoDni") || "";
-  if (ultimoDni) {
-    document.getElementById("logDni").value = ultimoDni;
-  }
-}
-
-function validarDni(dni) {
-  return /^\d{7,8}$/.test(onlyDigits(dni));
-}
-
-function validarTelefono(telefono) {
-  return /^\d{10,13}$/.test(onlyDigits(telefono));
-}
-
-function validarDireccion(direccion) {
-  return String(direccion || "").trim().length >= 6;
-}
-
-function registrarCliente() {
-  const payload = {
-    nombre: document.getElementById("regNombre").value.trim(),
-    dni: onlyDigits(document.getElementById("regDni").value),
-    telefono: onlyDigits(document.getElementById("regTelefono").value),
-    direccion: document.getElementById("regDireccion").value.trim(),
-    password: document.getElementById("regPassword").value.trim()
-  };
-
-  if (payload.nombre.length < 3) {
-    alert("Nombre inválido");
-    return;
-  }
-
-  if (!validarDni(payload.dni)) {
-    alert("DNI inválido");
-    return;
-  }
-
-  if (!validarTelefono(payload.telefono)) {
-    alert("Teléfono inválido");
-    return;
-  }
-
-  if (!validarDireccion(payload.direccion)) {
-    alert("Dirección inválida");
-    return;
-  }
-
-  if (payload.password.length < 4) {
-    alert("Contraseña inválida");
-    return;
-  }
-
-  fetch("/api/clientes/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-  .then(async res => {
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || "No se pudo registrar");
-    return data;
-  })
-  .then(data => {
-    setClienteSesion(data.cliente);
-    aplicarClienteSesion();
-    mostrarSistema("formulario");
-  })
-  .catch(err => alert(err.message));
-}
-
-function loginCliente() {
-  const payload = {
-    dni: onlyDigits(document.getElementById("logDni").value),
-    password: document.getElementById("logPassword").value.trim()
-  };
-
-  if (!validarDni(payload.dni)) {
-    alert("DNI inválido");
-    return;
-  }
-
-  if (!payload.password) {
-    alert("Ingresá la contraseña");
-    return;
-  }
-
-  fetch("/api/clientes/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-  .then(async res => {
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || "No se pudo iniciar sesión");
-    return data;
-  })
-  .then(data => {
-    setClienteSesion(data.cliente);
-    aplicarClienteSesion();
-    mostrarSistema("formulario");
-  })
-  .catch(err => alert(err.message));
-}
-
-function cerrarSesionCliente() {
-  clearClienteSesion();
-  carrito = [];
-  comboSeleccionado = null;
-  renderCarrito();
-  document.getElementById("authContainer").style.display = "block";
-  document.getElementById("cartaContainer").style.display = "none";
-  document.getElementById("formulario").style.display = "none";
-  document.getElementById("historial").style.display = "none";
-  document.getElementById("exito").style.display = "none";
-  mostrarLogin();
-}
-
-function aplicarClienteSesion() {
-  const cliente = getClienteSesion();
-
-  if (!cliente) {
-    document.getElementById("authContainer").style.display = "block";
-    document.getElementById("cartaContainer").style.display = "none";
-    document.getElementById("formulario").style.display = "none";
-    return;
-  }
-
-  document.getElementById("authContainer").style.display = "none";
-  document.getElementById("cartaContainer").style.display = "block";
-  document.getElementById("formulario").style.display = "block";
-
-  nombre.value = cliente.nombre || "";
-  telefono.value = cliente.telefono || "";
-  direccion.value = cliente.direccion || "";
-
-  nombre.readOnly = true;
-  telefono.readOnly = false;
-  direccion.readOnly = false;
-
-  document.getElementById("clienteActualNombre").innerText = cliente.nombre || "-";
-  document.getElementById("clienteActualDni").innerText = cliente.dni || "-";
-}
-
-function validarSesionClienteAlCargar() {
-  const cliente = getClienteSesion();
-
-  if (!cliente || !cliente.dni) {
-    document.getElementById("authContainer").style.display = "block";
-    document.getElementById("cartaContainer").style.display = "none";
-    document.getElementById("formulario").style.display = "none";
-    mostrarLogin();
-    return;
-  }
-
-  document.getElementById("mainContent").style.display = "block";
-  document.getElementById("introHero").style.display = "none";
-  aplicarClienteSesion();
-
-  fetch("/api/clientes/" + onlyDigits(cliente.dni))
-    .then(async res => {
-      if (!res.ok) throw new Error();
-      return res.json();
-    })
-    .then(data => {
-      setClienteSesion(data.cliente);
-      aplicarClienteSesion();
-    })
-    .catch(() => {
-      aplicarClienteSesion();
-    });
-}
-
-function guardarMisDatos() {
-  const cliente = getClienteSesion();
-  if (!cliente || !cliente.dni) {
-    alert("Primero tenés que iniciar sesión");
-    return;
-  }
-
-  const telefonoNuevo = onlyDigits(telefono.value);
-  const direccionNueva = direccion.value.trim();
-
-  if (!validarTelefono(telefonoNuevo)) {
-    alert("Teléfono inválido");
-    return;
-  }
-
-  if (!validarDireccion(direccionNueva)) {
-    alert("Dirección inválida");
-    return;
-  }
-
-  fetch("/api/clientes/" + onlyDigits(cliente.dni), {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      telefono: telefonoNuevo,
-      direccion: direccionNueva
-    })
-  })
-  .then(async res => {
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || "No se pudo guardar");
-    return data;
-  })
-  .then(data => {
-    setClienteSesion(data.cliente);
-    aplicarClienteSesion();
-    alert("Datos actualizados");
-  })
-  .catch(err => alert(err.message));
-}
-
-window.onload = ()=>{
-  validarSesionClienteAlCargar();
-  renderCarrito();
-};
-
-function renderCarta(productos) {
-  const cartaGrid = document.getElementById("cartaGrid");
-  cartaGrid.innerHTML = "";
-
-  if (!productos.length) {
-    cartaGrid.innerHTML = `<div class="carta-item"><strong>No se encontraron cortes</strong></div>`;
-    return;
-  }
-
-  productos.forEach((p, index) => {
-    const categoria = getCategoriaProducto(p.nombre);
-
-    cartaGrid.innerHTML += `
-      <div class="carta-item">
-        <div class="carta-categoria">${categoria.toUpperCase()}</div>
-        <strong>${p.nombre}</strong>
-        <span>$${formatMoney(p.precio)}</span>
-        <div class="carta-actions">
-          <input id="cartaCantidad_${index}" class="carta-cantidad" type="text" placeholder="Kg ej: 1.5">
-          <button class="carta-btn" type="button" onclick="agregarDesdeCarta(${index})">Agregar</button>
-        </div>
-      </div>
-    `;
-  });
-}
-
-function aplicarFiltroCarta() {
-  const texto = (document.getElementById("buscadorCarta").value || "").toLowerCase().trim();
-  const categoria = document.getElementById("categoriaCarta").value;
-
-  productosCartaFiltrados = productosCarta.filter(p => {
-    const coincideTexto = !texto || String(p.nombre || "").toLowerCase().includes(texto);
-    const categoriaProducto = getCategoriaProducto(p.nombre);
-    const coincideCategoria = categoria === "todos" || categoriaProducto === categoria;
-    return coincideTexto && coincideCategoria;
-  });
-
-  renderCarta(productosCartaFiltrados);
-}
-
-function agregarDesdeCarta(index) {
-  const cliente = getClienteSesion();
-  if (!cliente) {
-    alert("Primero tenés que iniciar sesión");
-    return;
-  }
-
-  const productoElegido = productosCartaFiltrados[index];
-  if (!productoElegido) return;
-
-  const input = document.getElementById(`cartaCantidad_${index}`);
-  const cantidadTexto = normalizarCantidadTexto(input.value);
-  const cantidadNumero = parseCantidad(cantidadTexto);
-
-  if (!cantidadTexto || cantidadNumero <= 0) {
-    alert("Ingresá una cantidad válida");
-    return;
-  }
-
-  carrito.push({
-    producto: productoElegido.nombre,
-    cantidad: cantidadTexto
-  });
-
-  input.value = "";
-  renderCarrito();
-  scrollA("formulario");
-}
-
-function cargarProductos(){
-  fetch("/api/productos")
-  .then(r=>r.json())
-  .then(data=>{
-    producto.innerHTML = "";
-    productosConPrecio = {};
-
-    data.forEach(p=>{
-      let o = document.createElement("option");
-      o.value = p.nombre;
-      o.textContent = p.nombre;
-      producto.appendChild(o);
-
-      productosConPrecio[p.nombre] = Number(p.precio || 0);
-    });
-
-    productosCarta = [...data];
-    productosCartaFiltrados = [...data];
-    renderCarta(productosCartaFiltrados);
-    renderCarrito();
-  });
-}
-
-function aplicarPromo(p,c){
-  comboSeleccionado = null;
-  comboBox.style.display = "none";
-  comboBox.innerHTML = "";
-  producto.value = p;
-  cantidad.value = c;
-}
-
-function combo1(){
-  comboSeleccionado = [
-    {producto:"ASADO completo",cantidad:"2"},
-    {producto:"VACIO PREMIUM",cantidad:"1"}
-  ];
-
-  comboBox.style.display = "block";
-  comboBox.innerHTML = "<b>Combo:</b><br>🥩 Asado 2kg<br>🥩 Vacío Premium 1kg";
-}
-
-function agregarAlCarrito(){
-  const cliente = getClienteSesion();
-  if (!cliente) {
-    alert("Primero tenés que iniciar sesión");
-    return;
-  }
-
-  if (comboSeleccionado && comboSeleccionado.length > 0) {
-    comboSeleccionado.forEach(item=>{
-      carrito.push({
-        producto: item.producto,
-        cantidad: normalizarCantidadTexto(item.cantidad)
-      });
-    });
-
-    comboSeleccionado = null;
-    comboBox.style.display = "none";
-    comboBox.innerHTML = "";
-    renderCarrito();
-    return;
-  }
-
-  const prod = producto.value;
-  const cantTexto = normalizarCantidadTexto(cantidad.value);
-  const cantNumero = parseCantidad(cantTexto);
-
-  if (!prod || !cantTexto || cantNumero <= 0) {
-    alert("Seleccioná producto y una cantidad válida");
-    return;
-  }
-
-  carrito.push({
-    producto: prod,
-    cantidad: cantTexto
-  });
-
-  cantidad.value = "";
-  renderCarrito();
-}
-
-function actualizarCantidadCarrito(index) {
-  const input = document.getElementById(`carritoCantidad_${index}`);
-  if (!input) return;
-
-  const cantidadTexto = normalizarCantidadTexto(input.value);
-  const cantidadNumero = parseCantidad(cantidadTexto);
-
-  if (!cantidadTexto || cantidadNumero <= 0) {
-    alert("Ingresá una cantidad válida");
-    return;
-  }
-
-  carrito[index].cantidad = cantidadTexto;
-  renderCarrito();
-}
-
-function quitarDelCarrito(index){
-  carrito.splice(index, 1);
-  renderCarrito();
-}
-
-function vaciarCarrito(){
-  carrito = [];
-  renderCarrito();
-}
-
-function calcularTotalCarrito(){
-  return carrito.reduce((acc, item) => {
-    const precio = Number(productosConPrecio[item.producto] || 0);
-    const cantidad = parseCantidad(item.cantidad);
-    return acc + (precio * cantidad);
-  }, 0);
-}
-
-function renderCarrito(){
-  if (carrito.length === 0) {
-    carritoLista.innerHTML = '<div class="carrito-empty">No hay productos agregados</div>';
-    carritoTotal.innerText = "Total estimado: $0";
-    return;
-  }
-
-  carritoLista.innerHTML = "";
-
-  carrito.forEach((item, i)=>{
-    const precio = Number(productosConPrecio[item.producto] || 0);
-    const cantidad = parseCantidad(item.cantidad);
-    const subtotal = precio * cantidad;
-
-    carritoLista.innerHTML += `
-      <div class="carrito-item">
-        <div class="carrito-item-top">
-          <div>
-            <strong>🥩 ${item.producto}</strong>
-            <span>Subtotal: $${formatMoney(subtotal)}</span>
-          </div>
-          <button class="btn-remove-item" onclick="quitarDelCarrito(${i})">Quitar</button>
-        </div>
-
-        <div class="carrito-edit">
-          <input id="carritoCantidad_${i}" class="carrito-cantidad-input" type="text" value="${item.cantidad}" placeholder="Kg ej: 1.5">
-          <button class="btn-save-item" onclick="actualizarCantidadCarrito(${i})">Guardar</button>
-          <span>⚖️ ${item.cantidad} kg</span>
-        </div>
-      </div>
-    `;
-  });
-
-  carritoTotal.innerText = `Total estimado: $${formatMoney(calcularTotalCarrito())}`;
-}
-
-async function enviar(){
-  const cliente = getClienteSesion();
-  if (!cliente) {
-    alert("Primero tenés que iniciar sesión");
-    return;
-  }
-
-  const n = nombre.value.trim();
-  const t = telefono.value.trim();
-  const d = direccion.value.trim();
-
-  if(!n || !t || !d){
-    alert("Datos de cliente incompletos");
-    return;
-  }
-
-  let itemsAEnviar = [];
-
-  if (carrito.length > 0) {
-    itemsAEnviar = [...carrito];
-  } else if (comboSeleccionado && comboSeleccionado.length > 0) {
-    itemsAEnviar = comboSeleccionado.map(i => ({
-      producto: i.producto,
-      cantidad: normalizarCantidadTexto(i.cantidad)
-    }));
-  } else {
-    const prod = producto.value;
-    const cantTexto = normalizarCantidadTexto(cantidad.value);
-    const cantNumero = parseCantidad(cantTexto);
-
-    if (!prod || !cantTexto || cantNumero <= 0) {
-      alert("Seleccioná producto y una cantidad válida, o agregalos al carrito");
-      return;
-    }
-
-    itemsAEnviar = [{
-      producto: prod,
-      cantidad: cantTexto
-    }];
-  }
-
-  const ahora = new Date();
-  const fecha = ahora.toLocaleDateString();
-  const hora = ahora.toLocaleTimeString();
-
-  const totalEstimado = itemsAEnviar.reduce((acc, item) => {
-    const precio = Number(productosConPrecio[item.producto] || 0);
-    const cantidad = parseCantidad(item.cantidad);
-    return acc + (precio * cantidad);
-  }, 0);
-
-  try {
-    const resp = await fetch("/api/pedidos", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        clienteDni: cliente.dni,
-        items: itemsAEnviar
-      })
-    });
-
-    const data = await resp.json().catch(() => ({}));
-
-    if (!resp.ok || !data.ok) {
-      throw new Error(data.error || "No se pudo guardar el pedido");
-    }
-
-    let mensaje = `🛒 *PEDIDO*%0A👤 ${n}%0A🪪 DNI ${cliente.dni}%0A📞 ${t}%0A📍 ${d}%0A`;
-
-    itemsAEnviar.forEach(item=>{
-      mensaje += `🥩 ${item.producto} - ${item.cantidad}kg%0A`;
-    });
-
-    mensaje += `💲 Total estimado: $${formatMoney(totalEstimado)}%0A`;
-    mensaje += `📅 ${fecha}%0A⏰ ${hora}%0A`;
-    mensaje += `#️⃣ Pedido: ${data.pedidoNumero || "-"}`;
-
-    window.open(`https://wa.me/${TELEFONO}?text=${mensaje}`, "_blank");
-
-    carrito = [];
-    comboSeleccionado = null;
-    comboBox.style.display = "none";
-    comboBox.innerHTML = "";
-    renderCarrito();
-    cantidad.value = "";
-
-    document.getElementById("formulario").style.display = "none";
-    document.getElementById("exito").style.display = "flex";
-  } catch (err) {
-    alert(err.message || "No se pudo enviar el pedido");
-  }
-}
-
-function cargarHistorialAgrupado() {
-  const cliente = getClienteSesion();
-  if(!cliente){
-    lista.innerHTML = "<p>Primero iniciá sesión</p>";
-    return;
-  }
-
-  fetch("/api/pedidos/grouped")
-  .then(r=>r.json())
-  .then(data=>{
-    lista.innerHTML = "";
-
-    const pedidos = data.filter(p=>String(p.clienteDni || "") === String(cliente.dni || ""));
-
-    if(pedidos.length === 0){
-      lista.innerHTML = "<p>No tenés pedidos</p>";
-      return;
-    }
-
-    pedidos
-      .slice()
-      .sort((a, b) => Number(b.pedidoNumero) - Number(a.pedidoNumero))
-      .forEach(p=>{
-        const estado = p.estado || "pendiente";
-        const clase = estado === "entregado" ? "entregado" : "pendiente";
-
-        const totalPedido = (p.items || []).reduce((acc, item) => {
-          const precio = Number(productosConPrecio[item.producto] || 0);
-          const cantidad = parseCantidad(item.cantidad);
-          return acc + (precio * cantidad);
-        }, 0);
-
-        const itemsHTML = (p.items || []).map(item => `
-          <div>
-            🥩 ${item.producto}<br>
-            ⚖️ ${item.cantidad}kg
-          </div>
-        `).join("<hr style='border-color: rgba(255,255,255,0.08);'>");
-
-        lista.innerHTML += `
-        <div class="card">
-          <b>👤 ${p.cliente?.nombre || "-"}</b><br>
-          🪪 DNI ${p.clienteDni || "-"}<br>
-          📞 ${p.cliente?.telefono || "-"}<br>
-          📍 ${p.cliente?.direccion || "-"}<br><br>
-
-          <div class="items-box">
-            ${itemsHTML}
-          </div>
-
-          💲 Total estimado: $${formatMoney(totalPedido)}<br>
-          📅 ${p.fecha || "-"}<br>
-          🕒 Actualizado: ${p.actualizado || "-"}<br>
-          #️⃣ Pedido: ${p.pedidoNumero || "-"}<br>
-
-          <div class="estado ${clase}">${estado}</div>
-        </div>`;
-      });
-  })
-  .catch(() => {
-    lista.innerHTML = "<p>No se pudieron cargar tus pedidos</p>";
-  });
-}
-
-function verHistorial(){
-  const cliente = getClienteSesion();
-  if(!cliente){
-    alert("Primero tenés que iniciar sesión");
-    return;
-  }
-
-  document.getElementById("formulario").style.display="none";
-  document.getElementById("historial").style.display="block";
-
-  cargarHistorialAgrupado();
-
-  if (historialInterval) clearInterval(historialInterval);
-  historialInterval = setInterval(() => {
-    if (document.getElementById("historial").style.display === "block") {
-      cargarHistorialAgrupado();
-    }
-  }, 10000);
-}
-
-function compartir(){
-  window.open(`https://wa.me/?text=Hacé tu pedido ${URL}`);
-}
-
-function verQR(){
-  qrImg.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${URL}`;
-  qrModal.style.display="flex";
-}
-
-function volver(){
-  document.getElementById("historial").style.display="none";
-  document.getElementById("exito").style.display="none";
-  aplicarClienteSesion();
-
-  if (historialInterval) {
-    clearInterval(historialInterval);
-    historialInterval = null;
-  }
-}
-
-function cargarProductos(){
-  fetch("/api/productos")
-  .then(r=>r.json())
-  .then(data=>{
-    producto.innerHTML = "";
-    productosConPrecio = {};
-
-    data.forEach(p=>{
-      let o = document.createElement("option");
-      o.value = p.nombre;
-      o.textContent = p.nombre;
-      producto.appendChild(o);
-
-      productosConPrecio[p.nombre] = Number(p.precio || 0);
-    });
-
-    productosCarta = [...data];
-    productosCartaFiltrados = [...data];
-    renderCarta(productosCartaFiltrados);
-    renderCarrito();
-  });
-}
-
-cargarProductos();
-</script>
-
+  <script src="app.js"></script>
 </body>
 </html>
