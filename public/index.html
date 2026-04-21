@@ -220,6 +220,13 @@ a {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 22px;
   padding: 20px;
+  cursor: pointer;
+  transition: transform .18s ease, filter .18s ease;
+}
+
+.intro-side-card:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
 }
 
 .intro-side-card small {
@@ -247,6 +254,10 @@ a {
 /* =========================
    RESTO DE LA WEB
 ========================= */
+#mainContent {
+  display: none;
+}
+
 .topbar {
   background: #7f1d1d;
   color: #fee2e2;
@@ -1044,7 +1055,7 @@ button:hover {
 <body>
 
 <!-- PORTADA DE PRESENTACIÓN -->
-<section class="intro-hero">
+<section class="intro-hero" id="introHero">
   <div class="intro-card">
     <div class="intro-grid">
       <div>
@@ -1062,8 +1073,8 @@ button:hover {
 
         <p class="intro-text">
           Somos una propuesta pensada para ofrecer variedad, calidad y servicio en cada pedido.
-          Desde esta nueva entrada, tus clientes pueden conocer mejor la empresa y luego continuar
-          directamente a la parte operativa del sistema para registrarse, elegir productos y hacer sus pedidos.
+          Esta portada presenta la empresa y, al continuar, se accede al sistema completo de pedidos
+          que ya venimos construyendo.
         </p>
 
         <div class="intro-points">
@@ -1089,28 +1100,28 @@ button:hover {
         </div>
 
         <div class="intro-actions">
-          <button class="intro-btn-main" onclick="irAlSistema()">Continuar</button>
-          <button class="intro-btn-sec" onclick="document.getElementById('promosSection').scrollIntoView({behavior:'smooth'})">Ver más</button>
+          <button class="intro-btn-main" onclick="mostrarSistema('top')">Continuar</button>
+          <button class="intro-btn-sec" onclick="mostrarSistema('promosSection')">Ver ofertas destacadas</button>
         </div>
       </div>
 
       <div class="intro-side">
-        <div class="intro-side-card">
-          <small>NUEVA ENTRADA VISUAL</small>
-          <b>Primera impresión más fuerte</b>
-          <span>La web ahora recibe al cliente con una presentación más comercial y más cercana a una marca profesional.</span>
+        <div class="intro-side-card" onclick="mostrarSistema('promosSection')">
+          <small>OFERTAS DESTACADAS</small>
+          <b>Promociones y accesos rápidos</b>
+          <span>Entrá directo al apartado de ofertas para ver promos destacadas y combos cargados.</span>
         </div>
 
-        <div class="intro-side-card">
-          <small>SIN PERDER FUNCIONES</small>
-          <b>Todo lo que ya funciona sigue igual</b>
-          <span>Login, registro, autocompletado, carta, carrito, historial, QR, compartir y panel admin siguen activos.</span>
+        <div class="intro-side-card" onclick="mostrarSistema('cartaContainer')">
+          <small>CORTES Y CATEGORÍAS</small>
+          <b>Catálogo completo</b>
+          <span>Pasá directamente a la sección de cortes, categorías y buscador para elegir productos.</span>
         </div>
 
-        <div class="intro-side-card">
-          <small>OBJETIVO</small>
-          <b>Vender mejor desde la primera vista</b>
-          <span>Una portada más clara y más estética ayuda a transmitir confianza antes de que el cliente haga el pedido.</span>
+        <div class="intro-side-card" onclick="mostrarSistema('formulario')">
+          <small>CARRITO Y PEDIDO</small>
+          <b>Ir directo a comprar</b>
+          <span>Entrá al formulario, carrito y armado del pedido para continuar la compra rápidamente.</span>
         </div>
       </div>
     </div>
@@ -1136,14 +1147,14 @@ button:hover {
       </div>
 
       <div class="header-actions">
-        <div class="header-chip">🔥 Ofertas destacadas</div>
-        <div class="header-chip">🥩 Cortes por categoría</div>
-        <div class="header-chip">🛒 Carrito y pedidos</div>
+        <div class="header-chip" onclick="scrollA('promosSection')" style="cursor:pointer;">🔥 Ofertas destacadas</div>
+        <div class="header-chip" onclick="scrollA('cartaContainer')" style="cursor:pointer;">🥩 Cortes y categorías</div>
+        <div class="header-chip" onclick="scrollA('formulario')" style="cursor:pointer;">🛒 Carrito y pedido</div>
       </div>
     </div>
   </header>
 
-  <section class="hero">
+  <section class="hero" id="top">
     <div class="hero-card">
       <div class="hero-grid">
         <div>
@@ -1221,19 +1232,19 @@ button:hover {
     </div>
 
     <div class="promos-grid">
-      <div class="promo-card" onclick="aplicarPromo('ASADO completo','2'); irAlSistema()">
+      <div class="promo-card" onclick="aplicarPromo('ASADO completo','2'); scrollA('formulario')">
         <small>PROMO RÁPIDA</small>
         <h3>2kg de Asado</h3>
         <p>Un toque y queda cargado en el formulario para sumar o enviar.</p>
       </div>
 
-      <div class="promo-card" onclick="combo1(); irAlSistema()">
+      <div class="promo-card" onclick="combo1(); scrollA('formulario')">
         <small>COMBO</small>
         <h3>Parrillero</h3>
         <p>2kg de asado + 1kg de vacío premium, listo para sumar al carrito.</p>
       </div>
 
-      <div class="promo-card" onclick="document.getElementById('cartaContainer').scrollIntoView({behavior:'smooth'})">
+      <div class="promo-card" onclick="scrollA('cartaContainer')">
         <small>CATÁLOGO</small>
         <h3>Explorar cortes</h3>
         <p>Buscá por nombre, filtrá por categoría y agregá productos con sus kilos.</p>
@@ -1445,8 +1456,19 @@ let productosCartaFiltrados = [];
 const URL = window.location.origin;
 const TELEFONO = "5491125061324";
 
-function irAlSistema() {
-  document.getElementById("mainContent").scrollIntoView({ behavior: "smooth", block: "start" });
+function mostrarSistema(destino = "top") {
+  document.getElementById("mainContent").style.display = "block";
+
+  setTimeout(() => {
+    scrollA(destino);
+  }, 50);
+}
+
+function scrollA(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 function onlyDigits(value) {
@@ -1575,7 +1597,7 @@ function registrarCliente() {
   .then(data => {
     setClienteSesion(data.cliente);
     aplicarClienteSesion();
-    irAlSistema();
+    mostrarSistema("formulario");
   })
   .catch(err => alert(err.message));
 }
@@ -1609,7 +1631,7 @@ function loginCliente() {
   .then(data => {
     setClienteSesion(data.cliente);
     aplicarClienteSesion();
-    irAlSistema();
+    mostrarSistema("formulario");
   })
   .catch(err => alert(err.message));
 }
@@ -1625,7 +1647,7 @@ function cerrarSesionCliente() {
   document.getElementById("historial").style.display = "none";
   document.getElementById("exito").style.display = "none";
   mostrarLogin();
-  irAlSistema();
+  mostrarSistema("top");
 }
 
 function aplicarClienteSesion() {
@@ -1793,7 +1815,7 @@ function agregarDesdeCarta(index) {
 
   input.value = "";
   renderCarrito();
-  document.getElementById("formulario").scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollA("formulario");
 }
 
 function cargarProductos(){
@@ -1825,7 +1847,6 @@ function aplicarPromo(p,c){
   comboBox.innerHTML = "";
   producto.value = p;
   cantidad.value = c;
-  document.getElementById("formulario").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function combo1(){
@@ -1836,7 +1857,6 @@ function combo1(){
 
   comboBox.style.display = "block";
   comboBox.innerHTML = "<b>Combo:</b><br>🥩 Asado 2kg<br>🥩 Vacío Premium 1kg";
-  document.getElementById("formulario").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function agregarAlCarrito(){
