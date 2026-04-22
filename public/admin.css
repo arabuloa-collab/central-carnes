@@ -1,0 +1,54 @@
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+.admin-header {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  padding: 20px;
+  text-align: center;
+}
+
+.container {
+  padding: 20px;
+}
+
+.filtros {
+  margin-bottom: 20px;
+}
+
+select {
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.estado {
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.pendiente { background: yellow; color: black; }
+.entregado { background: green; }
+.cancelado { background: red; }
+.preparacion { background: blue; }
+
+button {
+  margin-top: 8px;
+  margin-right: 5px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}

@@ -28,28 +28,67 @@ function formatFechaArgentina(dateInput = new Date()) {
   });
 }
 
+function normalizeEstado(estado) {
+  const e = String(estado || "").trim().toLowerCase();
+
+  if (e === "pendiente") return "pendiente";
+  if (e === "entregado") return "entregado";
+  if (e === "cancelado") return "cancelado";
+  if (
+    e === "en preparacion" ||
+    e === "en preparación" ||
+    e === "preparacion" ||
+    e === "preparación"
+  ) {
+    return "en preparación";
+  }
+
+  return e;
+}
+
+function estadoValido(estado) {
+  return ["pendiente", "en preparación", "entregado", "cancelado"].includes(
+    normalizeEstado(estado)
+  );
+}
+
 function normalizeItems(body) {
   if (Array.isArray(body.items) && body.items.length > 0) {
     return body.items
-      .map(i => ({
+      .map((i) => ({
         producto: String(i.producto || "").trim(),
         cantidad: normalizeCantidad(i.cantidad)
       }))
-      .filter(i => i.producto && cantidadValida(i.cantidad));
+      .filter((i) => i.producto && cantidadValida(i.cantidad));
   }
 
   const producto = String(body.producto || "").trim();
   const cantidad = normalizeCantidad(body.cantidad);
 
   if (!producto || !cantidadValida(cantidad)) return [];
+
   return [{ producto, cantidad }];
 }
 
-async function nextPedidoNumero() {
-  const result = await pool.query(`SELECT COALESCE(MAX(pedido_numero), 1000) AS max_num FROM pedidos`);
+async function nextPedidoNumero(client = pool) {
+  const result = await client.query(
+    `SELECT COALESCE(MAX(pedido_numero), 1000) AS max_num FROM pedidos`
+  );
   return Number(result.rows[0].max_num) + 1;
 }
 
+function csvEscape(value) {
+  const str = String(value ?? "");
+  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+/* =========================
+   GET /api/pedidos
+   Devuelve pedidos planos
+========================= */
 router.get("/", async (req, res) => {
   try {
     const result = await pool.query(`
@@ -69,7 +108,7 @@ router.get("/", async (req, res) => {
       ORDER BY p.pedido_numero DESC, pi.id ASC
     `);
 
-    const flat = result.rows.map(r => ({
+    const flat = result.rows.map((r) => ({
       pedidoNumero: r.pedido_numero,
       clienteDni: r.cliente_dni,
       cliente: {
@@ -86,11 +125,15 @@ router.get("/", async (req, res) => {
 
     res.json(flat);
   } catch (err) {
-    console.error("Error get pedidos flat:", err);
+    console.error("Error get pedidos:", err);
     res.status(500).json({ ok: false, error: "Error al cargar pedidos" });
   }
 });
 
+/* =========================
+   GET /api/pedidos/grouped
+   Devuelve pedidos agrupados
+========================= */
 router.get("/grouped", async (req, res) => {
   try {
     const pedidosResult = await pool.query(`
@@ -106,15 +149,19 @@ router.get("/grouped", async (req, res) => {
     `);
 
     const itemsPorPedido = {};
-    itemsResult.rows.forEach(item => {
-      if (!itemsPorPedido[item.pedido_id]) itemsPorPedido[item.pedido_id] = [];
+
+    itemsResult.rows.forEach((item) => {
+      if (!itemsPorPedido[item.pedido_id]) {
+        itemsPorPedido[item.pedido_id] = [];
+      }
+
       itemsPorPedido[item.pedido_id].push({
         producto: item.producto,
         cantidad: item.cantidad
       });
     });
 
-    const grouped = pedidosResult.rows.map(p => ({
+    const grouped = pedidosResult.rows.map((p) => ({
       id: p.id,
       pedidoNumero: p.pedido_numero,
       clienteDni: p.cliente_dni,
@@ -131,11 +178,14 @@ router.get("/grouped", async (req, res) => {
 
     res.json(grouped);
   } catch (err) {
-    console.error("Error grouped pedidos:", err);
+    console.error("Error get grouped pedidos:", err);
     res.status(500).json({ ok: false, error: "Error al cargar pedidos agrupados" });
   }
 });
 
+/* =========================
+   GET /api/pedidos/export.csv
+========================= */
 router.get("/export.csv", async (req, res) => {
   try {
     const result = await pool.query(`
@@ -168,32 +218,27 @@ router.get("/export.csv", async (req, res) => {
       "Cantidad"
     ];
 
-    const csvEscape = (value) => {
-      const str = String(value ?? "");
-      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-        return `"${str.replace(/"/g, '""')}"`;
-      }
-      return str;
-    };
-
     const lines = [headers.join(",")];
 
-    result.rows.forEach(r => {
-      lines.push([
-        csvEscape(r.pedido_numero),
-        csvEscape(r.cliente_nombre),
-        csvEscape(r.cliente_dni),
-        csvEscape(r.cliente_telefono),
-        csvEscape(r.cliente_direccion),
-        csvEscape(r.fecha),
-        csvEscape(r.actualizado),
-        csvEscape(r.estado),
-        csvEscape(r.producto),
-        csvEscape(r.cantidad)
-      ].join(","));
+    result.rows.forEach((r) => {
+      lines.push(
+        [
+          csvEscape(r.pedido_numero),
+          csvEscape(r.cliente_nombre),
+          csvEscape(r.cliente_dni),
+          csvEscape(r.cliente_telefono),
+          csvEscape(r.cliente_direccion),
+          csvEscape(r.fecha),
+          csvEscape(r.actualizado),
+          csvEscape(r.estado),
+          csvEscape(r.producto),
+          csvEscape(r.cantidad)
+        ].join(",")
+      );
     });
 
     const csv = "\uFEFF" + lines.join("\n");
+
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", 'attachment; filename="pedidos.csv"');
     res.send(csv);
@@ -203,25 +248,33 @@ router.get("/export.csv", async (req, res) => {
   }
 });
 
+/* =========================
+   POST /api/pedidos
+   Crear pedido
+========================= */
 router.post("/", async (req, res) => {
   const client = await pool.connect();
 
   try {
     const items = normalizeItems(req.body || {});
+
     if (!items.length) {
       return res.status(400).json({ ok: false, error: "Sin productos válidos" });
     }
 
     const clienteDni = onlyDigits(req.body?.clienteDni);
+
     if (!clienteDni) {
       return res.status(400).json({ ok: false, error: "Falta DNI del cliente" });
     }
 
     const clienteResult = await client.query(
-      `SELECT nombre, dni, telefono, direccion
-       FROM clientes
-       WHERE dni = $1
-       LIMIT 1`,
+      `
+      SELECT nombre, dni, telefono, direccion
+      FROM clientes
+      WHERE dni = $1
+      LIMIT 1
+      `,
       [clienteDni]
     );
 
@@ -230,18 +283,20 @@ router.post("/", async (req, res) => {
     }
 
     const cliente = clienteResult.rows[0];
-    const pedidoNumero = await nextPedidoNumero();
+    const pedidoNumero = await nextPedidoNumero(client);
     const fecha = formatFechaArgentina();
     const actualizado = fecha;
 
     await client.query("BEGIN");
 
     const pedidoInsert = await client.query(
-      `INSERT INTO pedidos
+      `
+      INSERT INTO pedidos
         (pedido_numero, cliente_nombre, cliente_dni, cliente_telefono, cliente_direccion, fecha, estado, actualizado)
-       VALUES
+      VALUES
         ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id`,
+      RETURNING id
+      `,
       [
         pedidoNumero,
         cliente.nombre,
@@ -258,8 +313,10 @@ router.post("/", async (req, res) => {
 
     for (const item of items) {
       await client.query(
-        `INSERT INTO pedido_items (pedido_id, producto, cantidad)
-         VALUES ($1, $2, $3)`,
+        `
+        INSERT INTO pedido_items (pedido_id, producto, cantidad)
+        VALUES ($1, $2, $3)
+        `,
         [pedidoId, item.producto, item.cantidad]
       );
     }
@@ -268,7 +325,6 @@ router.post("/", async (req, res) => {
 
     res.json({
       ok: true,
-      agrupado: false,
       pedidoNumero
     });
   } catch (err) {
@@ -280,32 +336,75 @@ router.post("/", async (req, res) => {
   }
 });
 
+/* =========================
+   PUT /api/pedidos/grouped/:pedidoNumero
+   Cambiar estado
+========================= */
 router.put("/grouped/:pedidoNumero", async (req, res) => {
   try {
-    const role = String(req.headers["x-role"] || "").trim();
-    if (!["admin", "vendedor"].includes(role)) {
-      return res.status(403).json({ ok: false, error: "Sin permisos" });
+    const pedidoNumero = Number(req.params.pedidoNumero);
+    const estado = normalizeEstado(req.body?.estado);
+
+    if (!pedidoNumero) {
+      return res.status(400).json({ ok: false, error: "Número de pedido inválido" });
     }
 
-    const pedidoNumero = Number(req.params.pedidoNumero);
-    const estado = String(req.body.estado || "").trim().toLowerCase();
-    const estadosValidos = ["pendiente", "en preparación", "entregado", "cancelado"];
-
-    if (!estadosValidos.includes(estado)) {
+    if (!estadoValido(estado)) {
       return res.status(400).json({ ok: false, error: "Estado inválido" });
     }
 
     const actualizado = formatFechaArgentina();
 
     const result = await pool.query(
-      `UPDATE pedidos
-       SET estado = $1, actualizado = $2
-       WHERE pedido_numero = $3`,
+      `
+      UPDATE pedidos
+      SET estado = $1, actualizado = $2
+      WHERE pedido_numero = $3
+      `,
       [estado, actualizado, pedidoNumero]
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ ok: false, error: "No existe" });
+      return res.status(404).json({ ok: false, error: "Pedido no encontrado" });
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Error update grouped pedido:", err);
+    res.status(500).json({ ok: false, error: "Error al cambiar estado" });
+  }
+});
+
+/* =========================
+   PUT /api/pedidos/estado/:numero
+   Alias para admin.js
+========================= */
+router.put("/estado/:numero", async (req, res) => {
+  try {
+    const pedidoNumero = Number(req.params.numero);
+    const estado = normalizeEstado(req.body?.estado);
+
+    if (!pedidoNumero) {
+      return res.status(400).json({ ok: false, error: "Número de pedido inválido" });
+    }
+
+    if (!estadoValido(estado)) {
+      return res.status(400).json({ ok: false, error: "Estado inválido" });
+    }
+
+    const actualizado = formatFechaArgentina();
+
+    const result = await pool.query(
+      `
+      UPDATE pedidos
+      SET estado = $1, actualizado = $2
+      WHERE pedido_numero = $3
+      `,
+      [estado, actualizado, pedidoNumero]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "Pedido no encontrado" });
     }
 
     res.json({ ok: true });
@@ -315,22 +414,27 @@ router.put("/grouped/:pedidoNumero", async (req, res) => {
   }
 });
 
+/* =========================
+   DELETE /api/pedidos/grouped/:pedidoNumero
+========================= */
 router.delete("/grouped/:pedidoNumero", async (req, res) => {
   try {
-    const role = String(req.headers["x-role"] || "").trim();
-    if (role !== "admin") {
-      return res.status(403).json({ ok: false, error: "Sin permisos" });
-    }
-
     const pedidoNumero = Number(req.params.pedidoNumero);
 
+    if (!pedidoNumero) {
+      return res.status(400).json({ ok: false, error: "Número de pedido inválido" });
+    }
+
     const result = await pool.query(
-      `DELETE FROM pedidos WHERE pedido_numero = $1`,
+      `
+      DELETE FROM pedidos
+      WHERE pedido_numero = $1
+      `,
       [pedidoNumero]
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ ok: false, error: "No existe" });
+      return res.status(404).json({ ok: false, error: "Pedido no encontrado" });
     }
 
     res.json({ ok: true });
