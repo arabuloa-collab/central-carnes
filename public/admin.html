@@ -1,32 +1,109 @@
-<!DOCTYPE html>
+<!<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Admin - Central Carnes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Pro - Central Carnes</title>
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
-<header class="admin-header">
-  <h1>Panel Admin - Central Carnes</h1>
-</header>
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <img src="logo.png" alt="Central Carnes" class="login-logo">
+      <div class="login-badge">PANEL ADMIN</div>
+      <h1>Central Carnes</h1>
+      <p>Ingresá con tu usuario y contraseña para administrar pedidos.</p>
 
-<div class="container">
+      <div class="login-form">
+        <label for="user">Usuario</label>
+        <input id="user" type="text" placeholder="Ingresá tu usuario">
 
-  <div class="filtros">
-    <select id="filtroEstado" onchange="cargarPedidos()">
-      <option value="todos">Todos</option>
-      <option value="pendiente">Pendiente</option>
-      <option value="en preparacion">En preparación</option>
-      <option value="cancelado">Cancelado</option>
-      <option value="entregado">Entregado</option>
-    </select>
+        <label for="pass">Contraseña</label>
+        <input id="pass" type="password" placeholder="Ingresá tu contraseña">
+
+        <button class="btn-primary" onclick="login()">Ingresar</button>
+      </div>
+    </div>
   </div>
 
-  <div id="listaPedidos"></div>
+  <div id="adminApp" class="hidden">
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <div class="brand">
+          <img src="logo.png" alt="Central Carnes">
+          <div>
+            <h1>Admin Pro</h1>
+            <span>Gestión de pedidos y clientes</span>
+          </div>
+        </div>
 
-</div>
+        <div class="admin-user-box">
+          <div class="admin-user-text">
+            <strong id="usuarioActual">-</strong>
+            <span id="rolActual">-</span>
+          </div>
+          <button class="btn-logout" onclick="logout()">Salir</button>
+        </div>
+      </div>
+    </header>
 
-<script src="admin.js"></script>
+    <main class="admin-main">
+      <section class="dashboard">
+        <div class="dashboard-card">
+          <small>Total pedidos</small>
+          <strong id="totalPedidos">0</strong>
+        </div>
+
+        <div class="dashboard-card">
+          <small>Pendientes</small>
+          <strong id="totalPendientes">0</strong>
+        </div>
+
+        <div class="dashboard-card">
+          <small>En preparación</small>
+          <strong id="totalPreparacion">0</strong>
+        </div>
+
+        <div class="dashboard-card">
+          <small>Entregados</small>
+          <strong id="totalEntregados">0</strong>
+        </div>
+
+        <div class="dashboard-card">
+          <small>Cancelados</small>
+          <strong id="totalCancelados">0</strong>
+        </div>
+      </section>
+
+      <section class="toolbar">
+        <div class="toolbar-left">
+          <input
+            id="filtroTexto"
+            type="text"
+            placeholder="Buscar por cliente, DNI, teléfono o número de pedido"
+            oninput="renderPedidos()"
+          >
+
+          <select id="filtroEstado" onchange="renderPedidos()">
+            <option value="todos">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en preparación">En preparación</option>
+            <option value="entregado">Entregado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+
+        <div class="toolbar-right">
+          <button class="btn-secondary" onclick="exportarCSV()">Exportar CSV</button>
+          <button class="btn-secondary" onclick="cargarPedidos(true)">Actualizar</button>
+        </div>
+      </section>
+
+      <section id="listaPedidos" class="lista-pedidos"></section>
+    </main>
+  </div>
+
+  <script src="admin.js"></script>
 </body>
 </html>

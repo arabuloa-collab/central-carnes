@@ -1,26 +1,30 @@
 const express = require("express");
 const router = express.Router();
 
-const usuarios = [
-  { user: "admin", pass: "1234", role: "admin" },
-  { user: "vendedor", pass: "1234", role: "vendedor" }
-];
+const ADMIN_USER = process.env.ADMIN_USER || "admin";
+const ADMIN_PASS = process.env.ADMIN_PASS || "1234";
 
-router.post("/", (req, res) => {
-  const { user, pass } = req.body || {};
+router.post("/", async (req, res) => {
+  try {
+    const user = String(req.body?.user || "").trim();
+    const pass = String(req.body?.pass || "").trim();
 
-  const encontrado = usuarios.find(
-    u => u.user === user && u.pass === pass
-  );
+    if (!user || !pass) {
+      return res.status(400).json({ ok: false, error: "Faltan datos" });
+    }
 
-  if (encontrado) {
+    if (user !== ADMIN_USER || pass !== ADMIN_PASS) {
+      return res.status(401).json({ ok: false, error: "Usuario o contraseña incorrectos" });
+    }
+
     res.json({
       ok: true,
-      user: encontrado.user,
-      role: encontrado.role
+      user: ADMIN_USER,
+      role: "admin"
     });
-  } else {
-    res.status(401).json({ ok: false });
+  } catch (err) {
+    console.error("Error login admin:", err);
+    res.status(500).json({ ok: false, error: "Error interno de login" });
   }
 });
 
