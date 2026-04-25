@@ -272,6 +272,14 @@ function wspNegocio(pedido) {
   window.open(`https://wa.me/${TELEFONO_NEGOCIO}?text=${msg}`, "_blank");
 }
 
+function convertirFechaPedidoAISO(fechaTexto) {
+  if (!fechaTexto) return "";
+  const match = String(fechaTexto).match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!match) return "";
+  const [, dd, mm, yyyy] = match;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function updateDashboard(data) {
   const total = data.length;
   const pendientes = data.filter(p => p.estado === "pendiente").length;
@@ -279,22 +287,39 @@ function updateDashboard(data) {
   const entregados = data.filter(p => p.estado === "entregado").length;
   const cancelados = data.filter(p => p.estado === "cancelado").length;
 
+  const hoyISO = new Date().toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
+  const pedidosHoy = data.filter(p => convertirFechaPedidoAISO(p.fecha) === hoyISO);
+  const totalHoy = pedidosHoy.reduce((acc, p) => acc + getTotalPedido(p.items || []), 0);
+
   document.getElementById("totalPedidos").innerText = total;
   document.getElementById("totalPendientes").innerText = pendientes;
   document.getElementById("totalPreparacion").innerText = preparacion;
   document.getElementById("totalEntregados").innerText = entregados;
   document.getElementById("totalCancelados").innerText = cancelados;
+  document.getElementById("totalHoy").innerText = `$${formatMoney(totalHoy)}`;
+}
+
+function limpiarFiltros() {
+  document.getElementById("filtroTexto").value = "";
+  document.getElementById("filtroEstado").value = "todos";
+  document.getElementById("filtroFecha").value = "";
+  renderPedidos();
 }
 
 function renderPedidos() {
   const lista = document.getElementById("listaPedidos");
   const texto = (document.getElementById("filtroTexto").value || "").toLowerCase().trim();
   const estado = document.getElementById("filtroEstado").value;
+  const fechaFiltro = document.getElementById("filtroFecha").value;
 
   let pedidos = [...pedidosDB];
 
   if (estado !== "todos") {
     pedidos = pedidos.filter(p => String(p.estado || "").toLowerCase() === estado.toLowerCase());
+  }
+
+  if (fechaFiltro) {
+    pedidos = pedidos.filter(p => convertirFechaPedidoAISO(p.fecha) === fechaFiltro);
   }
 
   if (texto) {
@@ -350,6 +375,7 @@ function renderPedidos() {
           <button class="btn-state" onclick="cambiarEstado(${pedido.pedidoNumero}, 'cancelado')">Cancelar</button>
           <button class="btn-wsp" onclick='wspNegocio(${JSON.stringify(pedido).replace(/'/g, "&apos;")})'>WhatsApp negocio</button>
           <button class="btn-notify" onclick='notifyCliente(${JSON.stringify(pedido).replace(/'/g, "&apos;")}, "${String(pedido.estado || "").replace(/"/g, "&quot;")}")'>Avisar cliente</button>
+          <button class="btn-delete" onclick="eliminarPedido(${pedido.pedidoNumero})">Eliminar</button>
         </div>
       </article>
     `;
@@ -403,7 +429,6 @@ async function cambiarEstado(pedidoNumero, estado) {
     }
 
     const pedido = pedidosDB.find(p => Number(p.pedidoNumero) === Number(pedidoNumero));
-
     if (pedido) {
       pedido.estado = estado;
     }
@@ -411,6 +436,30 @@ async function cambiarEstado(pedidoNumero, estado) {
     const quiereNotificar = confirm("Estado actualizado. ¿Querés avisarle al cliente por WhatsApp?");
     if (quiereNotificar && pedido) {
       notifyCliente(pedido, estado);
+    }
+
+    await cargarPedidos(true);
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+async function eliminarPedido(pedidoNumero) {
+  const confirmar = confirm(`¿Querés eliminar el pedido #${pedidoNumero}?`);
+  if (!confirmar) return;
+
+  try {
+    const res = await fetch(`/api/pedidos/grouped/${pedidoNumero}`, {
+      method: "DELETE",
+      headers: {
+        ...getSesionHeaders()
+      }
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.error || "No se pudo eliminar el pedido");
     }
 
     await cargarPedidos(true);

@@ -1,4 +1,4 @@
-<!<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -74,6 +74,11 @@
           <small>Cancelados</small>
           <strong id="totalCancelados">0</strong>
         </div>
+
+        <div class="dashboard-card dashboard-highlight">
+          <small>Total estimado hoy</small>
+          <strong id="totalHoy">$0</strong>
+        </div>
       </section>
 
       <section class="toolbar">
@@ -92,6 +97,10 @@
             <option value="entregado">Entregado</option>
             <option value="cancelado">Cancelado</option>
           </select>
+
+          <input id="filtroFecha" type="date" onchange="renderPedidos()">
+
+          <button class="btn-secondary" onclick="limpiarFiltros()">Limpiar filtros</button>
         </div>
 
         <div class="toolbar-right">

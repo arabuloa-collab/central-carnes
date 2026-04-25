@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 const { pool } = require("../db");
@@ -85,10 +86,6 @@ function csvEscape(value) {
   return str;
 }
 
-/* =========================
-   GET /api/pedidos
-   Devuelve pedidos planos
-========================= */
 router.get("/", async (req, res) => {
   try {
     const result = await pool.query(`
@@ -130,10 +127,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-/* =========================
-   GET /api/pedidos/grouped
-   Devuelve pedidos agrupados
-========================= */
 router.get("/grouped", async (req, res) => {
   try {
     const pedidosResult = await pool.query(`
@@ -183,9 +176,6 @@ router.get("/grouped", async (req, res) => {
   }
 });
 
-/* =========================
-   GET /api/pedidos/export.csv
-========================= */
 router.get("/export.csv", async (req, res) => {
   try {
     const result = await pool.query(`
@@ -248,10 +238,6 @@ router.get("/export.csv", async (req, res) => {
   }
 });
 
-/* =========================
-   POST /api/pedidos
-   Crear pedido
-========================= */
 router.post("/", async (req, res) => {
   const client = await pool.connect();
 
@@ -336,10 +322,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-/* =========================
-   PUT /api/pedidos/grouped/:pedidoNumero
-   Cambiar estado
-========================= */
 router.put("/grouped/:pedidoNumero", async (req, res) => {
   try {
     const pedidoNumero = Number(req.params.pedidoNumero);
@@ -375,10 +357,6 @@ router.put("/grouped/:pedidoNumero", async (req, res) => {
   }
 });
 
-/* =========================
-   PUT /api/pedidos/estado/:numero
-   Alias para admin.js
-========================= */
 router.put("/estado/:numero", async (req, res) => {
   try {
     const pedidoNumero = Number(req.params.numero);
@@ -414,9 +392,6 @@ router.put("/estado/:numero", async (req, res) => {
   }
 });
 
-/* =========================
-   DELETE /api/pedidos/grouped/:pedidoNumero
-========================= */
 router.delete("/grouped/:pedidoNumero", async (req, res) => {
   try {
     const pedidoNumero = Number(req.params.pedidoNumero);
