@@ -13,12 +13,16 @@ function mostrarSistema(destino = "top") {
   const main = document.getElementById("mainContent");
 
   main.style.display = "block";
-  intro.classList.add("intro-hide");
 
-  setTimeout(() => {
-    intro.style.display = "none";
+  if (intro) {
+    intro.classList.add("intro-hide");
+    setTimeout(() => {
+      intro.style.display = "none";
+      scrollA(destino);
+    }, 500);
+  } else {
     scrollA(destino);
-  }, 500);
+  }
 }
 
 function scrollA(id) {
@@ -126,26 +130,11 @@ async function registrarCliente() {
     password: document.getElementById("regPassword").value.trim()
   };
 
-  if (payload.nombre.length < 3) {
-    alert("Nombre inválido");
-    return;
-  }
-  if (!validarDni(payload.dni)) {
-    alert("DNI inválido");
-    return;
-  }
-  if (!validarTelefono(payload.telefono)) {
-    alert("Teléfono inválido");
-    return;
-  }
-  if (!validarDireccion(payload.direccion)) {
-    alert("Dirección inválida");
-    return;
-  }
-  if (payload.password.length < 4) {
-    alert("Contraseña inválida");
-    return;
-  }
+  if (payload.nombre.length < 3) return alert("Nombre inválido");
+  if (!validarDni(payload.dni)) return alert("DNI inválido");
+  if (!validarTelefono(payload.telefono)) return alert("Teléfono inválido");
+  if (!validarDireccion(payload.direccion)) return alert("Dirección inválida");
+  if (payload.password.length < 4) return alert("Contraseña inválida");
 
   try {
     const res = await fetch("/api/clientes/register", {
@@ -171,14 +160,8 @@ async function loginCliente() {
     password: document.getElementById("logPassword").value.trim()
   };
 
-  if (!validarDni(payload.dni)) {
-    alert("DNI inválido");
-    return;
-  }
-  if (!payload.password) {
-    alert("Ingresá la contraseña");
-    return;
-  }
+  if (!validarDni(payload.dni)) return alert("DNI inválido");
+  if (!payload.password) return alert("Ingresá la contraseña");
 
   try {
     const res = await fetch("/api/clientes/login", {
@@ -276,15 +259,8 @@ async function guardarMisDatos() {
   const telefonoNuevo = onlyDigits(document.getElementById("telefono").value);
   const direccionNueva = document.getElementById("direccion").value.trim();
 
-  if (!validarTelefono(telefonoNuevo)) {
-    alert("Teléfono inválido");
-    return;
-  }
-
-  if (!validarDireccion(direccionNueva)) {
-    alert("Dirección inválida");
-    return;
-  }
+  if (!validarTelefono(telefonoNuevo)) return alert("Teléfono inválido");
+  if (!validarDireccion(direccionNueva)) return alert("Dirección inválida");
 
   try {
     const res = await fetch("/api/clientes/" + onlyDigits(cliente.dni), {
@@ -307,26 +283,52 @@ async function guardarMisDatos() {
   }
 }
 
+/* CARTA NUEVA VISUAL PRO */
 function renderCarta(productos) {
   const cartaGrid = document.getElementById("cartaGrid");
   cartaGrid.innerHTML = "";
 
   if (!productos.length) {
-    cartaGrid.innerHTML = `<div class="carta-item"><strong>No se encontraron cortes</strong></div>`;
+    cartaGrid.innerHTML = `
+      <div class="carta-empty">
+        <strong>No se encontraron cortes</strong>
+        <span>Probá con otro nombre o categoría.</span>
+      </div>
+    `;
     return;
   }
 
   productos.forEach((p, index) => {
     const categoria = getCategoriaProducto(p.nombre);
+    const precio = Number(p.precio || 0);
 
     cartaGrid.innerHTML += `
-      <div class="carta-item">
-        <div class="carta-categoria">${categoria.toUpperCase()}</div>
-        <strong>${p.nombre}</strong>
-        <span>$${formatMoney(p.precio)}</span>
-        <div class="carta-actions">
-          <input id="cartaCantidad_${index}" class="carta-cantidad" type="text" placeholder="Kg ej: 1.5">
-          <button class="carta-btn" type="button" onclick="agregarDesdeCarta(${index})">Agregar</button>
+      <div class="corte-card">
+        <div class="corte-top">
+          <div class="corte-icon">🥩</div>
+          <div>
+            <div class="corte-categoria">${categoria.toUpperCase()}</div>
+            <h3>${p.nombre}</h3>
+          </div>
+        </div>
+
+        <div class="corte-precio">
+          $${formatMoney(precio)}
+          <span>/ kg</span>
+        </div>
+
+        <div class="corte-compra">
+          <input
+            id="cartaCantidad_${index}"
+            class="corte-input"
+            type="text"
+            inputmode="decimal"
+            placeholder="Kg ej: 1.5"
+          >
+
+          <button class="corte-btn" type="button" onclick="agregarDesdeCarta(${index})">
+            Agregar
+          </button>
         </div>
       </div>
     `;
